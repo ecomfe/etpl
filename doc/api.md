@@ -27,7 +27,7 @@ var etplEngine = new etpl.Engine();
 
 ```javascript
 var helloRenderer = etplEngine.compile( 'Hello ${name}!' );
-helloRenderer( {name: 'ETPL'} );
+helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
@@ -53,7 +53,7 @@ etplEngine.get( 'hello' ); // Hello ${name}!
 ```javascript
 etplEngine.compile( '<!-- target: hello -->Hello ${name}!' );
 var helloRenderer = etplEngine.getRenderer( 'hello' );
-helloRenderer( {name: 'ETPL'} );;
+helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
@@ -66,7 +66,7 @@ helloRenderer( {name: 'ETPL'} );;
 
 ```javascript
 etplEngine.compile( '<!-- target: hello -->Hello ${name}!' );
-etplEngine.render( 'hello', {name: 'ETPL'} );
+etplEngine.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
@@ -86,7 +86,7 @@ var etpl = require( 'etpl' );
 
 ```javascript
 var helloRenderer = etpl.compile( 'Hello ${name}!' );
-helloRenderer( {name: 'ETPL'} );
+helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
@@ -113,7 +113,7 @@ etpl.get( 'hello' ); // Hello ${name}!
 ```javascript
 etpl.compile( '<!-- target: hello -->Hello ${name}!' );
 var helloRenderer = etpl.getRenderer( 'hello' );
-helloRenderer( {name: 'ETPL'} );;
+helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
@@ -146,5 +146,5 @@ etpl.merge( document.body, 'hello', {name: 'ETPL'} );
 
 ```javascript
 etpl.compile( '<!-- target: hello -->Hello ${name}!' );
-etpl.render( 'hello', {name: 'ETPL'} );
+etpl.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 ```
