@@ -76,6 +76,7 @@ Bye <strong>ETPL</strong>!
 
 ETPL支持多种形式的模板复用方式，帮助模板开发者减少模板编写的重复劳动和维护成本。
 
+
 ### import
 
 通过import指令，可以在当前位置插入指定target的源码。
@@ -102,6 +103,48 @@ Hello <strong>${name}</strong>!
 
 
 ### master
+
+通过`master`指令可以声明一个母版，母版中通过`contentplaceholder`指令声明可被替换的部分。
+
+`target`声明时通过 **master=master-name** 指定一个母版，就可以继承于这个母版的片段，并且通过`content`指令，替换母版中`contentplaceholder`指令声明部分的内容。指定母版的target中只允许包含`content`指令声明的片段。
+
+#### 语法
+
+master的语法形式为：
+
+    master: master-name
+
+contentplaceholder的语法形式为：
+
+    contentplaceholder: content-name
+
+content的语法形式为：
+
+    content: content-name
+
+
+#### 自动结束
+
+master支持自动结束，当遇见 *target* 或 *master* 时自动结束。
+
+contentplaceholder支持自动结束，当遇见 *contentplaceholder* 或 *target* 或 *master* 时，在`指令标签起始`后自动结束。
+
+content支持自动结束，当遇见 *content* 或 *target* 或 *master* 时自动结束。
+
+#### 示例
+
+```html
+<!-- master: myMaster -->
+<div class="title"><!-- contentplaceholder: title -->title<!-- /contentplaceholder --></div>
+<div class="main"><!-- contentplaceholder: main --></div>
+
+<!-- target: myTarget(master=myMaster) -->
+<!-- content: title -->
+Building WebKit from Xcode
+
+<!-- content: main -->
+<p>To build from within Xcode, you can use the WebKit workspace. Ensure that the Products and Intermediates locations for the workspace match those used by build-webkit by choosing File > Workspace Settings and clicking the Advanced button, selecting Custom, Relative to Workspace, and entering WebKitBuild both for Products and for Intermediates. Note that if you have specified a custom build location in Xcode preferences, then you don’t need to do this.</p>
+```
 
 ## 分支与循环
 
