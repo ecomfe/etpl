@@ -8,7 +8,7 @@
 
 ETPL的指令标签默认为HTML注释的形式，包括 `指令标签起始` 和 `指令标签结束`。
 
-`指令标签起始`的语法形式为： *<!-- command-name: command-value -->*。
+`指令标签起始`的语法形式为： *<!-- command-name: command-value -->*。其中， *command-value* 的具体语法形式详情请参见各指令相关章节。
 
 ```html
 <!-- target: targetName -->
@@ -34,6 +34,31 @@ ETPL的指令标签默认为HTML注释的形式，包括 `指令标签起始` �
 
 
 ### target
+
+target是ETPL规定的基本单元，其含义是 **一个模版片段** 。target可用于render，也可用于被其他target所import。
+
+#### 语法
+
+target的 *command-value* 语法形式为：
+
+    target: target-name
+    target: target-name(master=master-name)
+
+
+
+#### 自动结束
+
+target支持自动结束，当遇见 *target* 或 *master* 时自动结束。
+
+#### 示例
+
+```html
+<!-- target: hello -->
+Hello <strong>ETPL</strong>!
+
+<!-- target: bye -->
+Bye <strong>ETPL</strong>!
+```
 
 ### 变量替换
 
