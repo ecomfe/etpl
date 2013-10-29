@@ -1,4 +1,4 @@
-# API
+# Syntax
 
 通过该文档，你可以了解ETPL的模板语法。
 
@@ -150,4 +150,63 @@ Building WebKit from Xcode
 
 ### if
 
+ETPL提供了分支的支持，相关指令有`if`、`elif`、`else`。分支语句必须位于target或master内。
+
+#### 语法
+
+if的语法形式为：
+
+    if: conditional-expression
+
+elif的语法形式为：
+
+    elif: conditional-expression
+
+else的语法形式为：
+
+    else
+
+conditional-expression中，通过`${variable}`的形式，可以使用模板render的data。`${variable}`支持`.`和`[]`形式的property accessor。
+
+#### 自动结束
+
+if指令不支持自动结束，必须手工编写`<!-- /if -->`。
+
+#### 示例
+
+```html
+<!-- if: ${number} > 0 -->
+larger than zero
+<!-- elif: ${number} == 0 -->
+zero
+<!-- else -->
+invalid
+<!-- /if -->
+```
+
 ### for
+
+通过for指令的支持，可以实现对数组的遍历。
+
+#### 语法
+
+for的语法形式为：
+
+    for: ${variable} as ${item-variable}, ${index-variable}
+
+其中，`${variable}`为想要遍历的数组对象。在遍历过程中，声明的`${item-variable}`和`${index-variable}`，分别代表数组项数据和数组项索引。
+
+#### 自动结束
+
+for指令不支持自动结束，必须手工编写`<!-- /for -->`。
+
+#### 示例
+
+```html
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>
+```
+
