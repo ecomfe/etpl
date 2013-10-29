@@ -44,11 +44,13 @@ target的 *command-value* 语法形式为：
     target: target-name
     target: target-name(master=master-name)
 
+target声明时可以为其指定相应的母版。
 
 
 #### 自动结束
 
 target支持自动结束，当遇见 *target* 或 *master* 时自动结束。
+
 
 #### 示例
 
@@ -61,6 +63,16 @@ Bye <strong>ETPL</strong>!
 ```
 
 ### 变量替换
+
+绝大多数模板引擎都支持变量替换功能。ETPL用于变量替换的变量语法为：
+
+    ${variable-name}
+    ${variable-name|filter-name}
+
+编写模板时可以手工指定变量替换的filter。ETPL在变量替换时，默认使用html filter进行HTML转义。如果想要保留变量的原形式，需要手工指定使用名称为raw的filter。
+
+    ${myVariable|raw}
+    
 
 ## 模板复用
 
