@@ -30,74 +30,7 @@ define(
         }
 
         /**
-         * 随手写了个栈
-         *
-         * @inner
-         */
-        function Stack() {
-            this.container = [];
-            this.index = -1;
-        }
-
-        Stack.prototype = {
-            /**
-             * 获取栈顶元素
-             *
-             * @return {Any}
-             */
-            current: function () {
-                return this.container[ this.index ];
-            },
-
-            /**
-             * 入栈
-             *
-             * @param {Any} elem
-             */
-            push: function ( elem ) {
-                this.container[ ++this.index ] = elem;
-            },
-
-            /**
-             * 出栈
-             *
-             * @return {Any}
-             */
-            pop: function () {
-                if ( this.index < 0 ) {
-                    return null;
-                }
-
-                var elem = this.container[ this.index ];
-                this.container.length = this.index--;
-
-                return elem;
-            },
-
-            /**
-             * 获取栈底元素
-             *
-             * @return {Any}
-             */
-            bottom: function () {
-                return this.container[ 0 ];
-            },
-
-            find: function ( condition ) {
-                var index = this.index + 1;
-                while ( index-- ) {
-                    var item = this.container[ index ];
-                    if ( condition( item ) ) {
-                        return item;
-                    }
-                }
-
-                return null;
-            }
-        };
-
-        /**
-         * 随手写了个数组作为buffer
+         * 随手写了个数组作为string buffer和stack
          *
          * @inner
          */
@@ -126,6 +59,40 @@ define(
             },
 
             /**
+             * 弹出顶部元素
+             *
+             * @return {Any}
+             */
+            pop: function () {
+                if ( this.length < 0 ) {
+                    return null;
+                }
+
+                var elem = this.raw[ --this.length ];
+                this.raw.length = this.length;
+
+                return elem;
+            },
+
+            /**
+             * 获取顶部元素
+             *
+             * @return {Any}
+             */
+            top: function () {
+                return this.raw[ this.length - 1 ];
+            },
+
+            /**
+             * 获取底部元素
+             *
+             * @return {Any}
+             */
+            bottom: function () {
+                return this.raw[ 0 ];
+            },
+
+            /**
              * 连接数组项
              *
              * @param {string} split 分隔串
@@ -144,8 +111,32 @@ define(
                 return this.raw;
             },
 
+            /**
+             * 根据索引获取元素
+             *
+             * @param {number} index 数组索引
+             * @return {Any}
+             */
             item: function ( index ) {
                 return this.raw[ index ];
+            },
+
+            /**
+             * 根据查询条件获取元素，逆序查找
+             * 
+             * @param {Function} condition 查询函数
+             * @return {Any}
+             */
+            findReversed: function ( condition ) {
+                var index = this.length;
+                while ( index-- ) {
+                    var item = this.raw[ index ];
+                    if ( condition( item ) ) {
+                        return item;
+                    }
+                }
+
+                return null;
             }
         };
 
@@ -237,7 +228,7 @@ define(
         };
 
         Command.prototype.open = function ( context ) {
-            var parent = context.position.current();
+            var parent = context.position.top();
             this.parent = parent;
             parent && parent.addChild( this );
             context.position.push( this );
@@ -407,7 +398,7 @@ debugger
         }
 
         ImportCommand.prototype.open = function ( context ) {
-            this.parent = context.position.current();
+            this.parent = context.position.top();
         };
 
         ImportCommand.prototype.close = function () {};
@@ -498,7 +489,7 @@ debugger
         function autoCloseCommand( context, CommandType ) {
             var position = context.position;
             var closeEnd = CommandType 
-                ? position.find( function ( item ) {
+                ? position.findReversed( function ( item ) {
                     return item instanceof CommandType;
                 } ) 
                 : position.bottom();
@@ -508,7 +499,7 @@ debugger
             }
 
             do {
-                var closeNode = position.current();
+                var closeNode = position.top();
                 if ( !closeNode.autoClose ) {
                     throw new Error( closeNode.type + ' must be closed manually!' );
                 }
@@ -532,7 +523,7 @@ debugger
         inherits( ContentPlaceHolderCommand, Command );
 
         ContentPlaceHolderCommand.prototype.open = function ( context ) {
-            var parent = context.position.current();
+            var parent = context.position.top();
             if ( parent instanceof TargetCommand
                  || parent instanceof MasterCommand
                  || parent instanceof ContentCommand
@@ -625,7 +616,7 @@ debugger
         inherits( ElifCommand, IfCommand );
 
         ElifCommand.prototype.open = function ( context ) {
-            var ifCommand = context.position.current();
+            var ifCommand = context.position.top();
             if ( !( ifCommand instanceof IfCommand ) ) {
                 throw new Error( ifCommand.type + ' have not been closed!' );
             }
@@ -643,7 +634,7 @@ debugger
         inherits( ElseCommand, Command );
 
         ElseCommand.prototype.open = function ( context ) {
-            var ifCommand = context.position.current();
+            var ifCommand = context.position.top();
             if ( !( ifCommand instanceof IfCommand ) ) {
                 throw new Error( ifCommand.type + ' have not been closed!' );
             }
@@ -725,7 +716,7 @@ debugger;
             var analyseContext = {
                 engine: engine,
                 targets: [],
-                position: new Stack()
+                position: new ArrayBuffer()
             };
 
             // node结果流
@@ -746,7 +737,7 @@ debugger;
                 if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
                     var textNode = new TextNode( text );
                     textNode.beforeAdd( analyseContext );
-                    analyseContext.position.current().addTextNode( textNode );
+                    analyseContext.position.top().addTextNode( textNode );
                     nodeStream.push( textNode );
                     textBuf = new ArrayBuffer();
                 }
@@ -789,7 +780,7 @@ debugger;
                             flushTextBuf(); 
                             
                             if ( commandIsClose ) {
-                                var closeNode = analyseContext.position.find(
+                                var closeNode = analyseContext.position.findReversed(
                                     function ( item ) {
                                         return item instanceof NodeClass;
                                     }
