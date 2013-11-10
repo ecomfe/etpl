@@ -18,7 +18,7 @@ define(
          * @param {[type]} target [target description]
          * @return {[type]} [return description]
          */
-        function ext( target ) {
+        function extend( target ) {
             for ( var i = 1, len = arguments.length; i < len; i++ ) {
                 var source = arguments[ i ];
                 for ( var key in source ) {
@@ -189,7 +189,7 @@ define(
 
             subClass.prototype = new F();
             subClass.prototype.constructor = subClass;
-            ext( subClass.prototype, subClassPrototype );
+            extend( subClass.prototype, subClassPrototype );
         }
 
         var defaultFilters = {
@@ -686,10 +686,10 @@ debugger
                 commandClose: '-->'
             };
 
-            ext( this.options, options );
+            extend( this.options, options );
             this.masters = {};
             this.targets = {};
-            this.filters = ext({}, defaultFilters);
+            this.filters = extend({}, defaultFilters);
         }
 
         /**
