@@ -193,6 +193,7 @@ define(
         /**
          * 默认filter
          * 
+         * @inner
          * @const
          * @type {Object}
          */
@@ -209,6 +210,12 @@ define(
             url: encodeURIComponent
         };
 
+        /**
+         * 自动创建target，用于匿名target的创建
+         * 
+         * @inner
+         * @param {Object} context 语法分析环境对象
+         */
         function autoCreateTarget( context ) {
             if ( context.position.bottom() ) {
                 return;
@@ -218,15 +225,61 @@ define(
             target.open( context );
         }
 
+        /**
+         * 字符串字面化
+         * 
+         * @inner
+         * @param {string} source 需要字面化的字符串
+         * @return {string}
+         */
+        function stringLiteralize( source ) {
+            return '"'
+                + source
+                    .replace( /"/g, '\\"' )
+                    .replace( /\n/g, '\\n' )
+                    .replace( /\t/g, '\\t' )
+                    .replace( /\r/g, '\\r' )
+                    .replace( /\b/g, '\\b' )
+                    .replace( /\f/g, '\\f' )
+                    .replace( /\\/g, '\\\\' )
+                + '"';
+        }
+
+        /**
+         * 字符串格式化
+         * 
+         * @inner
+         * @param {string} source 目标模版字符串
+         * @param {...string} replacements 字符串替换项集合
+         * @return {string}
+         */
+        function stringFormat( source ) {
+            var args = arguments;
+            return source.replace( 
+                /\{([0-9]+)\}/g,
+                function ( match, index ) {
+                    return args[ index - 0 + 1 ];
+                } );
+        }
+
+        /**
+         * 文本节点renderer body模板串
+         * 
+         * @inner
+         * @const
+         * @type {string}
+         */
+        var TEXT_RENDERER_BODY = 'str.push(replaceVariables({0}));'
         function TextNode( value ) {
             this.value = value;
         }
 
         TextNode.prototype.beforeAdd = autoCreateTarget;
         TextNode.prototype.getRendererBody = function () {
-            return 'str.push(replaceVariables("'
-                + this.value.replace( '"', '\\"' ) 
-                + '"));';
+            return stringFormat( 
+                TEXT_RENDERER_BODY, 
+                stringLiteralize( this.value ) 
+            );
         };
 
         function Command( value, engine ) {
