@@ -12,11 +12,12 @@
 define(
     function ( require ) {
         /**
-         * [ext description]
+         * 对象属性拷贝
          * 
          * @inner
-         * @param {[type]} target [target description]
-         * @return {[type]} [return description]
+         * @param {Object} target 目标对象
+         * @param {...Object} source 源对象
+         * @return {Object} 返回目标对象
          */
         function extend( target ) {
             for ( var i = 1, len = arguments.length; i < len; i++ ) {
@@ -43,7 +44,7 @@ define(
             /**
              * 添加元素到数组末端
              *
-             * @param {Any} elem 添加项
+             * @param {*} elem 添加项
              */
             push: function ( elem ) {
                 this.raw[ this.length++ ] = elem;
@@ -51,6 +52,8 @@ define(
 
             /**
              * 添加多个元素到数组末端
+             * 
+             * @param {...*} elem 添加项
              */
             pushMore: function () {
                 for ( var i = 0, l = arguments.length; i < l; i++ ) {
@@ -61,7 +64,7 @@ define(
             /**
              * 弹出顶部元素
              *
-             * @return {Any}
+             * @return {*}
              */
             pop: function () {
                 if ( this.length < 0 ) {
@@ -77,7 +80,7 @@ define(
             /**
              * 获取顶部元素
              *
-             * @return {Any}
+             * @return {*}
              */
             top: function () {
                 return this.raw[ this.length - 1 ];
@@ -86,7 +89,7 @@ define(
             /**
              * 获取底部元素
              *
-             * @return {Any}
+             * @return {*}
              */
             bottom: function () {
                 return this.raw[ 0 ];
@@ -103,19 +106,10 @@ define(
             },
 
             /**
-             * 获取源数组
-             *
-             * @return {Array}
-             */
-            getRaw: function () {
-                return this.raw;
-            },
-
-            /**
              * 根据索引获取元素
              *
              * @param {number} index 数组索引
-             * @return {Any}
+             * @return {*}
              */
             item: function ( index ) {
                 return this.raw[ index ];
@@ -125,7 +119,7 @@ define(
              * 根据查询条件获取元素，逆序查找
              * 
              * @param {Function} condition 查询函数
-             * @return {Any}
+             * @return {*}
              */
             findReversed: function ( condition ) {
                 var index = this.length;
@@ -140,32 +134,38 @@ define(
             }
         };
 
+        /**
+         * 命令文本格式规则
+         * 
+         * @inner
+         * @const
+         * @type {RegExp}
+         */
         var COMMAND_RULE = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/;
 
+        /**
+         * 唯一id的起始值
+         * 
+         * @inner
+         * @type {number}
+         */
         var guidIndex = 0xCADB7;
+
+        /**
+         * 获取唯一id，用于匿名target或编译代码的变量名生成
+         * 
+         * @inner
+         * @return {string}
+         */
         function generateGUID() {
             return '___' + (guidIndex++) + '___';
         }
 
         /**
-         * 节点类型声明
+         * 节点状态
          * 
          * @inner
-         * @const
          */
-        var NodeType = {
-            TEXT: 1,
-            TARGET: 2,
-            MASTER: 3,
-            IMPORT: 4,
-            CONTENT: 5,
-            CONTENTPLACEHOLDER: 6,
-            FOR: 7,
-            IF: 8,
-            ELIF: 9,
-            ELSE: 10
-        };
-
         var NodeState = {
             UNDEF: 0,
             READING: 1,
@@ -173,6 +173,13 @@ define(
             READY: 3
         };
 
+        /**
+         * 构建类之间的继承关系
+         * 
+         * @inner
+         * @param {Function} subClass 子类函数
+         * @param {Function} superClass 父类函数
+         */
         function inherits( subClass, superClass ) {
             var F = new Function();
             F.prototype = superClass.prototype;
@@ -183,15 +190,21 @@ define(
             extend( subClass.prototype, subClassPrototype );
         }
 
-        var defaultFilters = {
-            html: function (source) {
+        /**
+         * 默认filter
+         * 
+         * @const
+         * @type {Object}
+         */
+        var DEFAULT_FILTERS = {
+            html: function ( source ) {
                 source = source + '';
                 return source
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(/"/g, '&quot;')
-                    .replace(/'/g, '&#39;');
+                    .replace( /&/g, '&amp;' )
+                    .replace( /</g, '&lt;' )
+                    .replace( />/g, '&gt;' )
+                    .replace( /"/g, '&quot;' )
+                    .replace( /'/g, '&#39;' );
             },
             url: encodeURIComponent
         };
@@ -680,7 +693,7 @@ debugger
             extend( this.options, options );
             this.masters = {};
             this.targets = {};
-            this.filters = extend({}, defaultFilters);
+            this.filters = extend({}, DEFAULT_FILTERS);
         }
 
         /**
