@@ -222,7 +222,7 @@ define(
                 return;
             }
 
-            var target = new TargetCommand( generateGUID() );
+            var target = new TargetCommand( generateGUID(), context.engine );
             target.open( context );
         }
 
@@ -236,13 +236,13 @@ define(
         function stringLiteralize( source ) {
             return '"'
                 + source
+                    .replace( /\x5C/g, '\\\\' )
                     .replace( /"/g, '\\"' )
-                    .replace( /\n/g, '\\n' )
-                    .replace( /\t/g, '\\t' )
-                    .replace( /\r/g, '\\r' )
-                    .replace( /\b/g, '\\b' )
-                    .replace( /\f/g, '\\f' )
-                    .replace( /\\/g, '\\\\' )
+                    .replace( /\x0A/g, '\\n' )
+                    .replace( /\x09/g, '\\t' )
+                    .replace( /\x0D/g, '\\r' )
+                    .replace( /\x08/g, '\\b' )
+                    .replace( /\x0C/g, '\\f' )
                 + '"';
         }
 
@@ -641,7 +641,7 @@ define(
                     var realRenderer = new Function( 
                         'data', 'engine',
                         [
-                            RENDERER_BODY_START
+                            RENDERER_BODY_START,
                             this.getRendererBody(),
                             RENDERER_BODY_END
                         ].join( '\n' )
@@ -1157,8 +1157,20 @@ define(
         // 创建else命令节点继承关系
         inherits( ElseCommand, Command );
 
+        /**
+         * 命令类型集合
+         * 
+         * @type {Object}
+         */
         var commandTypes = {};
 
+        /**
+         * 添加命令类型
+         * 
+         * @inner
+         * @param {string} name 命令名称
+         * @param {Function} Type 处理命令用到的类
+         */
         function addCommandType( name, Type ) {
             if ( !commandTypes[ name ] ) {
                 commandTypes[ name ] = Type;
@@ -1176,7 +1188,6 @@ define(
         addCommandType( 'content', ContentCommand );
         addCommandType( 'contentplaceholder', ContentPlaceHolderCommand );
         
-
         /**
          * etpl引擎类
          * 
@@ -1197,40 +1208,67 @@ define(
             this.filters = extend({}, DEFAULT_FILTERS);
         }
 
-        /**
-         * [compile description]
-         * 
-         * @param {[type]} source [source description]
-         * @return {Function}
-         */
-        Engine.prototype.compile = function ( source ) {
-            var targetNames = parseSource( source, this );
-            var firstRenderer = this.targets[ targetNames[ 0 ] ].getRenderer();
-debugger;
-            return firstRenderer;
-        };
+        Engine.prototype = {
+            // 暴露出去的类，进行constructor修正
+            constructor: Engine,
 
-        Engine.prototype.addFilter = function ( name, filter ) {
-            this.filters[ name ] = filter;
-        };
+            /**
+             * 编译模板。返回第一个target编译后的renderer函数
+             * 
+             * @param {string} source 模板源代码
+             * @return {function(Object):string}
+             */
+            compile: function ( source ) {
+                var targetNames = parseSource( source, this );
+                var firstRenderer = this.targets[ targetNames[ 0 ] ].getRenderer();
+                debugger;
+                return firstRenderer;
+            },
 
-        Engine.prototype.filter = function ( name, source ) {
-            var filter = this.filters[ name ];
-            if ( typeof filter === 'function' ) {
-                return filter( source );
+            /**
+             * 增加过滤器
+             * 
+             * @param {string} name 过滤器名称
+             * @param {function(string):string} filter 过滤函数
+             */
+            addFilter: function ( name, filter ) {
+                this.filters[ name ] = filter;
+            },
+
+            /**
+             * 字符串过滤处理
+             * 
+             * @param {string} name 过滤器名称
+             * @param {string} source 源字符串
+             * @return {string}
+             */
+            filter: function ( name, source ) {
+                var filter = this.filters[ name ];
+                if ( typeof filter === 'function' ) {
+                    return filter( source );
+                }
+
+                return source;
             }
-
-            return source;
         };
 
+        /**
+         * 解析源代码
+         * 
+         * @inner
+         * @param {string} source 模板源代码
+         * @param {Engine} engine 引擎实例
+         * @return {Array} target名称列表
+         */
         function parseSource( source, engine ) {
             var commandOpen = engine.options.commandOpen;
             var commandClose = engine.options.commandClose;
 
+            var position = new ArrayBuffer();
             var analyseContext = {
                 engine: engine,
                 targets: [],
-                position: new ArrayBuffer()
+                position: position
             };
 
             // text节点内容缓冲区，用于合并多text
@@ -1248,7 +1286,7 @@ debugger;
                 if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
                     var textNode = new TextNode( text );
                     textNode.beforeAdd( analyseContext );
-                    analyseContext.position.top().addTextNode( textNode );
+                    position.top().addTextNode( textNode );
                     textBuf = new ArrayBuffer();
                 }
             }
@@ -1260,7 +1298,7 @@ debugger;
              * @inner
              */
             function beNormalText( text ) {
-                textBuf.pushMore(commandOpen, text, commandClose);
+                textBuf.pushMore( commandOpen, text, commandClose );
             }
 
             // 先以 commandOpen(默认<!--) 进行split
@@ -1270,6 +1308,21 @@ debugger;
             if ( texts[ 0 ].length === 0 ) {
                 i++;
             }
+
+            var NodeType;
+
+            /**
+             * 判断节点是否是NodeType类型的实例
+             * 用于在position中fine提供filter
+             * 
+             * @inner
+             * @param {Command} node 目标节点
+             * @return {boolean}
+             */
+            function isInstanceofNodeType( node ) {
+                return node instanceof NodeType;
+            }
+
             for ( ; i < len; i++ ) {
                 // 对 commandOpen(默认<!--) 进行split的结果
                 // 挨个用 commandClose(默认-->) 进行split
@@ -1284,26 +1337,25 @@ debugger;
                         var commandIsClose = RegExp.$1;
                         var commandValue = RegExp.$4;
 
-                        var NodeClass = commandTypes[ commandName ];
-                        if ( typeof NodeClass === 'function' ) {
+                        NodeType = commandTypes[ commandName ];
+                        if ( typeof NodeType === 'function' ) {
                             // 先将缓冲区中的text节点内容写入
                             flushTextBuf(); 
                             
                             if ( commandIsClose ) {
-                                var closeNode = analyseContext.position.findReversed(
-                                    function ( item ) {
-                                        return item instanceof NodeClass;
-                                    }
+                                var closeNode = position.findReversed(
+                                    isInstanceofNodeType
                                 );
                                 closeNode && closeNode.close( analyseContext );
                             }
                             else {
-                                var openNode = new NodeClass( commandValue, engine );
+                                var openNode = new NodeType( commandValue, engine );
                                 if ( typeof openNode.beforeOpen === 'function' ) {
                                     openNode.beforeOpen( analyseContext );
                                 }
                                 openNode.open( analyseContext );
                             }
+                            NodeType = null;
                         }
                         else {
                             beNormalText( commentText );
@@ -1326,26 +1378,8 @@ debugger;
             return analyseContext.targets;
         }
 
-        /**
-         * [get description]
-         * 
-         * @param {[type]} name [name description]
-         * @return {[type]} [return description]
-         */
-        Engine.prototype.get = function ( name ) {
-
-        };
-
         var defaultEngine = new Engine();
         
-        return {
-            compile: function ( source ) {
-                return defaultEngine.compile( source );
-            },
-
-            get: function ( name ) {
-                return defaultEngine.get( name );
-            }
-        };
+        return defaultEngine;
     }
 );
