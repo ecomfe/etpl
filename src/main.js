@@ -1233,9 +1233,6 @@ debugger;
                 position: new ArrayBuffer()
             };
 
-            // node结果流
-            var nodeStream = new ArrayBuffer();
-
             // text节点内容缓冲区，用于合并多text
             var textBuf = new ArrayBuffer();
 
@@ -1252,7 +1249,6 @@ debugger;
                     var textNode = new TextNode( text );
                     textNode.beforeAdd( analyseContext );
                     analyseContext.position.top().addTextNode( textNode );
-                    nodeStream.push( textNode );
                     textBuf = new ArrayBuffer();
                 }
             }
@@ -1307,7 +1303,6 @@ debugger;
                                     openNode.beforeOpen( analyseContext );
                                 }
                                 openNode.open( analyseContext );
-                                nodeStream.push( openNode );
                             }
                         }
                         else {
