@@ -28,6 +28,8 @@ define(
                     }
                 }
             }
+
+            return target;
         }
 
         /**
@@ -463,6 +465,7 @@ define(
          * @type {string}
          */
         var RENDERER_BODY_START = [
+            'data = data || {};',
             'var str = [];',
             'var variables = {};',
 
@@ -493,6 +496,7 @@ define(
                         'var len = segs.length;',
                         'var name = segs[0];',
                         'var value = getVariable(name);',
+                        'if (len === 1) { len = 2; segs[1]="html"; }',
                         'for (var i = 1; i < len; i++) {',
                             'value = engine.filter(segs[i], value);',
                         '}',
@@ -527,7 +531,6 @@ define(
             Command.call( this, value, engine );
             readNameAndMasterOfCommandValue( this );
             this.contents = {};
-            this.imports = {};
         }
         
         /**
@@ -555,6 +558,9 @@ define(
             var masterName = this.master;
             if ( masterName ) {
                 var masterNode = this.engine.masters[ masterName ];
+                if ( !masterNode ) {
+                    return;
+                }
                 masterNode.applyMaster();
 
                 if ( masterNode.state < NodeState.READY ) {
@@ -572,7 +578,7 @@ define(
                         
                         this.realChildren.push.apply( 
                             this.realChildren, 
-                            (contentNode || child).children
+                            (contentNode || child).realChildren
                         );
                     }
                     else {
@@ -634,6 +640,7 @@ define(
                 this.applyMaster();
                 
                 if ( this.state === NodeState.READY && this.isImportsReady() ) {
+                    console.log(this.name)
                     console.log(RENDERER_BODY_START 
                         + this.getRendererBody() 
                         + RENDERER_BODY_END)
@@ -650,7 +657,7 @@ define(
                     this.renderer = function ( data ) {
                         return realRenderer.call( this, data, engine );
                     };
-
+debugger;
                     return this.renderer;
                 }
 
@@ -663,6 +670,7 @@ define(
              * @return {boolean}
              */
             isImportsReady: function () {
+                this.applyMaster();
                 if ( this.state < NodeState.READY ) {
                     return false;
                 }
@@ -693,6 +701,7 @@ define(
                 }
 
                 checkReadyState( this );
+                debugger;
                 return readyState;
             }
         };
@@ -720,7 +729,9 @@ define(
              * @param {Object} context 语法分析环境对象
              */
             open: function ( context ) {
-                this.parent = context.position.top();
+                var parent = context.position.top();
+                this.parent = parent;
+                parent.addChild( this );
             },
 
             /**
@@ -873,7 +884,6 @@ define(
                 ) {
                     autoCloseCommand( context, ContentPlaceHolderCommand );
                     Command.prototype.open.call( this, context );
-                    context.targetOrMaster.contents[ this.name ] = this;
                 }
                 else {
                     throw new Error( 'contentplaceholder cannot in ' + parent.type );
@@ -1220,9 +1230,23 @@ define(
              */
             compile: function ( source ) {
                 var targetNames = parseSource( source, this );
-                var firstRenderer = this.targets[ targetNames[ 0 ] ].getRenderer();
-                debugger;
-                return firstRenderer;
+                if ( targetNames.length ) {
+                    var firstTarget = this.targets[ targetNames[ 0 ] ];
+                    return firstTarget.getRenderer();
+                }
+            },
+
+            /**
+             * 根据target名称获取编译后的renderer函数
+             * 
+             * @param {string} name target名称
+             * @return {function(Object):string}
+             */
+            getRenderer: function ( name ) {
+                var target = this.targets[ name ];
+                if ( target ) {
+                    return target.getRenderer();
+                }
             },
 
             /**
