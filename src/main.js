@@ -466,47 +466,47 @@ define(
          * @const
          * @type {string}
          */
-        var RENDERER_BODY_START = [
-            'data = data || {};',
-            'var str = new ArrayBuffer();',
-            'var variables = {};',
+        var RENDERER_BODY_START = ''
+            + 'data = data || {};'
+            + 'var str = new ArrayBuffer();'
+            + 'var variables = {};'
 
-            'var getVariable = typeof data.get === "function"',
-                '? function (name) {',
-                    'return data.get(name);',
-                '}',
-                ': function (name) {',
-                    'var props = name.split(".");',
-                    'var firstProp = props[0];',
-                    'var firstVariable = variables[firstProp];',
-                    'var d = firstVariable == null',
-                        '? data[firstProp] ',
-                        ': firstVariable;',
-                    'for (var i = 1, len = props.length; i < len; i++) {',
-                        'if (d != null) {',
-                            'd = d[ props[ i ] ];',
-                        '}',
-                    '}',
-                    'return d;',
-                '};',
+            + 'var getVariable = typeof data.get === "function"'
+            +     '? function (name) {'
+            +         'return data.get(name);'
+            +     '}'
+            +     ': function (name) {'
+            +         'var props = name.split(".");'
+            +         'var firstProp = props[0];'
+            +         'var firstVariable = variables[firstProp];'
+            +         'var d = firstVariable == null'
+            +             '? data[firstProp] '
+            +             ': firstVariable;'
+            +         'for (var i = 1, len = props.length; i < len; i++) {'
+            +             'if (d != null) {'
+            +                 'd = d[ props[ i ] ];'
+            +             '}'
+            +         '}'
+            +         'return d;'
+            +     '};'
 
-            'function replaceVariables(s) {',
-                'return s.replace(',
-                    '/\\$\\{([^\\}]+)\\}/g,',
-                    'function (match, expr){',
-                        'var segs = expr.split(/\\s*\\|\\s*/);',
-                        'var len = segs.length;',
-                        'var name = segs[0];',
-                        'var value = getVariable(name);',
-                        'if (len === 1) { len = 2; segs[1]="html"; }',
-                        'for (var i = 1; i < len; i++) {',
-                            'value = engine.filter(segs[i], value);',
-                        '}',
-                        'return value;',
-                    '}',
-                ');',
-            '}'
-        ].join( '' );
+            + 'function replaceVariables(s) {'
+            +     'return s.replace('
+            +         '/\\$\\{([^\\}]+)\\}/g,'
+            +         'function (match, expr){'
+            +             'var segs = expr.split(/\\s*\\|\\s*/);'
+            +             'var len = segs.length;'
+            +             'var name = segs[0];'
+            +             'var value = getVariable(name);'
+            +             'if (len === 1) { len = 2; segs[1]="html"; }'
+            +             'for (var i = 1; i < len; i++) {'
+            +                 'value = engine.filter(segs[i], value);'
+            +             '}'
+            +             'return value;'
+            +         '}'
+            +     ');'
+            + '}'
+        ;
 
         /**
          * renderer body结束代码段
@@ -952,26 +952,26 @@ debugger;
          * @const
          * @type {string}
          */
-        var FOR_RENDERER_BODY = [
-            'var {0} = getVariable({1});',
-            'if ({0} instanceof Array) {',
-                'for (',
-                    'variables[{2}] = 0, variables[{3}] = {0}.length;',
-                    'variables[{2}] < variables[{3}];',
-                    'variables[{2}]++',
-                '){',
-                    'variables[{4}] = {0}[variables[{2}]];',
-                    '{6}',
-                '}',
-            '}',
-            'else if (typeof {0} === "object") {',
-                'for (var {5} in {0}) {',
-                    'variables[{2}] = {5};',
-                    'variables[{4}] = {0}[{5}];',
-                    '{6}',
-                '}',
-            '}'
-        ].join('');
+        var FOR_RENDERER_BODY = ''
+            + 'var {0} = getVariable({1});'
+            + 'if ({0} instanceof Array) {'
+            +     'for ('
+            +         'variables[{2}] = 0, variables[{3}] = {0}.length;'
+            +         'variables[{2}] < variables[{3}];'
+            +         'variables[{2}]++'
+            +     '){'
+            +         'variables[{4}] = {0}[variables[{2}]];'
+            +         '{6}'
+            +     '}'
+            + '}'
+            + 'else if (typeof {0} === "object") {'
+            +     'for (var {5} in {0}) {'
+            +         'variables[{2}] = {5};'
+            +         'variables[{4}] = {0}[{5}];'
+            +         '{6}'
+            +     '}'
+            + '}'
+        ;
 
         ForCommand.prototype = {
             /**
