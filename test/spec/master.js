@@ -6,12 +6,14 @@ define(
         var text = readText( 'spec/master.text.html' );
 
         var simpleRenderer = etpl.compile( text.simple );
+        var simple2Renderer = etpl.compile( text.simple2 );
 
         describe('Master', function() {
             it(
                 'can be applied to target', 
                 function() {
                     expect(simpleRenderer()).toEqual(text[ 'expect-simple' ]);
+                    expect(simple2Renderer()).toEqual(text[ 'expect-simple2' ]);
                 }
             );
             it(
