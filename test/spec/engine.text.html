@@ -1,0 +1,45 @@
+::default-tpl::
+<!-- target: engineTarget -->default engine
+::myengine-tpl::
+<!-- target: engineTarget -->my engine
+::variable-tpl::
+<!-- target: engineVariableTarget -->Hello ${info.name}!
+::repeat-tpl::
+<!-- target: engineRepeatTarget -->default engine
+::repeat-master-tpl::
+<!-- master: engineRepeatMaster -->default engine
+::data-tpl::
+<!-- target: engineDataTarget -->Hello ${info.name} by ${info.contributor.name}[${info.contributor.email}]!
+::data::
+({
+    info: {
+        name: 'etpl', 
+        contributor: {
+            name:'errorrik', 
+            email:'errorrik@gmail.com'
+        }
+    }
+})
+::data-getter::
+({
+    get: function (name){
+        if ( name == 'info.name' ) {
+            return 'etpl';
+        }
+        if ( name == 'info.contributor.name' ) {
+            return 'errorrik';
+        }
+        if ( name == 'info.contributor.email' ) {
+            return 'errorrik@gmail.com';
+        }
+    }
+})
+::custom-options::
+<% target: engineCustomTarget %><!-- import: a -->
+::expect-default::
+default engine
+::expect-myengine::
+my engine
+::expect-custom-options::
+<!-- import: a -->
+::eof::
