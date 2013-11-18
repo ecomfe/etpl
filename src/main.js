@@ -10,7 +10,7 @@
 /* jshint maxdepth: 10, unused: false, white: false */
 
 define(
-    function ( require ) {
+    function ( require, exports, module ) {
         /**
          * 对象属性拷贝
          * 
@@ -161,7 +161,7 @@ define(
          * @return {string}
          */
         function generateGUID() {
-            return '___' + (guidIndex++) + '___';
+            return '____' + (guidIndex++);
         }
 
         /**
@@ -393,9 +393,10 @@ define(
          * 
          * @inner
          * @param {Command} node 命令节点
+         * @param {string} value 命令值
          */
-        function readNameOfCommandValue( node ) {
-            if ( COMMAND_VALUE_RULE_NAME.test( node.value ) ) {
+        function readNameOfCommandValue( node, value ) {
+            if ( COMMAND_VALUE_RULE_NAME.test( value ) ) {
                 node.name = RegExp.$1;
             }
         }
@@ -415,9 +416,10 @@ define(
          * 
          * @inner
          * @param {Command} node 命令节点
+         * @param {string} value 命令值
          */
-        function readNameAndMasterOfCommandValue( node ) {
-            if ( COMMAND_VALUE_RULE_NAME_AND_MASTER.test( node.value ) ) {
+        function readNameAndMasterOfCommandValue( node, value ) {
+            if ( COMMAND_VALUE_RULE_NAME_AND_MASTER.test( value ) ) {
                 node.name = RegExp.$1;
                 if ( RegExp.$2 ) {
                     node.master = RegExp.$3;
@@ -466,7 +468,7 @@ define(
          */
         var RENDERER_BODY_START = [
             'data = data || {};',
-            'var str = [];',
+            'var str = new ArrayBuffer();',
             'var variables = {};',
 
             'var getVariable = typeof data.get === "function"',
@@ -524,12 +526,13 @@ define(
          * @param {Engine} engine 引擎实例
          */
         function TargetCommand( value, engine ) {
+            readNameAndMasterOfCommandValue( this, value );
+            var name = this.name;
             if ( engine.targets[ name ] ) {
-                throw new Error( 'target ' + name + ' is exists!' );
+                throw new Error( 'Target "' + name + '" is exists!' );
             }
 
             Command.call( this, value, engine );
-            readNameAndMasterOfCommandValue( this );
             this.contents = {};
         }
         
@@ -646,7 +649,7 @@ define(
                         + RENDERER_BODY_END)
 
                     var realRenderer = new Function( 
-                        'data', 'engine',
+                        'data', 'engine', 'ArrayBuffer',
                         [
                             RENDERER_BODY_START,
                             this.getRendererBody(),
@@ -655,7 +658,7 @@ define(
                     );
 
                     this.renderer = function ( data ) {
-                        return realRenderer.call( this, data, engine );
+                        return realRenderer.call( this, data, engine, ArrayBuffer );
                     };
 debugger;
                     return this.renderer;
@@ -719,7 +722,7 @@ debugger;
          */
         function ImportCommand( value, engine ) {
             Command.call( this, value, engine );
-            readNameOfCommandValue( this );
+            readNameOfCommandValue( this, value );
         }
 
         ImportCommand.prototype = {
@@ -772,9 +775,13 @@ debugger;
          * @param {Engine} engine 引擎实例
          */
         function MasterCommand( value, engine ) {
+            readNameAndMasterOfCommandValue( this, value );
+            var name = this.name;
+            if ( engine.masters[ name ] ) {
+                throw new Error( 'Master "' + name + '" is exists!' );
+            }
+
             Command.call( this, value, engine );
-            readNameAndMasterOfCommandValue( this );
-            this.realChildren = this.children;
             this.contents = {};
         }
 
@@ -831,7 +838,7 @@ debugger;
          */
         function ContentCommand( value, engine ) {
             Command.call( this, value, engine );
-            readNameOfCommandValue( this );
+            readNameOfCommandValue( this, value );
         }
         
         ContentCommand.prototype = {
@@ -867,7 +874,7 @@ debugger;
          */
         function ContentPlaceHolderCommand( value, engine ) {
             Command.call( this, value, engine );
-            readNameOfCommandValue( this );
+            readNameOfCommandValue( this, value );
         }
 
         ContentPlaceHolderCommand.prototype = {
@@ -953,7 +960,14 @@ debugger;
                     'variables[{2}]++',
                 '){',
                     'variables[{4}] = {0}[variables[{2}]];',
-                    '{5}',
+                    '{6}',
+                '}',
+            '}',
+            'else if (typeof {0} === "object") {',
+                'for (var {5} in {0}) {',
+                    'variables[{2}] = {5};',
+                    'variables[{4}] = {0}[{5}];',
+                    '{6}',
                 '}',
             '}'
         ].join('');
@@ -979,6 +993,7 @@ debugger;
                     stringLiteralize( this.index || generateGUID() ),
                     stringLiteralize( generateGUID() ),
                     stringLiteralize( this.item ),
+                    generateGUID(),
                     Command.prototype.getRendererBody.call( this )
                 );
             }
@@ -1212,10 +1227,24 @@ debugger;
                 commandClose: '-->'
             };
 
-            extend( this.options, options );
+            this.setOptions( options );
             this.masters = {};
             this.targets = {};
             this.filters = extend({}, DEFAULT_FILTERS);
+        }
+
+        /**
+         * 解析模板并编译的方法。返回第一个target编译后的renderer函数
+         * 
+         * @param {string} source 模板源代码
+         * @return {function(Object):string}
+         */
+        function engineCompileMethod( source ) {
+            var targetNames = parseSource( source, this );
+            if ( targetNames.length ) {
+                var firstTarget = this.targets[ targetNames[ 0 ] ];
+                return firstTarget.getRenderer();
+            }
         }
 
         Engine.prototype = {
@@ -1223,18 +1252,32 @@ debugger;
             constructor: Engine,
 
             /**
-             * 编译模板。返回第一个target编译后的renderer函数
+             * 设置引擎参数，设置的参数将被合并到现有参数中
+             * 
+             * @param {Object} options 参数对象
+             * @param {string=} options.commandOpen 命令语法起始串
+             * @param {string=} options.commandClose 命令语法结束串
+             */
+            setOptions: function ( options ) {
+                extend( this.options, options );
+            },
+
+            /**
+             * 解析模板并编译，返回第一个target编译后的renderer函数。
              * 
              * @param {string} source 模板源代码
              * @return {function(Object):string}
              */
-            compile: function ( source ) {
-                var targetNames = parseSource( source, this );
-                if ( targetNames.length ) {
-                    var firstTarget = this.targets[ targetNames[ 0 ] ];
-                    return firstTarget.getRenderer();
-                }
-            },
+            compile: engineCompileMethod,
+
+            /**
+             * 解析模板并编译，返回第一个target编译后的renderer函数。
+             * 该方法的存在为了兼容老模板引擎
+             * 
+             * @param {string} source 模板源代码
+             * @return {function(Object):string}
+             */
+            parse: engineCompileMethod,
 
             /**
              * 根据target名称获取编译后的renderer函数
@@ -1247,6 +1290,24 @@ debugger;
                 if ( target ) {
                     return target.getRenderer();
                 }
+            },
+
+            /**
+             * 执行模板渲染，返回渲染后的字符串。
+             * 
+             * @param {string} name target名称
+             * @param {Object=} data 模板数据。
+             *      可以是plain object，
+             *      也可以是带有 {string}get({string}name) 方法的对象
+             * @return {string}
+             */
+            render: function ( name, data ) {
+                var renderer = this.getRenderer( name );
+                if ( renderer ) {
+                    return renderer( data );
+                }
+
+                return '';
             },
 
             /**
@@ -1402,8 +1463,23 @@ debugger;
             return analyseContext.targets;
         }
 
-        var defaultEngine = new Engine();
-        
-        return defaultEngine;
+
+        exports = module.exports = new Engine();
+
+        /**
+         * 执行模板渲染，并将渲染后的字符串作为innerHTML填充到HTML元素中。
+         * 该方法的存在是为了兼容老版本的模板引擎api，不建议使用。
+         * 
+         * @param {HTMLElement} element 渲染字符串填充的HTML元素
+         * @param {string} name target名称
+         * @param {Object=} data 模板数据
+         */
+        exports.merge = function ( element, name, data ) {
+            if ( element ) {
+                element.innerHTML = this.render( name, data );
+            }
+        };
+
+        exports.Engine = Engine;
     }
 );
