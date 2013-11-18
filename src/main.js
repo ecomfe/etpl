@@ -494,7 +494,7 @@ define(
                 'return s.replace(',
                     '/\\$\\{([^\\}]+)\\}/g,',
                     'function (match, expr){',
-                        'var segs = expr.split("|");',
+                        'var segs = expr.split(/\\s*\\|\\s*/);',
                         'var len = segs.length;',
                         'var name = segs[0];',
                         'var value = getVariable(name);',
@@ -888,6 +888,7 @@ debugger;
                 if ( parent instanceof TargetCommand
                      || parent instanceof MasterCommand
                      || parent instanceof ContentCommand
+                     || parent instanceof ContentPlaceHolderCommand
                 ) {
                     autoCloseCommand( context, ContentPlaceHolderCommand );
                     Command.prototype.open.call( this, context );
@@ -1049,6 +1050,18 @@ debugger;
 
         var GET_VARIABLE_TPL = 'getVariable({0})';
 
+        function replaceGetVariableLiteral( source ) {
+            return source.replace(
+                /\$\{([0-9a-z_\.]+)\}/g,
+                function( match, name ){
+                    return stringFormat(
+                        GET_VARIABLE_TPL,
+                        stringLiteralize( name )
+                    );
+                }
+            );
+        }
+
         IfCommand.prototype = {
             /**
              * 节点open前的处理动作
@@ -1078,15 +1091,7 @@ debugger;
             getRendererBody: function () {
                 var rendererBody = stringFormat(
                     IF_RENDERER_BODY,
-                    this.value.replace(
-                        /\$\{([0-9a-z_\.]+)\}/g,
-                        function( match, name ){
-                            return stringFormat(
-                                GET_VARIABLE_TPL,
-                                stringLiteralize( name )
-                            );
-                        }
-                    ),
+                    replaceGetVariableLiteral( this.value ),
                     Command.prototype.getRendererBody.call( this )
                 );
 
@@ -1183,6 +1188,79 @@ debugger;
         inherits( ElseCommand, Command );
 
         /**
+         * Var命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function VarCommand( value, engine ) {
+            Command.call( this, value, engine );
+            if ( /^\s*([^=\s]+)\s*=(.*)$/.test( this.value ) ) {
+                this.varName = RegExp.$1;
+                this.varValue = RegExp.$2;
+            }
+        }
+
+        /**
+         * var的renderer body模板串
+         * 
+         * @inner
+         * @const
+         * @type {string}
+         */
+        var VAR_RENDERER_BODY = 'variables[{0}]={1};';
+
+        VarCommand.prototype = {
+            /**
+             * var节点open，解析开始
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            open: function ( context ) {
+                var parent = context.position.top();
+                this.parent = parent;
+                parent.addChild( this );
+            },
+
+            /**
+             * 节点解析结束
+             * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            close: new Function(),
+
+            /**
+             * 获取renderer body的生成代码
+             * 
+             * @return {string}
+             */
+            getRendererBody: function () {
+                if ( this.varValue ) {
+                    return stringFormat( 
+                        VAR_RENDERER_BODY,
+                        stringLiteralize( this.varName ),
+                        replaceGetVariableLiteral( this.varValue )
+                    );
+                }
+
+                return '';
+            },
+
+            /**
+             * 节点open前的处理动作
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            beforeOpen: autoCreateTarget
+        };
+
+        // 创建Var命令节点继承关系
+        inherits( VarCommand, Command );
+
+        /**
          * 命令类型集合
          * 
          * @type {Object}
@@ -1206,6 +1284,7 @@ debugger;
         addCommandType( 'target', TargetCommand );
         addCommandType( 'master', MasterCommand );
         addCommandType( 'import', ImportCommand );
+        addCommandType( 'var', VarCommand );
         addCommandType( 'for', ForCommand );
         addCommandType( 'if', IfCommand );
         addCommandType( 'elif', ElifCommand );
@@ -1227,7 +1306,7 @@ debugger;
                 commandClose: '-->'
             };
 
-            this.setOptions( options );
+            this.config( options );
             this.masters = {};
             this.targets = {};
             this.filters = extend({}, DEFAULT_FILTERS);
@@ -1252,13 +1331,13 @@ debugger;
             constructor: Engine,
 
             /**
-             * 设置引擎参数，设置的参数将被合并到现有参数中
+             * 配置引擎参数，设置的参数将被合并到现有参数中
              * 
              * @param {Object} options 参数对象
              * @param {string=} options.commandOpen 命令语法起始串
              * @param {string=} options.commandClose 命令语法结束串
              */
-            setOptions: function ( options ) {
+            config: function ( options ) {
                 extend( this.options, options );
             },
 
