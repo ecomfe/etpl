@@ -266,6 +266,35 @@ define(
         }
 
         /**
+         * getVariable调用的renderer body模板串
+         * 
+         * @inner
+         * @const
+         * @type {string}
+         */
+        var GET_VARIABLE_TPL = 'getVariable({0})';
+
+        /**
+         * 替换字符串中的${...}成getVariable调用的编译语句
+         * 用于if、var等命令生成编译代码
+         * 
+         * @inner
+         * @param {string} source 源字符串
+         * @return {string}
+         */
+        function replaceGetVariableLiteral( source ) {
+            return source.replace(
+                /\$\{([0-9a-z_\.]+)\}/g,
+                function( match, name ){
+                    return stringFormat(
+                        GET_VARIABLE_TPL,
+                        stringLiteralize( name )
+                    );
+                }
+            );
+        }
+
+        /**
          * 文本节点renderer body模板串
          * 
          * @inner
@@ -923,7 +952,8 @@ debugger;
          * @const
          * @type {RegExp}
          */
-        var COMMAND_VALUE_RULE_FOR = /^\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
+        var COMMAND_VALUE_RULE_FOR = 
+            /^\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
         
         /**
          * for命令节点类
@@ -1047,20 +1077,6 @@ debugger;
          * @type {string}
          */
         var ELSE_RENDERER_BODY = 'else {{0}}';
-
-        var GET_VARIABLE_TPL = 'getVariable({0})';
-
-        function replaceGetVariableLiteral( source ) {
-            return source.replace(
-                /\$\{([0-9a-z_\.]+)\}/g,
-                function( match, name ){
-                    return stringFormat(
-                        GET_VARIABLE_TPL,
-                        stringLiteralize( name )
-                    );
-                }
-            );
-        }
 
         IfCommand.prototype = {
             /**
