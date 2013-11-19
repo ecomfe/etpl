@@ -49,8 +49,8 @@ define(
                 }
             });
 
-            it('"setOptions" method can setup command open and close', function() {
-                mytpl.setOptions({
+            it('"config" method can setup command open and close', function() {
+                mytpl.config({
                     commandOpen: '<%',
                     commandClose: '%>'
                 });
@@ -59,7 +59,7 @@ define(
                     .toEqual(text['expect-custom-options']);
                 expect(mytpl.getRenderer('engineTarget')())
                     .toEqual(text['expect-myengine']);
-                mytpl.setOptions({
+                mytpl.config({
                     commandOpen: '<!--',
                     commandClose: '-->'
                 });
