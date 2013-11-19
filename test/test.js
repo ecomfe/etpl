@@ -8,10 +8,12 @@ define(
         require('spec/variableSubstitution');
         require('spec/master');
         require('spec/import');
+        require('spec/use');
         require('spec/for');
         require('spec/if');
         require('spec/var');
         require('spec/engine');
+        require('spec/comment');
 
         return {
             start: function () {

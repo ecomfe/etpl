@@ -1,0 +1,47 @@
+::tpl::
+<!-- target: useEngineTarget -->Engine(${engine})<!-- use: useEngine2Target() -->
+<!-- target: useEngine2Target -->Engine(${engine})
+<!-- target: useSimpleTarget -->
+<ul>
+<!-- for: ${persons} as ${person} -->
+<!-- use: usePersonTarget( name = ${person.name} , email=${person.email} ) -->
+<!-- /for -->
+</ul>
+<!-- target: usePersonTarget --><li>${name}[${email}]
+::tpl-dep-target::
+<!-- target: useDepTarget( master = useDepMaster ) -->
+<!-- content: header --><!-- use: useDepHeaderTarget() -->
+::tpl-dep-master::
+<!-- master: useDepMaster -->
+<header><!-- contentplaceholder: header --></header>
+<div><!-- use: useDepBodyTarget( name=${engine} ) --></div>
+<!-- target: useDepBodyTarget -->${name}
+<!-- target: useDepHeaderTarget -->header
+::data-persons::
+[
+    {name:'errorrik', email:'errorrik@gmail.com'},
+    {name:'otakustay', email:'otakustay@gmail.com'}
+]
+::data-engine::
+default
+::expect-useSimpleTarget::
+
+<ul>
+
+<li>errorrik[errorrik@gmail.com]
+
+<li>otakustay[otakustay@gmail.com]
+
+</ul>
+
+::expect-useEngineTarget::
+Engine(default)Engine()
+
+
+::expect-useDepTarget::
+
+<header>header</header>
+<div>default
+</div>
+
+::eof::

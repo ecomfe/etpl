@@ -4,6 +4,7 @@
  * 
  * @file 模板引擎
  * @author errorrik(errorrik@gmail.com)
+ *         otakustay(otakustay@gmail.com)
  */
 
 // 有的正则比较长，所以特别放开一些限制
@@ -270,7 +271,7 @@ define(
          */
         function replaceGetVariableLiteral( source ) {
             return source.replace(
-                /\$\{([0-9a-z_\.]+)\}/g,
+                /\$\{([0-9a-z_\.]+)\}/ig,
                 function( match, name ){
                     return stringFormat(
                         GET_VARIABLE_TPL,
@@ -373,7 +374,6 @@ define(
              * @param {Object} context 语法分析环境对象
              */
             close: function ( context ) {
-                var commandNode;
                 while (context.position.pop().constructor !== this.constructor)
                     ;;
             },
@@ -522,6 +522,7 @@ define(
             +             'var len = segs.length;'
             +             'var name = segs[0];'
             +             'var value = getVariable(name);'
+            +             'if (value == null) { value = ""; }'
             +             'if (len === 1) { len = 2; segs[1]="html"; }'
             +             'for (var i = 1; i < len; i++) {'
             +                 'value = engine.filter(segs[i], value);'
@@ -735,7 +736,9 @@ define(
 
                     for ( var i = 0, len = children.length; i < len; i++ ) {
                         var child = children[ i ];
-                        if ( child instanceof ImportCommand ) {
+                        if ( child instanceof ImportCommand 
+                            || child instanceof UseCommand
+                        ) {
                             var target = engine.targets[ child.name ];
                             readyState = readyState 
                                 && target && target.isImportsReady( engine );
@@ -747,13 +750,81 @@ define(
                 }
 
                 checkReadyState( this );
-                debugger;
                 return readyState;
             }
         };
 
         // 创建Target命令节点继承关系
         inherits( TargetCommand, Command );
+
+        /**
+         * Use命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function UseCommand( value, engine ) {
+            if ( !/^\s*([a-z0-9_-]+)\s*\((.*)\)\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid use syntax: ' + value );
+            }
+
+            this.name = RegExp.$1;
+            this.paramValue = RegExp.$2;
+            Command.call( this, value, engine );
+        }
+
+        var USE_RENDERER_BODY = 'str.push(engine.render({0}, {{1}}));';
+
+        UseCommand.prototype = {
+            /**
+             * 节点open，解析开始
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            open: function ( context ) {
+                var parent = context.position.top();
+                this.parent = parent;
+                parent.addChild( this );
+            },
+
+            /**
+             * 节点解析结束
+             * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            close: new Function(),
+
+            /**
+             * 获取renderer body的生成代码
+             * 
+             * @return {string}
+             */
+            getRendererBody: function () {
+                return stringFormat(
+                    USE_RENDERER_BODY,
+                    stringLiteralize( this.name ),
+                    replaceGetVariableLiteral( this.paramValue.replace( 
+                        /(^|,)\s*([a-z0-9_]+)\s*=/ig,
+                        function (match, start, paramName) {
+                            return (start || '') + stringLiteralize( paramName ) + ':'
+                        }
+                    ))
+                );
+            },
+
+            /**
+             * 节点open前的处理动作
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            beforeOpen: autoCreateTarget
+        };
+
+        // 创建Use命令节点继承关系
+        inherits( UseCommand, Command );
 
         /**
          * Import命令节点类
@@ -1324,6 +1395,7 @@ define(
         addCommandType( 'target', TargetCommand );
         addCommandType( 'master', MasterCommand );
         addCommandType( 'import', ImportCommand );
+        addCommandType( 'use', UseCommand );
         addCommandType( 'var', VarCommand );
         addCommandType( 'for', ForCommand );
         addCommandType( 'if', IfCommand );
@@ -1562,7 +1634,7 @@ define(
                         var commandIsClose = RegExp.$1;
                         var commandValue = RegExp.$4;
 
-                        NodeType = commandTypes[ commandName ];
+                        NodeType = commandTypes[ commandName ];debugger;
                         if ( typeof NodeType === 'function' ) {
                             // 先将缓冲区中的text节点内容写入
                             flushTextBuf(); 
