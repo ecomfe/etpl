@@ -16,16 +16,13 @@ define(
          * 
          * @inner
          * @param {Object} target 目标对象
-         * @param {...Object} source 源对象
+         * @param {Object} source 源对象
          * @return {Object} 返回目标对象
          */
-        function extend( target ) {
-            for ( var i = 1, len = arguments.length; i < len; i++ ) {
-                var source = arguments[ i ];
-                for ( var key in source ) {
-                    if ( source.hasOwnProperty( key ) ) {
-                        target[ key ] = source[ key ];
-                    }
+        function extend( target, source ) {
+            for ( var key in source ) {
+                if ( source.hasOwnProperty( key ) ) {
+                    target[ key ] = source[ key ];
                 }
             }
 
@@ -51,17 +48,6 @@ define(
              */
             push: function ( elem ) {
                 this.raw[ this.length++ ] = elem;
-            },
-
-            /**
-             * 添加多个元素到数组末端
-             * 
-             * @param {...*} elem 添加项
-             */
-            pushMore: function () {
-                for ( var i = 0, l = arguments.length; i < l; i++ ) {
-                    this.push( arguments[ i ] );
-                }
             },
 
             /**
@@ -672,7 +658,6 @@ define(
                 this.applyMaster();
                 
                 if ( this.state === NodeState.READY && this.isImportsReady() ) {
-                    console.log(this.name)
                     console.log(RENDERER_BODY_START 
                         + this.getRendererBody() 
                         + RENDERER_BODY_END)
@@ -689,7 +674,7 @@ define(
                     this.renderer = function ( data ) {
                         return realRenderer.call( this, data, engine, ArrayBuffer );
                     };
-debugger;
+
                     return this.renderer;
                 }
 
@@ -1432,6 +1417,8 @@ debugger;
             }
         };
 
+        var COMMENT_RULE = /^\s*\/\//;
+
         /**
          * 解析源代码
          * 
@@ -1478,7 +1465,11 @@ debugger;
              * @inner
              */
             function beNormalText( text ) {
-                textBuf.pushMore( commandOpen, text, commandClose );
+                if ( !COMMENT_RULE.test( text ) ) {
+                    textBuf.push( commandOpen );
+                    textBuf.push( text );
+                    textBuf.push( commandClose );
+                }
             }
 
             // 先以 commandOpen(默认<!--) 进行split
