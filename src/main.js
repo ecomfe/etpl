@@ -318,6 +318,15 @@ define(
                     TEXT_RENDERER_BODY, 
                     stringLiteralize( this.value ) 
                 );
+            },
+
+            /**
+             * 获取内容
+             * 
+             * @return {string}
+             */
+            getContent: function () {
+                return this.value;
             }
         };
 
@@ -682,6 +691,26 @@ define(
             },
 
             /**
+             * 获取内容
+             * 
+             * @return {string}
+             */
+            getContent: function () {
+                this.applyMaster();
+                if ( this.state === NodeState.READY && this.isImportsReady() ) {
+                    var buf = new ArrayBuffer();
+                    var children = this.realChildren;
+                    for ( var i = 0; i < children.length; i++ ) {
+                        buf.push( children[ i ].getContent() );
+                    }
+
+                    return buf.join( '' );
+                }
+
+                return '';
+            },
+
+            /**
              * 判断target的imports是否准备完成
              * 
              * @return {boolean}
@@ -774,7 +803,17 @@ define(
              * 
              * @param {Object} context 语法分析环境对象
              */
-            beforeOpen: autoCreateTarget
+            beforeOpen: autoCreateTarget,
+
+            /**
+             * 获取内容
+             * 
+             * @return {string}
+             */
+            getContent: function () {
+                var target = this.engine.targets[ this.name ];
+                return target.getContent();
+            }
         };
 
         // 创建Import命令节点继承关系
@@ -1370,6 +1409,21 @@ define(
                 if ( target ) {
                     return target.getRenderer();
                 }
+            },
+
+            /**
+             * 根据target名称获取模板内容
+             * 
+             * @param {string} name target名称
+             * @return {string}
+             */
+            get: function ( name ) {
+                var target = this.targets[ name ];
+                if ( target ) {
+                    return target.getContent();
+                }
+
+                return '';
             },
 
             /**

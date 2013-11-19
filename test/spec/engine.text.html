@@ -42,4 +42,29 @@ default engine
 my engine
 ::expect-custom-options::
 <!-- import: a -->
+::get-tpl::
+<!-- target: engineGetSimpleTarget -->Hello etpl!
+<!-- target: engineGetImportTarget -->
+<div><!--import: engineGetSimpleTarget --></div>
+<!-- target: engineGetMasterTarget(master=engineGetMaster) -->
+<!-- content: header -->header by target
+<!-- master: engineGetMaster -->
+<header><!-- contentplaceholder: header -->my header<!-- /contentplaceholder --></header>
+<div><!--import: engineGetSimpleTarget --></div>
+<footer><!-- contentplaceholder: footer -->my footer<!-- /contentplaceholder --></footer>
+::expect-engineGetSimpleTarget::
+Hello etpl!
+
+::expect-engineGetImportTarget::
+
+<div>Hello etpl!
+</div>
+
+::expect-engineGetMasterTarget::
+
+<header>header by target
+</header>
+<div>Hello etpl!
+</div>
+<footer>my footer</footer>
 ::eof::

@@ -4,6 +4,7 @@ define(
         var mytpl = new etpl.Engine();
         var readText = require( 'readTextSync' );
         var text = readText( 'spec/engine.text.html' );
+        etpl.compile( text['get-tpl'] );
 
         describe('Engine', function() {
             it('can new by manual, isolate from default engine', function() {
@@ -81,6 +82,21 @@ define(
                 var data = eval(text['data']);
                 var dataGetter = eval(text['data-getter'])
                 expect(renderer(data)).toEqual(renderer(dataGetter));
+            });
+
+            it('"get" method should return the target content', function() {
+                expect(etpl.get('engineGetSimpleTarget'))
+                    .toEqual(text['expect-engineGetSimpleTarget']);
+            });
+
+            it('"get" method should return the target content which had mixed imports', function() {
+                expect(etpl.get('engineGetImportTarget'))
+                    .toEqual(text['expect-engineGetImportTarget']);
+            });
+
+            it('"get" method should return the target content which had applied master', function() {
+                expect(etpl.get('engineGetMasterTarget'))
+                    .toEqual(text['expect-engineGetMasterTarget']);
             });
 
             it('default instance: "parse" method should reserved for backward compatibility, same as "compile" method', function() {
