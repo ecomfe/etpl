@@ -35,6 +35,14 @@ define(
             );
 
             it(
+                'should substitute correctly if has more than 1 filters', 
+                function() {
+                    expect(etpl.getRenderer('variableSubstitution-filters')(data))
+                        .toEqual(text['expect-filters']);
+                }
+            );
+
+            it(
                 'should substitute correctly when many variables and filters mixed', 
                 function() {
                     expect(etpl.getRenderer('variableSubstitution-mix')(data))

@@ -13,6 +13,8 @@ baidu
 Hello ${name}!
 <!-- target: variableSubstitution-raw -->
 Hello ${name|raw}!
+<!-- target: variableSubstitution-filters -->
+Hello ${name|html|url}!
 <!-- target: variableSubstitution-property-accessor -->
 Repos: ${info.repos}
 Contributor: ${info.contributor.name}[${info.contributor.email}]
@@ -26,6 +28,10 @@ Hello &lt;b&gt;ecom&amp;fe&lt;/b&gt;!
 ::expect-raw::
 
 Hello <b>ecom&fe</b>!
+
+::expect-filters::
+
+Hello %26lt%3Bb%26gt%3Becom%26amp%3Bfe%26lt%3B%2Fb%26gt%3B!
 
 ::expect-mix::
 
