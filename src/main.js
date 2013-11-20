@@ -188,16 +188,20 @@ define(
          * @type {Object}
          */
         var DEFAULT_FILTERS = {
-            html: function ( source ) {
-                source = source + '';
-                return source
-                    .replace( /&/g, '&amp;' )
-                    .replace( /</g, '&lt;' )
-                    .replace( />/g, '&gt;' )
-                    .replace( /"/g, '&quot;' )
-                    .replace( /'/g, '&#39;' );
+            html: {
+                filter: function ( source ) {
+                    source = source + '';
+                    return source
+                        .replace( /&/g, '&amp;' )
+                        .replace( /</g, '&lt;' )
+                        .replace( />/g, '&gt;' )
+                        .replace( /"/g, '&quot;' )
+                        .replace( /'/g, '&#39;' );
+                }
             },
-            url: encodeURIComponent
+            url: { 
+                filter: encodeURIComponent
+            }
         };
 
         /**
@@ -282,23 +286,16 @@ define(
         }
 
         /**
-         * 文本节点renderer body模板串
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var TEXT_RENDERER_BODY = 'str.push(replaceVariables({0}));';
-
-        /**
          * 文本节点类
          * 
          * @inner
          * @constructor
          * @param {string} value 文本节点的内容文本
+         * @param {Engine} engine 引擎实例
          */
-        function TextNode( value ) {
+        function TextNode( value, engine ) {
             this.value = value;
+            this.engine = engine;
         }
         
         TextNode.prototype = {
@@ -315,10 +312,55 @@ define(
              * @return {string}
              */
             getRendererBody: function () {
-                return stringFormat( 
-                    TEXT_RENDERER_BODY, 
-                    stringLiteralize( this.value ) 
-                );
+                var defaultFilter = this.engine.options.defaultFilter;
+                var code = new ArrayBuffer();
+                var texts = this.value.split( '${' );
+                for ( var i = 0, len = texts.length; i < len; i++ ) {
+                    var text = texts[ i ];
+                    if ( i !== 0 ) {
+                        var rightIndex = text.indexOf( '}' );
+                        if ( rightIndex > 0 ) {
+                            var variableText = text.slice( 0, rightIndex );
+                            text = text.slice( rightIndex + 1 );
+                            generateVariableSubstitutionCode( variableText );
+                        }
+                        else {
+                            text = '${' + text;
+                        }
+                    }
+                    code.push( 'str.push(' + stringLiteralize( text ) + '); ' );
+                }
+
+                
+                function generateVariableSubstitutionCode( source ) {
+                    if ( source.indexOf( '|' ) < 0 && defaultFilter ) {
+                        source += '|' + defaultFilter;
+                    }
+                    code.push( 'str.push(' );
+
+                    var segs = source.split( /\s*\|\s*/ );
+                    var codeTail = new ArrayBuffer();
+
+                    for ( var i = 0, len = segs.length; i < len; i++ ) {
+                        var seg = segs[ i ];
+                        if ( i === 0 ) {
+                            codeTail.push( stringLiteralize( seg ) );
+                        }
+                        else {
+                            code.push( 'engine.filter(' );
+                            if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
+                                codeTail.push( '), ' + stringLiteralize( RegExp.$1 ) );
+                                if ( RegExp.$2 ) {
+                                    codeTail.push( ', [' + RegExp.$3 + ']');
+                                }
+                            }
+                        }
+                    }
+
+                    code.push( 'getVariableStr(' + codeTail.join( '' ) + ')); ' );
+                }
+
+                return code.join('');
             },
 
             /**
@@ -513,24 +555,11 @@ define(
             +         '}'
             +         'return d;'
             +     '};'
-
-            + 'function replaceVariables(s) {'
-            +     'return s.replace('
-            +         '/\\$\\{([^\\}]+)\\}/g,'
-            +         'function (match, expr){'
-            +             'var segs = expr.split(/\\s*\\|\\s*/);'
-            +             'var len = segs.length;'
-            +             'var name = segs[0];'
-            +             'var value = getVariable(name);'
-            +             'if (value == null) { value = ""; }'
-            +             'if (len === 1) { len = 2; segs[1]="html"; }'
-            +             'for (var i = 1; i < len; i++) {'
-            +                 'value = engine.filter(segs[i], value);'
-            +             '}'
-            +             'return value;'
-            +         '}'
-            +     ');'
-            + '}'
+            + 'var getVariableStr = function (name) {'
+            +     'var value = getVariable(name);'
+            +     'if ( value == null ) { value = ""; }'
+            +     'return value;'
+            + '};'
         ;
 
         /**
@@ -668,9 +697,9 @@ define(
                 this.applyMaster();
                 
                 if ( this.state === NodeState.READY && this.isImportsReady() ) {
-                    console.log(RENDERER_BODY_START 
-                        + this.getRendererBody() 
-                        + RENDERER_BODY_END)
+                    // console.log(RENDERER_BODY_START 
+                    //     + this.getRendererBody() 
+                    //     + RENDERER_BODY_END)
 
                     var realRenderer = new Function( 
                         'data', 'engine', 'ArrayBuffer',
@@ -766,12 +795,12 @@ define(
          * @param {Engine} engine 引擎实例
          */
         function UseCommand( value, engine ) {
-            if ( !/^\s*([a-z0-9_-]+)\s*\((.*)\)\s*$/i.test( value ) ) {
+            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
                 throw new Error( 'Invalid use syntax: ' + value );
             }
 
             this.name = RegExp.$1;
-            this.paramValue = RegExp.$2;
+            this.paramValue = RegExp.$3 || '';
             Command.call( this, value, engine );
         }
 
@@ -1129,6 +1158,69 @@ define(
         inherits( ForCommand, Command );
 
         /**
+         * filter命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function FilterCommand( value, engine ) {
+            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid filter syntax: ' + value );
+            }
+
+            this.name = RegExp.$1;
+            this.paramValue = RegExp.$3 || '';
+            Command.call( this, value, engine );
+        }
+
+        /**
+         * filter节点renderer body模板串
+         * 
+         * @inner
+         * @const
+         * @type {string}
+         */
+        var FILTER_RENDERER_BODY = ''
+            + 'str.push(engine.filter('
+            +     '(function(){'
+            +         'var str = new ArrayBuffer();'
+            +         '{0}'
+            +         'return str.join("");'
+            +     '})(),'
+            +     '{1},'
+            +     '[{2}]'
+            + '));'
+        ;
+
+        FilterCommand.prototype = {
+            /**
+             * 节点open前的处理动作
+             * 
+             * @param {Object} context 语法分析环境对象
+             */
+            beforeOpen: autoCreateTarget,
+
+            /**
+             * 获取renderer body的生成代码
+             * 
+             * @return {string}
+             */
+            getRendererBody: function () {
+                return stringFormat(
+                    FILTER_RENDERER_BODY,
+                    Command.prototype.getRendererBody.call( this ),
+                    stringLiteralize( this.name ),
+                    this.paramValue
+                );
+            }
+        };
+
+        // 创建filter命令节点继承关系
+        inherits( FilterCommand, Command );
+
+        /**
          * 命令值规则：if，用于if、elif命令
          * 
          * @inner
@@ -1394,6 +1486,8 @@ define(
 
         addCommandType( 'target', TargetCommand );
         addCommandType( 'master', MasterCommand );
+        addCommandType( 'content', ContentCommand );
+        addCommandType( 'contentplaceholder', ContentPlaceHolderCommand );
         addCommandType( 'import', ImportCommand );
         addCommandType( 'use', UseCommand );
         addCommandType( 'var', VarCommand );
@@ -1401,8 +1495,8 @@ define(
         addCommandType( 'if', IfCommand );
         addCommandType( 'elif', ElifCommand );
         addCommandType( 'else', ElseCommand );
-        addCommandType( 'content', ContentCommand );
-        addCommandType( 'contentplaceholder', ContentPlaceHolderCommand );
+        addCommandType( 'filter', FilterCommand );
+        
         
         /**
          * etpl引擎类
@@ -1415,7 +1509,8 @@ define(
         function Engine( options ) {
             this.options = {
                 commandOpen: '<!--',
-                commandClose: '-->'
+                commandClose: '-->',
+                defaultFilter: 'html'
             };
 
             this.config( options );
@@ -1520,10 +1615,17 @@ define(
              * 增加过滤器
              * 
              * @param {string} name 过滤器名称
-             * @param {function(string):string} filter 过滤函数
+             * @param {Function} filter 过滤函数
+             * @param {boolean} isFactory 传入的是否是返回过滤函数的factory
              */
-            addFilter: function ( name, filter ) {
-                this.filters[ name ] = filter;
+            addFilter: function ( name, filter, isFactory ) {
+                if ( typeof filter === 'function' ) {
+                    this.filters[ name ] = {
+                        filter: filter,
+                        isFactory: !!isFactory
+                    };
+                }
+                
             },
 
             /**
@@ -1531,12 +1633,19 @@ define(
              * 
              * @param {string} name 过滤器名称
              * @param {string} source 源字符串
+             * @param {Array=} params 额外参数
              * @return {string}
              */
-            filter: function ( name, source ) {
+            filter: function ( source, name, params ) {
                 var filter = this.filters[ name ];
-                if ( typeof filter === 'function' ) {
-                    return filter( source );
+                if ( filter ) {
+                    if ( filter.isFactory ) {
+                        return filter.filter.apply( this, params )( source );
+                    }
+
+                    var args = [ source ];
+                    args.push.apply( args, params );
+                    return filter.filter.apply( this, args );
                 }
 
                 return source;
@@ -1577,7 +1686,7 @@ define(
                 var text;
 
                 if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
-                    var textNode = new TextNode( text );
+                    var textNode = new TextNode( text, engine );
                     textNode.beforeAdd( analyseContext );
                     position.top().addTextNode( textNode );
                     textBuf = new ArrayBuffer();

@@ -9,12 +9,12 @@ errorrik@gmail.com
 ::address::
 baidu
 ::tpl::
+<!-- target: variableSubstitution-filters -->
+Hello ${name|html|url|unknown(1, true, "2")}!
 <!-- target: variableSubstitution-normal -->
 Hello ${name}!
 <!-- target: variableSubstitution-raw -->
 Hello ${name|raw}!
-<!-- target: variableSubstitution-filters -->
-Hello ${name|html|url}!
 <!-- target: variableSubstitution-property-accessor -->
 Repos: ${info.repos}
 Contributor: ${info.contributor.name}[${info.contributor.email}]

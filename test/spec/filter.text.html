@@ -1,0 +1,19 @@
+::tpl-simple::
+<!-- target: filterSimpleTarget -->
+<!-- filter: html() --><b>Hello etpl!</b><!-- /filter -->
+::expect-simple::
+
+&lt;b&gt;Hello etpl!&lt;/b&gt;
+::tpl-nested::
+<!-- target: filterNestedTarget -->
+<!-- filter: html() --><b>Hello <!--filter: url() --><em>etpl&er</em><!-- /filter -->!</b><!-- /filter -->
+::expect-nested::
+
+&lt;b&gt;Hello %3Cem%3Eetpl%26er%3C%2Fem%3E!&lt;/b&gt;
+::tpl-param::
+<!-- target: filterParamTarget -->
+<!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: filter-lower(true) -->ETPL<!-- /filter -->
+::expect-param::
+
+etpl Etpl
+::eof::

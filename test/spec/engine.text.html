@@ -10,6 +10,16 @@
 <!-- master: engineRepeatMaster -->default engine
 ::data-tpl::
 <!-- target: engineDataTarget -->Hello ${info.name} by ${info.contributor.name}[${info.contributor.email}]!
+::custom-filter-tpl::
+<!-- target: engineCustomFilterTarget -->Hello ${name}!
+::custom-filter-tpl2::
+<!-- target: engineCustomFilterTarget2 -->Hello ${name}!
+::upper-tpl::
+<!-- target: engineUpperTarget -->Hello ${name|upper}!
+::upper-tpl2::
+<!-- target: engineUpperTarget2 -->Hello ${name|upper2()}! Hello ${name | upper2(true)}!
+::upper-tpl3::
+<!-- target: engineUpperTarget3 -->Hello ${name|upper3(2)}! Hello ${name | upper3(3, true)}!
 ::data::
 ({
     info: {
@@ -67,4 +77,14 @@ Hello etpl!
 <div>Hello etpl!
 </div>
 <footer>my footer</footer>
+::expect-custom-filter-raw::
+Hello <b>etpl</b>!
+::expect-custom-filter-html::
+Hello &lt;b&gt;etpl&lt;/b&gt;!
+::expect-engineUpperTarget::
+Hello ETPL!
+::expect-engineUpperTarget2::
+Hello ETPL! Hello Etpl!
+::expect-engineUpperTarget3::
+Hello ET! Hello Etp!
 ::eof::

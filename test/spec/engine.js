@@ -66,6 +66,23 @@ define(
                 });
             });
 
+            it('"config" method can setup default filter', function() {
+                var data = {name: '<b>etpl</b>'};
+
+                mytpl.compile(text['custom-filter-tpl']);
+                expect(mytpl.render('engineCustomFilterTarget',data)).toEqual(text['expect-custom-filter-html']);
+                
+                mytpl.config({
+                    defaultFilter: ''
+                });
+                mytpl.compile(text['custom-filter-tpl2']);
+                expect(mytpl.render('engineCustomFilterTarget2',data)).toEqual(text['expect-custom-filter-raw']);
+                
+                mytpl.config({
+                    defaultFilter: 'html'
+                });
+            });
+
             it('"render" method returns the same value as renderer call', function() {
                 var renderer = mytpl.compile(text['variable-tpl']);
                 var data = { 
@@ -97,6 +114,52 @@ define(
             it('"get" method should return the target content which had applied master', function() {
                 expect(etpl.get('engineGetMasterTarget'))
                     .toEqual(text['expect-engineGetMasterTarget']);
+            });
+
+            it('"addFilter" method can add a filter function', function() {
+                etpl.addFilter( 'upper', function ( source ) {
+                    return source.toUpperCase();
+                } );
+                var renderer = etpl.compile(text['upper-tpl']);
+                var data = {name: 'etpl'};
+                expect(renderer(data))
+                     .toEqual(text['expect-engineUpperTarget']);
+            });
+
+            it('"addFilter" method can add a filter function which can receive extra params', function() {
+                etpl.addFilter( 'upper2', function ( source, initial ) {
+                    if (initial) {
+                        return source.charAt(0).toUpperCase() + source.slice( 1 );
+                    }
+
+                    return source.toUpperCase();
+                } );
+                var renderer = etpl.compile(text['upper-tpl2']);
+                var data = {name: 'etpl'};
+                expect(renderer(data))
+                     .toEqual(text['expect-engineUpperTarget2']);
+            });
+
+            it('"addFilter" method can add a filter factory', function() {
+                etpl.addFilter( 
+                    'upper3', 
+                    function ( len, initial ) {
+                        if (initial) {
+                            return function ( source ) {
+                                return source.charAt(0).toUpperCase() + source.slice( 1, len );
+                            };
+                        }
+
+                        return function ( source ) {
+                            return source.toUpperCase().slice( 0, len );
+                        };
+                    },
+                    true 
+                );
+                var renderer = etpl.compile(text['upper-tpl3']);
+                var data = {name: 'etpl'};
+                expect(renderer(data))
+                     .toEqual(text['expect-engineUpperTarget3']);
             });
 
             it('default instance: "parse" method should reserved for backward compatibility, same as "compile" method', function() {
