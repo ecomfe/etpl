@@ -12,6 +12,7 @@ define(
         require('spec/for');
         require('spec/if');
         require('spec/var');
+        require('spec/filter');
         require('spec/engine');
         require('spec/comment');
 
