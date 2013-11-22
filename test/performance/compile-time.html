@@ -2,11 +2,12 @@
 <html>
 <head>
 <title>ETPL Compile Time Test</title>
-<script src="lib/esl-1.6.6.js"></script>
+<script src="../lib/esl-1.6.6.js"></script>
 </head>
 
 <body>
 <script>
+require.config( { baseUrl: '../' } );
 require(
     [ 'etpl' ], 
     function (etpl) {
