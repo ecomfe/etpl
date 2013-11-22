@@ -48,7 +48,7 @@ define(
         describe('Traversal', function() {
             it('can be nested', function() {
                 var renderer = etpl.getRenderer('forNestedTarget');
-                var result = renderer(data);console.log(result)
+                var result = renderer(data);
                 expect(result.indexOf(text['except-nested-1'])).toBeGreaterThan(-1);
                 expect(result.indexOf(text['except-nested-2'])).toBeGreaterThan(-1);
                 expect(result.indexOf(text['except-nested-3'])).toBeGreaterThan(-1);

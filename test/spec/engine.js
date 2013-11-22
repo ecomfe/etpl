@@ -140,28 +140,6 @@ define(
                      .toEqual(text['expect-engineUpperTarget2']);
             });
 
-            it('"addFilter" method can add a filter factory', function() {
-                etpl.addFilter( 
-                    'upper3', 
-                    function ( len, initial ) {
-                        if (initial) {
-                            return function ( source ) {
-                                return source.charAt(0).toUpperCase() + source.slice( 1, len );
-                            };
-                        }
-
-                        return function ( source ) {
-                            return source.toUpperCase().slice( 0, len );
-                        };
-                    },
-                    true 
-                );
-                var renderer = etpl.compile(text['upper-tpl3']);
-                var data = {name: 'etpl'};
-                expect(renderer(data))
-                     .toEqual(text['expect-engineUpperTarget3']);
-            });
-
             it('default instance: "parse" method should reserved for backward compatibility, same as "compile" method', function() {
                 expect(etpl.parse).toBe(etpl.compile);
             });

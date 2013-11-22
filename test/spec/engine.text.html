@@ -18,8 +18,6 @@
 <!-- target: engineUpperTarget -->Hello ${name|upper}!
 ::upper-tpl2::
 <!-- target: engineUpperTarget2 -->Hello ${name|upper2()}! Hello ${name | upper2(true)}!
-::upper-tpl3::
-<!-- target: engineUpperTarget3 -->Hello ${name|upper3(2)}! Hello ${name | upper3(3, true)}!
 ::data::
 ({
     info: {
@@ -85,6 +83,4 @@ Hello &lt;b&gt;etpl&lt;/b&gt;!
 Hello ETPL!
 ::expect-engineUpperTarget2::
 Hello ETPL! Hello Etpl!
-::expect-engineUpperTarget3::
-Hello ET! Hello Etp!
 ::eof::
