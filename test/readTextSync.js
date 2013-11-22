@@ -8,7 +8,7 @@ define(
             xhr.send( null );
 
             if ( xhr.status >= 200 && xhr.status < 300 ) {
-                var lines = xhr.responseText.split( /\r?\n/ );
+                var lines = xhr.responseText.replace(/\r?\n/g, '\n').split( '\n' );
                 var result = {};
 
                 var itemName;
