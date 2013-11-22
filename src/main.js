@@ -30,6 +30,20 @@ define(
             return target;
         }
 
+        var RENDER_STRING_DECLATION = 'var str = "";';
+        var RENDER_STRING_ADD_START = 'str += ';
+        var RENDER_STRING_ADD_END = ';';
+        var RENDER_STRING_RETURN = 'return str;';
+
+
+        var StringBuffer;
+        if (typeof window !== 'undefined' && navigator && window.document && /msie/i.test( navigator.userAgent ) ) {
+            var RENDER_STRING_DECLATION = 'var str = new StringBuffer();';
+            var RENDER_STRING_ADD_START = 'str.push(';
+            var RENDER_STRING_ADD_END = ');';
+            var RENDER_STRING_RETURN = 'return str.join("");';
+        }
+
         /**
          * 随手写了个数组作为string buffer和stack
          *
@@ -180,6 +194,17 @@ define(
             extend( subClass.prototype, subClassPrototype );
         }
 
+        var HTML_ENTITY = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+
+        function htmlFilterReplacer( c ) {
+            return HTML_ENTITY[ c ];
+        }
         /**
          * 默认filter
          * 
@@ -188,19 +213,12 @@ define(
          * @type {Object}
          */
         var DEFAULT_FILTERS = {
-            html: {
-                filter: function ( source ) {
-                    source = source + '';
-                    return source
-                        .replace( /&/g, '&amp;' )
-                        .replace( /</g, '&lt;' )
-                        .replace( />/g, '&gt;' )
-                        .replace( /"/g, '&quot;' )
-                        .replace( /'/g, '&#39;' );
-                }
+            html: function ( source ) {
+                return source.replace( /[&<>"']/g, htmlFilterReplacer );
             },
-            url: { 
-                filter: encodeURIComponent
+            url: encodeURIComponent,
+            raw: function (source) {
+                return source;
             }
         };
 
@@ -263,12 +281,38 @@ define(
          * @const
          * @type {string}
          */
-        var GET_VARIABLE_TPL = 'getVariable({0})';
+        var GET_VARIABLE_TPL = 'getVariable("{0}",["{1}"])';
+
+        /**
+         * getVariableStr调用的renderer body模板串
+         * 
+         * @inner
+         * @const
+         * @type {string}
+         */
+        var GET_VARIABLE_STR_TPL = 'getVariableStr("{0}",["{1}"])';
+
+        /**
+         * 将访问变量名称转换成getVariable调用的编译语句
+         * 用于if、var等命令生成编译代码
+         * 
+         * @inner
+         * @param {string} name 访问变量名
+         * @param {boolean} isStr 是否字符串形式的访问
+         * @return {string}
+         */
+        function toGetVariableLiteral( name, isStr ) {
+            return stringFormat(
+                (isStr ? GET_VARIABLE_STR_TPL : GET_VARIABLE_TPL),
+                name,
+                name.split( '.' ).join( '","' )
+            );
+        }
 
         /**
          * 替换字符串中的${...}成getVariable调用的编译语句
          * 用于if、var等命令生成编译代码
-         * 
+         *
          * @inner
          * @param {string} source 源字符串
          * @return {string}
@@ -277,10 +321,7 @@ define(
             return source.replace(
                 /\$\{([0-9a-z_\.]+)\}/ig,
                 function( match, name ){
-                    return stringFormat(
-                        GET_VARIABLE_TPL,
-                        stringLiteralize( name )
-                    );
+                    return toGetVariableLiteral( name );
                 }
             );
         }
@@ -328,7 +369,7 @@ define(
                             text = '${' + text;
                         }
                     }
-                    code.push( 'str.push(' + stringLiteralize( text ) + '); ' );
+                    code.push( RENDER_STRING_ADD_START + stringLiteralize( text ) + RENDER_STRING_ADD_END );
                 }
 
                 
@@ -336,28 +377,30 @@ define(
                     if ( source.indexOf( '|' ) < 0 && defaultFilter ) {
                         source += '|' + defaultFilter;
                     }
-                    code.push( 'str.push(' );
+                    code.push( RENDER_STRING_ADD_START );
 
                     var segs = source.split( /\s*\|\s*/ );
                     var codeTail = new ArrayBuffer();
+                    var codeHead = new ArrayBuffer();
+                    var variableName = segs[ 0 ];
 
-                    for ( var i = 0, len = segs.length; i < len; i++ ) {
+                    for ( var i = 1, len = segs.length; i < len; i++ ) {
                         var seg = segs[ i ];
-                        if ( i === 0 ) {
-                            codeTail.push( stringLiteralize( seg ) );
-                        }
-                        else {
-                            code.push( 'engine.filter(' );
-                            if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
-                                codeTail.push( '), ' + stringLiteralize( RegExp.$1 ) );
-                                if ( RegExp.$2 ) {
-                                    codeTail.push( ', [' + RegExp.$3 + ']');
-                                }
+
+                        if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
+                            codeHead.push('filters[' + stringLiteralize( RegExp.$1 ) + '](')
+                            if ( RegExp.$3 ) {
+                                codeTail.push( ', ' + replaceGetVariableLiteral( RegExp.$3 ) );
                             }
+                            codeTail.push( ')' );
                         }
                     }
 
-                    code.push( 'getVariableStr(' + codeTail.join( '' ) + ')); ' );
+                    codeHead.raw.reverse();
+                    code.push( codeHead.join( '' ) );
+                    code.push( toGetVariableLiteral( variableName, 1 ) );
+                    code.push( codeTail.join( '' ) );
+                    code.push( RENDER_STRING_ADD_END );
                 }
 
                 return code.join('');
@@ -534,31 +577,31 @@ define(
          */
         var RENDERER_BODY_START = ''
             + 'data = data || {};'
-            + 'var str = new ArrayBuffer();'
+            + RENDER_STRING_DECLATION
             + 'var variables = {};'
-
+            + 'var filters = engine.filters;'
             + 'var getVariable = typeof data.get === "function"'
             +     '? function (name) {'
             +         'return data.get(name);'
             +     '}'
-            +     ': function (name) {'
-            +         'var props = name.split(".");'
-            +         'var firstProp = props[0];'
-            +         'var firstVariable = variables[firstProp];'
+            +     ': function (name, props) {'
+            +         'var prop = props[0];'
+            +         'var firstVariable = variables[prop];'
             +         'var d = firstVariable == null'
-            +             '? data[firstProp] '
+            +             '? data[prop] '
             +             ': firstVariable;'
-            +         'for (var i = 1, len = props.length; i < len; i++) {'
+            +         'for ( var i = 1, len = props.length; i < len; i++ ) {'
             +             'if (d != null) {'
-            +                 'd = d[ props[ i ] ];'
+            +                 'd = d[ props[i] ];'
             +             '}'
             +         '}'
             +         'return d;'
             +     '};'
-            + 'var getVariableStr = function (name) {'
-            +     'var value = getVariable(name);'
+            + 'var getVariableStr = function (name, props) {'
+            +     'var value = getVariable(name, props);'
+            +     'if ( typeof value === "string" ) { return value; }'
             +     'if ( value == null ) { value = ""; }'
-            +     'return value;'
+            +     'return value + "";'
             + '};'
         ;
 
@@ -569,7 +612,7 @@ define(
          * @const
          * @type {string}
          */
-        var RENDERER_BODY_END = 'return str.join("")';
+        var RENDERER_BODY_END = RENDER_STRING_RETURN;
 
         /**
          * Target命令节点类
@@ -694,6 +737,7 @@ define(
                 }
 
                 var engine = this.engine;
+                var StringBuffer = ArrayBuffer;
                 this.applyMaster();
                 
                 if ( this.state === NodeState.READY && this.isImportsReady() ) {
@@ -702,7 +746,7 @@ define(
                     //     + RENDERER_BODY_END)
 
                     var realRenderer = new Function( 
-                        'data', 'engine', 'ArrayBuffer',
+                        'data', 'engine', 'StringBuffer',
                         [
                             RENDERER_BODY_START,
                             this.getRendererBody(),
@@ -711,7 +755,7 @@ define(
                     );
 
                     this.renderer = function ( data ) {
-                        return realRenderer.call( this, data, engine, ArrayBuffer );
+                        return realRenderer( data, engine, StringBuffer );
                     };
 
                     return this.renderer;
@@ -804,7 +848,7 @@ define(
             Command.call( this, value, engine );
         }
 
-        var USE_RENDERER_BODY = 'str.push(engine.render({0}, {{1}}));';
+        var USE_RENDERER_BODY = RENDER_STRING_ADD_START + 'engine.render({0}, {{1}})' + RENDER_STRING_ADD_END;
 
         UseCommand.prototype = {
             /**
@@ -835,12 +879,14 @@ define(
                 return stringFormat(
                     USE_RENDERER_BODY,
                     stringLiteralize( this.name ),
-                    replaceGetVariableLiteral( this.paramValue.replace( 
-                        /(^|,)\s*([a-z0-9_]+)\s*=/ig,
-                        function (match, start, paramName) {
-                            return (start || '') + stringLiteralize( paramName ) + ':'
-                        }
-                    ))
+                    replaceGetVariableLiteral( 
+                        this.paramValue.replace( 
+                            /(^|,)\s*([a-z0-9_]+)\s*=/ig,
+                            function ( match, start, paramName ) {
+                                return (start || '') + stringLiteralize( paramName ) + ':'
+                            }
+                        )
+                    )
                 );
             },
 
@@ -1077,7 +1123,7 @@ define(
          * @type {RegExp}
          */
         var COMMAND_VALUE_RULE_FOR = 
-            /^\s*\$\{([0-9a-z_.\[\]]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
+            /^\s*\$\{([0-9a-z_\.]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
         
         /**
          * for命令节点类
@@ -1107,21 +1153,18 @@ define(
          * @type {string}
          */
         var FOR_RENDERER_BODY = ''
-            + 'var {0} = getVariable({1});'
+            + 'var {0} = {1};'
             + 'if ({0} instanceof Array) {'
-            +     'for ('
-            +         'variables[{2}] = 0, variables[{3}] = {0}.length;'
-            +         'variables[{2}] < variables[{3}];'
-            +         'variables[{2}]++'
-            +     '){'
-            +         'variables[{4}] = {0}[variables[{2}]];'
+            +     'for (var {4} = 0, {5} = {0}.length; {4} < {5}; {4}++) {'
+            +         '{2}'
+            +         'variables[{3}] = {0}[{4}];'
             +         '{6}'
             +     '}'
             + '}'
             + 'else if (typeof {0} === "object") {'
-            +     'for (var {5} in {0}) {'
-            +         'variables[{2}] = {5};'
-            +         'variables[{4}] = {0}[{5}];'
+            +     'for (var {4} in {0}) {'
+            +         '{2}'
+            +         'variables[{3}] = {0}[{4}];'
             +         '{6}'
             +     '}'
             + '}'
@@ -1141,13 +1184,18 @@ define(
              * @return {string}
              */
             getRendererBody: function () {
+                var indexVariable = generateGUID();
+                var innerIndexSetter = '';
+                if ( this.index ) {
+                    innerIndexSetter = 'variables["' + this.index + '"] = ' + indexVariable + ';';
+                }
                 return stringFormat(
                     FOR_RENDERER_BODY,
                     generateGUID(),
-                    stringLiteralize( this.list ),
-                    stringLiteralize( this.index || generateGUID() ),
-                    stringLiteralize( generateGUID() ),
+                    toGetVariableLiteral( this.list ),
+                    innerIndexSetter,
                     stringLiteralize( this.item ),
+                    indexVariable,
                     generateGUID(),
                     Command.prototype.getRendererBody.call( this )
                 );
@@ -1182,16 +1230,16 @@ define(
          * @const
          * @type {string}
          */
-        var FILTER_RENDERER_BODY = ''
-            + 'str.push(engine.filter('
+        var FILTER_RENDERER_BODY = RENDER_STRING_ADD_START
+            + 'filters[{1}]('
             +     '(function(){'
-            +         'var str = new ArrayBuffer();'
+            +         RENDER_STRING_DECLATION
             +         '{0}'
-            +         'return str.join("");'
-            +     '})(),'
-            +     '{1},'
-            +     '[{2}]'
-            + '));'
+            +         RENDER_STRING_RETURN
+            +     '})()'
+            +     '{2}'
+            + ')'
+            + RENDER_STRING_ADD_END
         ;
 
         FilterCommand.prototype = {
@@ -1208,11 +1256,14 @@ define(
              * @return {string}
              */
             getRendererBody: function () {
+                var filterParams = this.paramValue;
                 return stringFormat(
                     FILTER_RENDERER_BODY,
                     Command.prototype.getRendererBody.call( this ),
                     stringLiteralize( this.name ),
-                    this.paramValue
+                    filterParams 
+                        ? ',' + replaceGetVariableLiteral( filterParams )
+                        : ''
                 );
             }
         };
@@ -1616,39 +1667,11 @@ define(
              * 
              * @param {string} name 过滤器名称
              * @param {Function} filter 过滤函数
-             * @param {boolean} isFactory 传入的是否是返回过滤函数的factory
              */
-            addFilter: function ( name, filter, isFactory ) {
+            addFilter: function ( name, filter ) {
                 if ( typeof filter === 'function' ) {
-                    this.filters[ name ] = {
-                        filter: filter,
-                        isFactory: !!isFactory
-                    };
+                    this.filters[ name ] = filter;
                 }
-                
-            },
-
-            /**
-             * 字符串过滤处理
-             * 
-             * @param {string} name 过滤器名称
-             * @param {string} source 源字符串
-             * @param {Array=} params 额外参数
-             * @return {string}
-             */
-            filter: function ( source, name, params ) {
-                var filter = this.filters[ name ];
-                if ( filter ) {
-                    if ( filter.isFactory ) {
-                        return filter.filter.apply( this, params )( source );
-                    }
-
-                    var args = [ source ];
-                    args.push.apply( args, params );
-                    return filter.filter.apply( this, args );
-                }
-
-                return source;
             }
         };
 
@@ -1665,6 +1688,7 @@ define(
         function parseSource( source, engine ) {
             var commandOpen = engine.options.commandOpen;
             var commandClose = engine.options.commandClose;
+            var commandCloseLen = commandClose.length;
 
             var position = new ArrayBuffer();
             var analyseContext = {
@@ -1731,19 +1755,24 @@ define(
 
             for ( ; i < len; i++ ) {
                 // 对 commandOpen(默认<!--) 进行split的结果
-                // 挨个用 commandClose(默认-->) 进行split
-                // 如果split数组长度为2，则0项为注释内容，1项为正常html内容
-                var str = texts[i].split( commandClose );
-                var strLen = str.length;
+                // 挨个查找第一个 commandClose的位置
+                // 之前为注释内容，之后为正常html内容
+                var text = texts[ i ];
 
-                if ( strLen === 2 ) {
-                    var commentText = str[ 0 ];
+                if ( i === 0 ) {
+                    textBuf.push( text );
+                    continue;
+                }
+
+                var closeIndex = text.indexOf( commandClose );
+                if ( closeIndex >= 0 ) {
+                    var commentText = text.slice( 0, closeIndex );
                     if ( COMMAND_RULE.test( commentText ) ) {
                         var commandName = RegExp.$2;
                         var commandIsClose = RegExp.$1;
                         var commandValue = RegExp.$4;
 
-                        NodeType = commandTypes[ commandName ];debugger;
+                        NodeType = commandTypes[ commandName ];
                         if ( typeof NodeType === 'function' ) {
                             // 先将缓冲区中的text节点内容写入
                             flushTextBuf(); 
@@ -1771,10 +1800,10 @@ define(
                         beNormalText( commentText );
                     }
 
-                    textBuf.push( str[ 1 ] );
+                    textBuf.push( text.slice( closeIndex + commandCloseLen ) );
                 }
                 else {
-                    textBuf.push( str[ 0 ] );
+                    textBuf.push( text );
                 }
             }
 
