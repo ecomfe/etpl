@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ETPL Render Time Test</title>
+<style>
+body { font-size: 14px; }
+li {height: 30px; width: 200px;list-style: none}
+li a {float: left; color: blue;}
+li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
+</style>
+<script>
+(function (global) {
+    var tests = [
+        {name: 'etpl', url: 'etpl/etpl.html'},
+        {name: 'juicer', url: 'juicer/juicer.html'},
+        {name: 'mustache', url: 'mustache/mustache.html'},
+        {name: 'hogan', url: 'hogan/hogan.html'},
+        {name: 'handlebars', url: 'handlebars/handlebars.html'},
+        {name: 'ejs', url: 'ejs/ejs.html'},
+        {name: 'dot', url: 'dot/dot.html'},
+        {name: 'baiduTemplate', url: 'baiduTemplate/baiduTemplate.html'},
+        {name: 'artTemplate', url: 'artTemplate/artTemplate.html'}
+    ];
+
+    var index = -1;
+    var testIframe;
+    global.nextTest = function () {
+        index++;
+        if ( index >= tests.length ) {
+            return;
+        }
+
+        var test = tests[ index ];
+        testIframe.src = test.url;
+    };
+
+    global.receiveResult = function ( time ) {
+        document.getElementsByTagName('li')[index].getElementsByTagName('b')[0].innerHTML = time + 'ms';
+        global.nextTest();
+    };
+
+    global.start = function () {
+        var ul = document.createElement( 'ul' );
+        for ( var i = 0; i < tests.length; i++ ) {
+            var li = document.createElement( 'li' );
+            var item = tests[ i ];
+            li.innerHTML = '<a target="_blank" href="' + item.url + '">' + item.name + '</a><b></b>';
+            ul.appendChild( li );
+        }
+        document.body.appendChild( ul );
+
+        testIframe = document.createElement('iframe');
+        testIframe.style.display = 'none';
+        document.body.appendChild(testIframe);
+        global.nextTest();
+    };
+})(this);
+
+</script>
+</head>
+<body>
+    <script> start(); </script>
+</body>
+</html>
