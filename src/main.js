@@ -30,20 +30,6 @@ define(
             return target;
         }
 
-        var RENDER_STRING_DECLATION = 'var str = "";';
-        var RENDER_STRING_ADD_START = 'str += ';
-        var RENDER_STRING_ADD_END = ';';
-        var RENDER_STRING_RETURN = 'return str;';
-
-
-        var StringBuffer;
-        if (typeof window !== 'undefined' && navigator && window.document && /msie/i.test( navigator.userAgent ) ) {
-            var RENDER_STRING_DECLATION = 'var str = new StringBuffer();';
-            var RENDER_STRING_ADD_START = 'str.push(';
-            var RENDER_STRING_ADD_END = ');';
-            var RENDER_STRING_RETURN = 'return str.join("");';
-        }
-
         /**
          * 随手写了个数组作为string buffer和stack
          *
@@ -59,10 +45,12 @@ define(
             /**
              * 添加元素到数组末端
              *
-             * @param {*} elem 添加项
+             * @param {...*} elem 添加项
              */
-            push: function ( elem ) {
-                this.raw[ this.length++ ] = elem;
+            push: function () {
+                for ( var i = 0, len = arguments.length; i < len; i++ ) {
+                    this.raw[ this.length++ ] = arguments[ i ];
+                }
             },
 
             /**
@@ -110,16 +98,6 @@ define(
             },
 
             /**
-             * 根据索引获取元素
-             *
-             * @param {number} index 数组索引
-             * @return {*}
-             */
-            item: function ( index ) {
-                return this.raw[ index ];
-            },
-
-            /**
              * 根据查询条件获取元素，逆序查找
              * 
              * @param {Function} condition 查询函数
@@ -137,15 +115,6 @@ define(
                 return null;
             }
         };
-
-        /**
-         * 命令文本格式规则
-         * 
-         * @inner
-         * @const
-         * @type {RegExp}
-         */
-        var COMMAND_RULE = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/;
 
         /**
          * 唯一id的起始值
@@ -171,7 +140,6 @@ define(
          * @inner
          */
         var NodeState = {
-            UNDEF: 0,
             READING: 1,
             READED: 2,
             READY: 3
@@ -205,6 +173,7 @@ define(
         function htmlFilterReplacer( c ) {
             return HTML_ENTITY[ c ];
         }
+
         /**
          * 默认filter
          * 
@@ -217,7 +186,7 @@ define(
                 return source.replace( /[&<>"']/g, htmlFilterReplacer );
             },
             url: encodeURIComponent,
-            raw: function (source) {
+            raw: function ( source ) {
                 return source;
             }
         };
@@ -274,6 +243,20 @@ define(
                 } );
         }
 
+        var RENDER_STRING_DECLATION = 'var str="";';
+        var RENDER_STRING_ADD_START = 'str+=';
+        var RENDER_STRING_ADD_END = ';';
+        var RENDER_STRING_RETURN = 'return str;';
+
+        if ( typeof navigator !== 'undefined' 
+            && /msie/i.test( navigator.userAgent ) 
+        ) {
+            RENDER_STRING_DECLATION = 'var str=new StringBuffer();';
+            RENDER_STRING_ADD_START = 'str.push(';
+            RENDER_STRING_ADD_END = ');';
+            RENDER_STRING_RETURN = 'return str.join("");';
+        }
+
         /**
          * getVariable调用的renderer body模板串
          * 
@@ -281,7 +264,7 @@ define(
          * @const
          * @type {string}
          */
-        var GET_VARIABLE_TPL = 'getVariable("{0}",["{1}"])';
+        var GET_VARIABLE_TPL = 'gv("{0}",["{1}"])';
 
         /**
          * getVariableStr调用的renderer body模板串
@@ -290,7 +273,7 @@ define(
          * @const
          * @type {string}
          */
-        var GET_VARIABLE_STR_TPL = 'getVariableStr("{0}",["{1}"])';
+        var GET_VARIABLE_STR_TPL = 'gvs("{0}",["{1}"])';
 
         /**
          * 将访问变量名称转换成getVariable调用的编译语句
@@ -369,7 +352,12 @@ define(
                             text = '${' + text;
                         }
                     }
-                    code.push( RENDER_STRING_ADD_START + stringLiteralize( text ) + RENDER_STRING_ADD_END );
+
+                    code.push( 
+                        RENDER_STRING_ADD_START, 
+                        stringLiteralize( text ), 
+                        RENDER_STRING_ADD_END
+                    );
                 }
 
                 
@@ -381,26 +369,28 @@ define(
 
                     var segs = source.split( /\s*\|\s*/ );
                     var codeTail = new ArrayBuffer();
-                    var codeHead = new ArrayBuffer();
+                    var codeHead = [];
                     var variableName = segs[ 0 ];
 
                     for ( var i = 1, len = segs.length; i < len; i++ ) {
                         var seg = segs[ i ];
 
                         if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
-                            codeHead.push('filters[' + stringLiteralize( RegExp.$1 ) + '](')
+                            codeHead.unshift( 'fs["' + RegExp.$1 + '"](' );
+
                             if ( RegExp.$3 ) {
-                                codeTail.push( ', ' + replaceGetVariableLiteral( RegExp.$3 ) );
+                                codeTail.push( ',', replaceGetVariableLiteral( RegExp.$3 ) );
                             }
                             codeTail.push( ')' );
                         }
                     }
 
-                    codeHead.raw.reverse();
-                    code.push( codeHead.join( '' ) );
-                    code.push( toGetVariableLiteral( variableName, 1 ) );
-                    code.push( codeTail.join( '' ) );
-                    code.push( RENDER_STRING_ADD_END );
+                    code.push( 
+                        codeHead.join( '' ),
+                        toGetVariableLiteral( variableName, 1 ),
+                        codeTail.join( '' ),
+                        RENDER_STRING_ADD_END
+                    );
                 }
 
                 return code.join('');
@@ -489,15 +479,6 @@ define(
         };
 
         /**
-         * 命令值规则：name，用于import、content、contentplaceholder命令
-         * 
-         * @inner
-         * @const
-         * @type {RegExp}
-         */
-        var COMMAND_VALUE_RULE_NAME = /^\s*([a-z0-9_-]+)\s*$/i;
-
-        /**
          * 读取name形式的命令值
          * 
          * @inner
@@ -505,21 +486,11 @@ define(
          * @param {string} value 命令值
          */
         function readNameOfCommandValue( node, value ) {
-            if ( COMMAND_VALUE_RULE_NAME.test( value ) ) {
+            if ( /^\s*([a-z0-9_-]+)\s*$/i.test( value ) ) {
                 node.name = RegExp.$1;
             }
         }
 
-        /**
-         * 命令值规则：name和master，用于target、master命令
-         * 
-         * @inner
-         * @const
-         * @type {RegExp}
-         */
-        var COMMAND_VALUE_RULE_NAME_AND_MASTER = 
-            /^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i;
-        
         /**
          * 读取name和master形式的命令值
          * 
@@ -528,7 +499,7 @@ define(
          * @param {string} value 命令值
          */
         function readNameAndMasterOfCommandValue( node, value ) {
-            if ( COMMAND_VALUE_RULE_NAME_AND_MASTER.test( value ) ) {
+            if ( /^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i.test( value ) ) {
                 node.name = RegExp.$1;
                 if ( RegExp.$2 ) {
                     node.master = RegExp.$3;
@@ -576,44 +547,24 @@ define(
          * @type {string}
          */
         var RENDERER_BODY_START = ''
-            + 'data = data || {};'
-            + RENDER_STRING_DECLATION
-            + 'var variables = {};'
-            + 'var filters = engine.filters;'
-            + 'var getVariable = typeof data.get === "function"'
-            +     '? function (name) {'
-            +         'return data.get(name);'
-            +     '}'
-            +     ': function (name, props) {'
-            +         'var prop = props[0];'
-            +         'var firstVariable = variables[prop];'
-            +         'var d = firstVariable == null'
-            +             '? data[prop] '
-            +             ': firstVariable;'
-            +         'for ( var i = 1, len = props.length; i < len; i++ ) {'
-            +             'if (d != null) {'
-            +                 'd = d[ props[i] ];'
-            +             '}'
-            +         '}'
+            + 'data=data||{};'
+            + 'var v={},fs=engine.filters,'
+            + 'gv=typeof data.get==="function"'
+            +     '? function(n){return data.get(n);}'
+            +     ': function(n,ps){'
+            +         'var p=ps[0],d=v[p];'
+            +         'd=d==null?data[p]:d;'
+            +         'for(var i=1,l=ps.length;i<l;i++)if(d!=null)d = d[ps[i]];'
             +         'return d;'
-            +     '};'
-            + 'var getVariableStr = function (name, props) {'
-            +     'var value = getVariable(name, props);'
-            +     'if ( typeof value === "string" ) { return value; }'
-            +     'if ( value == null ) { value = ""; }'
-            +     'return value + "";'
+            +     '},'
+            + 'gvs=function(n,ps){'
+            +     'var v=gv(n,ps);'
+            +     'if(typeof v==="string"){return v;}'
+            +     'if(v==null){v="";}'
+            +     'return ""+v;'
             + '};'
         ;
-
-        /**
-         * renderer body结束代码段
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var RENDERER_BODY_END = RENDER_STRING_RETURN;
-
+        
         /**
          * Target命令节点类
          * 
@@ -632,25 +583,256 @@ define(
             Command.call( this, value, engine );
             this.contents = {};
         }
-        
+
+        // 创建Target命令节点继承关系
+        inherits( TargetCommand, Command );
+
         /**
-         * target和master节点的闭合方法
+         * Master命令节点类
          * 
          * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function MasterCommand( value, engine ) {
+            readNameAndMasterOfCommandValue( this, value );
+            var name = this.name;
+            if ( engine.masters[ name ] ) {
+                throw new Error( 'Master "' + name + '" is exists!' );
+            }
+
+            Command.call( this, value, engine );
+            this.contents = {};
+        }
+
+        // 创建Master命令节点继承关系
+        inherits( MasterCommand, Command );
+
+        /**
+         * Content命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ContentCommand( value, engine ) {
+            Command.call( this, value, engine );
+            readNameOfCommandValue( this, value );
+        }
+
+        // 创建Content命令节点继承关系
+        inherits( ContentCommand, Command );
+
+        /**
+         * ContentPlaceHolder命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ContentPlaceHolderCommand( value, engine ) {
+            Command.call( this, value, engine );
+            readNameOfCommandValue( this, value );
+        }
+
+        // 创建ContentPlaceHolder命令节点继承关系
+        inherits( ContentPlaceHolderCommand, Command );
+        
+        /**
+         * Import命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ImportCommand( value, engine ) {
+            Command.call( this, value, engine );
+            readNameOfCommandValue( this, value );
+        }
+
+        // 创建Import命令节点继承关系
+        inherits( ImportCommand, Command );
+
+        /**
+         * Var命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function VarCommand( value, engine ) {
+            if ( !/^\s*([a-z0-9_]+)\s*=(.*)$/i.test( value ) ) {
+                throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+            }
+
+            this.varName = RegExp.$1;
+            this.varValue = RegExp.$2;
+            Command.call( this, value, engine );
+        }
+
+        // 创建Var命令节点继承关系
+        inherits( VarCommand, Command );
+
+        /**
+         * filter命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function FilterCommand( value, engine ) {
+            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+            }
+
+            this.name = RegExp.$1;
+            this.paramValue = RegExp.$3 || '';
+            Command.call( this, value, engine );
+        }
+
+        // 创建filter命令节点继承关系
+        inherits( FilterCommand, Command );
+
+        /**
+         * Use命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function UseCommand( value, engine ) {
+            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+            }
+
+            this.name = RegExp.$1;
+            this.paramValue = RegExp.$3 || '';
+            Command.call( this, value, engine );
+        }
+
+        // 创建Use命令节点继承关系
+        inherits( UseCommand, Command );
+
+        /**
+         * for命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ForCommand( value, engine ) {
+            if ( !/^\s*\$\{([0-9a-z_\.]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+            }
+            
+            this.list = RegExp.$1;
+            this.item = RegExp.$2;
+            this.index = RegExp.$4;
+            Command.call( this, value, engine );
+        }
+
+        // 创建for命令节点继承关系
+        inherits( ForCommand, Command );
+        
+        /**
+         * if命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function IfCommand( value, engine ) {
+            Command.call( this, value, engine );
+            if ( !/^\s*([>=<!0-9a-z$\{\}\[\]\(\):\s'"\.\|&_]+)\s*$/i.test( value ) ) {
+                throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+            }
+
+            Command.call( this, value, engine );
+        }
+
+        // 创建if命令节点继承关系
+        inherits( IfCommand, Command );
+
+        /**
+         * elif命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ElifCommand( value, engine ) {
+            IfCommand.call( this, value, engine );
+        }
+
+        // 创建elif命令节点继承关系
+        inherits( ElifCommand, IfCommand );
+
+        /**
+         * else命令节点类
+         * 
+         * @inner
+         * @constructor
+         * @param {string} value 命令节点的value
+         * @param {Engine} engine 引擎实例
+         */
+        function ElseCommand( value, engine ) {
+            Command.call( this, value, engine );
+        }
+
+        // 创建else命令节点继承关系
+        inherits( ElseCommand, Command ); 
+        
+        /**
+         * 节点闭合，解析结束
+         * 
          * @param {Object} context 语法分析环境对象
          */
-        function targetAndMasterCloseMethod( context ) {
+        MasterCommand.prototype.close =
+
+        /**
+         * 节点闭合，解析结束。自闭合时被调用
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        MasterCommand.prototype.autoClose = 
+
+        /**
+         * 节点闭合，解析结束
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        TargetCommand.prototype.close =
+
+        /**
+         * 节点闭合，解析结束。自闭合时被调用
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        TargetCommand.prototype.autoClose = function ( context ) {
             Command.prototype.close.call( this, context );
             this.state = NodeState.READED;
             context.targetOrMaster = null;
-        }
+        };
 
         /**
-         * target和master节点的应用母版方法
-         * 
-         * @inner
+         * 应用其继承的母版
          */
-        function targetAndMasterApplyMasterMethod() {
+        TargetCommand.prototype.applyMaster = 
+
+        /**
+         * 应用其继承的母版
+         */
+        MasterCommand.prototype.applyMaster = function () {
             if ( this.state >= NodeState.READY ) {
                 return;
             }
@@ -688,832 +870,430 @@ define(
             }
 
             this.state = NodeState.READY;
-        }
-
-        TargetCommand.prototype = {
-            /**
-             * target节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                autoCloseCommand( context );
-                Command.prototype.open.call( this, context );
-
-                context.targetOrMaster = this;
-                var name = this.name;
-                context.targets.push( name );
-                context.engine.targets[ name ] = this;
-                this.state = NodeState.READING;
-            },
-
-            /**
-             * 节点闭合，解析结束
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: targetAndMasterCloseMethod,
-
-            /**
-             * 节点自动闭合，解析结束
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            autoClose: targetAndMasterCloseMethod,
-
-            /**
-             * 应用其继承的母版
-             */
-            applyMaster: targetAndMasterApplyMasterMethod,
-
-            /**
-             * 获取target的renderer函数
-             * 
-             * @return {function(Object):string}
-             */
-            getRenderer: function () {
-                if ( this.renderer ) {
-                    return this.renderer;
-                }
-
-                var engine = this.engine;
-                var StringBuffer = ArrayBuffer;
-                this.applyMaster();
-                
-                if ( this.state === NodeState.READY && this.isImportsReady() ) {
-                    // console.log(RENDERER_BODY_START 
-                    //     + this.getRendererBody() 
-                    //     + RENDERER_BODY_END)
-
-                    var realRenderer = new Function( 
-                        'data', 'engine', 'StringBuffer',
-                        [
-                            RENDERER_BODY_START,
-                            this.getRendererBody(),
-                            RENDERER_BODY_END
-                        ].join( '\n' )
-                    );
-
-                    this.renderer = function ( data ) {
-                        return realRenderer( data, engine, StringBuffer );
-                    };
-
-                    return this.renderer;
-                }
-
-                return null;
-            },
-
-            /**
-             * 获取内容
-             * 
-             * @return {string}
-             */
-            getContent: function () {
-                this.applyMaster();
-                if ( this.state === NodeState.READY && this.isImportsReady() ) {
-                    var buf = new ArrayBuffer();
-                    var children = this.realChildren;
-                    for ( var i = 0; i < children.length; i++ ) {
-                        buf.push( children[ i ].getContent() );
-                    }
-
-                    return buf.join( '' );
-                }
-
-                return '';
-            },
-
-            /**
-             * 判断target的imports是否准备完成
-             * 
-             * @return {boolean}
-             */
-            isImportsReady: function () {
-                this.applyMaster();
-                if ( this.state < NodeState.READY ) {
-                    return false;
-                }
-
-                var readyState = true;
-                var engine = this.engine;
-
-                /**
-                 * 递归检查节点的ready状态
-                 * 
-                 * @inner
-                 * @param {Command|TextNode} node 目标节点
-                 */
-                function checkReadyState( node ) {
-                    var children = node.realChildren;
-
-                    for ( var i = 0, len = children.length; i < len; i++ ) {
-                        var child = children[ i ];
-                        if ( child instanceof ImportCommand 
-                            || child instanceof UseCommand
-                        ) {
-                            var target = engine.targets[ child.name ];
-                            readyState = readyState 
-                                && target && target.isImportsReady( engine );
-                        }
-                        else if ( child instanceof Command ) {
-                            checkReadyState( child );
-                        }
-                    }
-                }
-
-                checkReadyState( this );
-                return readyState;
-            }
         };
 
-        // 创建Target命令节点继承关系
-        inherits( TargetCommand, Command );
-
         /**
-         * Use命令节点类
+         * 获取target的renderer函数
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @return {function(Object):string}
          */
-        function UseCommand( value, engine ) {
-            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
-                throw new Error( 'Invalid use syntax: ' + value );
+        TargetCommand.prototype.getRenderer = function () {
+            if ( this.renderer ) {
+                return this.renderer;
             }
 
-            this.name = RegExp.$1;
-            this.paramValue = RegExp.$3 || '';
-            Command.call( this, value, engine );
-        }
+            var engine = this.engine;
+            var StringBuffer = ArrayBuffer;
+            this.applyMaster();
+            
+            if ( this.state === NodeState.READY && this.isImportsReady() ) {
+                console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
+                    + this.getRendererBody() 
+                    + RENDER_STRING_RETURN)
 
-        var USE_RENDERER_BODY = RENDER_STRING_ADD_START + 'engine.render({0}, {{1}})' + RENDER_STRING_ADD_END;
-
-        UseCommand.prototype = {
-            /**
-             * 节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var parent = context.position.top();
-                this.parent = parent;
-                parent.addChild( this );
-            },
-
-            /**
-             * 节点解析结束
-             * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: new Function(),
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                return stringFormat(
-                    USE_RENDERER_BODY,
-                    stringLiteralize( this.name ),
-                    replaceGetVariableLiteral( 
-                        this.paramValue.replace( 
-                            /(^|,)\s*([a-z0-9_]+)\s*=/ig,
-                            function ( match, start, paramName ) {
-                                return (start || '') + stringLiteralize( paramName ) + ':'
-                            }
-                        )
-                    )
+                var realRenderer = new Function( 
+                    'data', 'engine', 'StringBuffer',
+                    [
+                        RENDERER_BODY_START,
+                        RENDER_STRING_DECLATION,
+                        this.getRendererBody(),
+                        RENDER_STRING_RETURN
+                    ].join( '\n' )
                 );
-            },
 
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget
-        };
+                this.renderer = function ( data ) {
+                    return realRenderer( data, engine, StringBuffer );
+                };
 
-        // 创建Use命令节点继承关系
-        inherits( UseCommand, Command );
-
-        /**
-         * Import命令节点类
-         * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
-         */
-        function ImportCommand( value, engine ) {
-            Command.call( this, value, engine );
-            readNameOfCommandValue( this, value );
-        }
-
-        ImportCommand.prototype = {
-            /**
-             * import节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var parent = context.position.top();
-                this.parent = parent;
-                parent.addChild( this );
-            },
-
-            /**
-             * import节点解析结束
-             * 由于import节点无需闭合，处理时不会入栈，所以将close置为空函数
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: new Function(),
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                var target = this.engine.targets[ this.name ];
-                return target.getRendererBody();
-            },
-
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget,
-
-            /**
-             * 获取内容
-             * 
-             * @return {string}
-             */
-            getContent: function () {
-                var target = this.engine.targets[ this.name ];
-                return target.getContent();
+                return this.renderer;
             }
+
+            return null;
         };
 
-        // 创建Import命令节点继承关系
-        inherits( ImportCommand, Command );
+        /**
+         * 获取内容
+         * 
+         * @return {string}
+         */
+        TargetCommand.prototype.getContent = function () {
+            this.applyMaster();
+            if ( this.state === NodeState.READY && this.isImportsReady() ) {
+                var buf = new ArrayBuffer();
+                var children = this.realChildren;
+                for ( var i = 0; i < children.length; i++ ) {
+                    buf.push( children[ i ].getContent() );
+                }
+
+                return buf.join( '' );
+            }
+
+            return '';
+        };
 
         /**
-         * Master命令节点类
+         * 判断target的imports是否准备完成
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @return {boolean}
          */
-        function MasterCommand( value, engine ) {
-            readNameAndMasterOfCommandValue( this, value );
+        TargetCommand.prototype.isImportsReady = function () {
+            this.applyMaster();
+            if ( this.state < NodeState.READY ) {
+                return false;
+            }
+
+            var readyState = true;
+            var engine = this.engine;
+
+            /**
+             * 递归检查节点的ready状态
+             * 
+             * @inner
+             * @param {Command|TextNode} node 目标节点
+             */
+            function checkReadyState( node ) {
+                var children = node.realChildren;
+
+                for ( var i = 0, len = children.length; i < len; i++ ) {
+                    var child = children[ i ];
+                    if ( child instanceof ImportCommand 
+                        || child instanceof UseCommand
+                    ) {
+                        var target = engine.targets[ child.name ];
+                        readyState = readyState 
+                            && target && target.isImportsReady( engine );
+                    }
+                    else if ( child instanceof Command ) {
+                        checkReadyState( child );
+                    }
+                }
+            }
+
+            checkReadyState( this );
+            return readyState;
+        };
+
+        /**
+         * target节点open，解析开始
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        TargetCommand.prototype.open = function ( context ) {
+            autoCloseCommand( context );
+            Command.prototype.open.call( this, context );
+
             var name = this.name;
-            if ( engine.masters[ name ] ) {
-                throw new Error( 'Master "' + name + '" is exists!' );
-            }
-
-            Command.call( this, value, engine );
-            this.contents = {};
-        }
-
-        MasterCommand.prototype = {
-            /**
-             * master节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                if ( context.engine.masters[ name ] ) {
-                    throw new Error( 'master ' + name + ' is exists!' );
-                }
-
-                autoCloseCommand( context );
-                Command.prototype.open.call( this, context );
-
-                var name = this.name;
-                context.targetOrMaster = this;
-                context.engine.masters[ name ] = this;
-                this.state = NodeState.READING;
-            },
-
-            /**
-             * 节点闭合，解析结束
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: targetAndMasterCloseMethod,
-
-            /**
-             * 节点自动闭合，解析结束
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            autoClose: targetAndMasterCloseMethod,
-
-            /**
-             * 应用其继承的母版
-             */
-            applyMaster: targetAndMasterApplyMasterMethod
-        };
-        
-        // 创建Master命令节点继承关系
-        inherits( MasterCommand, Command );
-
-        /**
-         * Content命令节点类
-         * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
-         */
-        function ContentCommand( value, engine ) {
-            Command.call( this, value, engine );
-            readNameOfCommandValue( this, value );
-        }
-        
-        ContentCommand.prototype = {
-            /**
-             * content节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                autoCloseCommand( context, ContentCommand );
-                Command.prototype.open.call( this, context );
-                context.targetOrMaster.contents[ this.name ] = this;
-            },
-
-            /**
-             * 节点自动闭合，解析结束
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            autoClose: Command.prototype.close
+            context.targetOrMaster = this;
+            this.state = NodeState.READING;
+            context.engine.targets[ name ] = this;
+            context.targets.push( name );
         };
 
-        // 创建Content命令节点继承关系
-        inherits( ContentCommand, Command );
-
         /**
-         * ContentPlaceHolder命令节点类
+         * master节点open，解析开始
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @param {Object} context 语法分析环境对象
          */
-        function ContentPlaceHolderCommand( value, engine ) {
-            Command.call( this, value, engine );
-            readNameOfCommandValue( this, value );
-        }
+        MasterCommand.prototype.open = function ( context ) {
+            autoCloseCommand( context );
+            Command.prototype.open.call( this, context );
 
-        ContentPlaceHolderCommand.prototype = {
-            /**
-             * content节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var parent = context.position.top();
-                if ( parent instanceof TargetCommand
-                     || parent instanceof MasterCommand
-                     || parent instanceof ContentCommand
-                     || parent instanceof ContentPlaceHolderCommand
-                ) {
-                    autoCloseCommand( context, ContentPlaceHolderCommand );
-                    Command.prototype.open.call( this, context );
-                }
-                else {
-                    throw new Error( 'contentplaceholder cannot in ' + parent.type );
-                }
-            },
-
-            /**
-             * 节点自动闭合，解析结束
-             * contentplaceholder的自动结束逻辑为，在其开始位置后马上结束
-             * 所以，其自动结束时children应赋予其所属的parent，也就是master
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            autoClose: function ( context ) {
-                var parentChildren = this.parent.children;
-                parentChildren.push.apply( parentChildren, this.children );
-                this.children.length = 0;
-                this.close( context );
-            }
+            var name = this.name;
+            context.targetOrMaster = this;
+            this.state = NodeState.READING;
+            context.engine.masters[ name ] = this;
         };
 
-        // 创建ContentPlaceHolder命令节点继承关系
-        inherits( ContentPlaceHolderCommand, Command );
+        /**
+         * Import节点open，解析开始
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        ImportCommand.prototype.open = 
 
         /**
-         * 命令值规则：for，用于for命令
+         * Var节点open，解析开始
          * 
-         * @inner
-         * @const
-         * @type {RegExp}
+         * @param {Object} context 语法分析环境对象
          */
-        var COMMAND_VALUE_RULE_FOR = 
-            /^\s*\$\{([0-9a-z_\.]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i;
+        VarCommand.prototype.open = 
+
+        /**
+         * Use节点open，解析开始
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        UseCommand.prototype.open = function ( context ) {
+            var parent = context.position.top();
+            this.parent = parent;
+            parent.addChild( this );
+        };
+
+
+        /**
+         * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        UseCommand.prototype.beforeOpen = 
+        ImportCommand.prototype.beforeOpen = 
+        VarCommand.prototype.beforeOpen = 
+        ForCommand.prototype.beforeOpen = 
+        FilterCommand.prototype.beforeOpen = 
+        IfCommand.prototype.beforeOpen = autoCreateTarget;
+
+        /**
+         * 节点解析结束
+         * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        UseCommand.prototype.close = 
+
+        /**
+         * 节点解析结束
+         * 由于import节点无需闭合，处理时不会入栈，所以将close置为空函数
+         * 
+         * @param {Object} context 语法分析环境对象
+         */ 
+        ImportCommand.prototype.close = 
+
+        /**
+         * 节点解析结束
+         * 由于else节点无需闭合，处理时不会入栈，闭合由if负责。所以将close置为空函数
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        ElseCommand.prototype.close = 
+
+        /**
+         * 节点解析结束
+         * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        VarCommand.prototype.close = function () {};
         
         /**
-         * for命令节点类
+         * 获取renderer body的生成代码
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @return {string}
          */
-        function ForCommand( value, engine ) {
-            Command.call( this, value, engine );
-            if ( COMMAND_VALUE_RULE_FOR.test( this.value ) ) {
-                this.list = RegExp.$1;
-                this.item = RegExp.$2;
-                this.index = RegExp.$4;
-            }
-            else {
-                throw new Error( 'invalid "for" syntax: ' + this.value );
-            }
-        }
-
+        UseCommand.prototype.getRendererBody = function () {
+            return stringFormat(
+                '{0}engine.render({2},{{3}}){1}',
+                RENDER_STRING_ADD_START,
+                RENDER_STRING_ADD_END,
+                stringLiteralize( this.name ),
+                replaceGetVariableLiteral( 
+                    this.paramValue.replace( 
+                        /(^|,)\s*([a-z0-9_]+)\s*=/ig,
+                        function ( match, start, paramName ) {
+                            return (start || '') + stringLiteralize( paramName ) + ':'
+                        }
+                    )
+                )
+            );
+        };
+        
         /**
-         * for节点renderer body模板串
+         * 获取renderer body的生成代码
          * 
-         * @inner
-         * @const
-         * @type {string}
+         * @return {string}
          */
-        var FOR_RENDERER_BODY = ''
-            + 'var {0} = {1};'
-            + 'if ({0} instanceof Array) {'
-            +     'for (var {4} = 0, {5} = {0}.length; {4} < {5}; {4}++) {'
-            +         '{2}'
-            +         'variables[{3}] = {0}[{4}];'
-            +         '{6}'
-            +     '}'
-            + '}'
-            + 'else if (typeof {0} === "object") {'
-            +     'for (var {4} in {0}) {'
-            +         '{2}'
-            +         'variables[{3}] = {0}[{4}];'
-            +         '{6}'
-            +     '}'
-            + '}'
-        ;
-
-        ForCommand.prototype = {
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget,
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                var indexVariable = generateGUID();
-                var innerIndexSetter = '';
-                if ( this.index ) {
-                    innerIndexSetter = 'variables["' + this.index + '"] = ' + indexVariable + ';';
-                }
-                return stringFormat(
-                    FOR_RENDERER_BODY,
-                    generateGUID(),
-                    toGetVariableLiteral( this.list ),
-                    innerIndexSetter,
-                    stringLiteralize( this.item ),
-                    indexVariable,
-                    generateGUID(),
-                    Command.prototype.getRendererBody.call( this )
+        VarCommand.prototype.getRendererBody = function () {
+            if ( this.varValue ) {
+                return stringFormat( 
+                    'v[{0}]={1};',
+                    stringLiteralize( this.varName ),
+                    replaceGetVariableLiteral( this.varValue )
                 );
             }
+
+            return '';
         };
 
-        // 创建for命令节点继承关系
-        inherits( ForCommand, Command );
-
         /**
-         * filter命令节点类
+         * 获取renderer body的生成代码
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @return {string}
          */
-        function FilterCommand( value, engine ) {
-            if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
-                throw new Error( 'Invalid filter syntax: ' + value );
-            }
-
-            this.name = RegExp.$1;
-            this.paramValue = RegExp.$3 || '';
-            Command.call( this, value, engine );
-        }
-
-        /**
-         * filter节点renderer body模板串
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var FILTER_RENDERER_BODY = RENDER_STRING_ADD_START
-            + 'filters[{1}]('
-            +     '(function(){'
-            +         RENDER_STRING_DECLATION
-            +         '{0}'
-            +         RENDER_STRING_RETURN
-            +     '})()'
-            +     '{2}'
-            + ')'
-            + RENDER_STRING_ADD_END
-        ;
-
-        FilterCommand.prototype = {
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget,
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                var filterParams = this.paramValue;
-                return stringFormat(
-                    FILTER_RENDERER_BODY,
-                    Command.prototype.getRendererBody.call( this ),
-                    stringLiteralize( this.name ),
-                    filterParams 
-                        ? ',' + replaceGetVariableLiteral( filterParams )
-                        : ''
-                );
-            }
+        ImportCommand.prototype.getRendererBody = function () {
+            var target = this.engine.targets[ this.name ];
+            return target.getRendererBody();
         };
 
-        // 创建filter命令节点继承关系
-        inherits( FilterCommand, Command );
+        /**
+         * 获取renderer body的生成代码
+         * 
+         * @return {string}
+         */
+        FilterCommand.prototype.getRendererBody = function () {
+            var filterParams = this.paramValue;
+            return stringFormat(
+                '{2}fs[{5}]((function(){{0}{4}{1}})(){6}){3}',
+                RENDER_STRING_DECLATION,
+                RENDER_STRING_RETURN,
+                RENDER_STRING_ADD_START,
+                RENDER_STRING_ADD_END,
+                Command.prototype.getRendererBody.call( this ),
+                stringLiteralize( this.name ),
+                filterParams 
+                    ? ',' + replaceGetVariableLiteral( filterParams )
+                    : ''
+            );
+        };
 
         /**
-         * 命令值规则：if，用于if、elif命令
+         * 获取renderer body的生成代码
          * 
-         * @inner
-         * @const
-         * @type {RegExp}
+         * @return {string}
          */
-        var COMMAND_VALUE_RULE_IF = /^\s*([>=<!0-9a-z$\{\}\[\]\(\):\s'"\.\|&_]+)\s*$/i;
+        IfCommand.prototype.getRendererBody = function () {
+            var rendererBody = stringFormat(
+                'if({0}){{1}}',
+                replaceGetVariableLiteral( this.value ),
+                Command.prototype.getRendererBody.call( this )
+            );
+
+            var elseCommand = this[ 'else' ];
+            if ( elseCommand ) {
+                return [
+                    rendererBody,
+                    stringFormat( 
+                        'else{{0}}',
+                        elseCommand.getRendererBody()
+                    )
+                ].join( '' );
+            }
+
+            return rendererBody;
+        };
+
+        /**
+         * 获取renderer body的生成代码
+         * 
+         * @return {string}
+         */
+        ForCommand.prototype.getRendererBody = function () {
+            return stringFormat(
+                ''
+                + 'var {0}={1};'
+                + 'if({0} instanceof Array)'
+                +     'for (var {4}=0,{5}={0}.length;{4}<{5};{4}++){v[{2}]={4};v[{3}]={0}[{4}];{6}}'
+                + 'else if(typeof {0}==="object")'
+                +     'for(var {4} in {0}){v[{2}]={4};v[{3}]={0}[{4}];{6}}',
+                generateGUID(),
+                toGetVariableLiteral( this.list ),
+                stringLiteralize( this.index || generateGUID() ),
+                stringLiteralize( this.item ),
+                generateGUID(),
+                generateGUID(),
+                Command.prototype.getRendererBody.call( this )
+            );
+        };
+
+        /**
+         * 获取内容
+         * 
+         * @return {string}
+         */
+        ImportCommand.prototype.getContent = function () {
+            var target = this.engine.targets[ this.name ];
+            return target.getContent();
+        };
+
+
+
+        /**
+         * content节点open，解析开始
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        ContentCommand.prototype.open = function ( context ) {
+            autoCloseCommand( context, ContentCommand );
+            Command.prototype.open.call( this, context );
+            context.targetOrMaster.contents[ this.name ] = this;
+        };
         
         /**
-         * if命令节点类
+         * content节点open，解析开始
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @param {Object} context 语法分析环境对象
          */
-        function IfCommand( value, engine ) {
-            Command.call( this, value, engine );
-            if ( COMMAND_VALUE_RULE_IF.test( this.value ) ) {
-                this.value = RegExp.$1;
-            }
-            else {
-                throw new Error( 'invalid conditional syntax: ' + this.value );
-            }
-        }
-
-        /**
-         * if的renderer body模板串
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var IF_RENDERER_BODY = 'if ({0}) {{1}}';
-
-        /**
-         * else的renderer body模板串
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var ELSE_RENDERER_BODY = 'else {{0}}';
-
-        IfCommand.prototype = {
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget,
-
-            /**
-             * 添加子节点
-             * 
-             * @param {TextNode|Command} node 子节点
-             */
-            addChild: function ( node ) {
-                var elseCommand = this[ 'else' ];
-                ( elseCommand 
-                    ? elseCommand.children 
-                    : this.children
-                ).push( node );
-            },
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                var rendererBody = stringFormat(
-                    IF_RENDERER_BODY,
-                    replaceGetVariableLiteral( this.value ),
-                    Command.prototype.getRendererBody.call( this )
-                );
-
-                var elseCommand = this[ 'else' ];
-                if ( elseCommand ) {
-                    return [
-                        rendererBody,
-                        stringFormat( 
-                            ELSE_RENDERER_BODY,
-                            elseCommand.getRendererBody()
-                        )
-                    ].join( '' );
-                }
-
-                return rendererBody;
-            }
+        ContentPlaceHolderCommand.prototype.open = function ( context ) {
+            autoCloseCommand( context, ContentPlaceHolderCommand );
+            Command.prototype.open.call( this, context );
         };
 
-        // 创建if命令节点继承关系
-        inherits( IfCommand, Command );
+        /**
+         * 节点自动闭合，解析结束
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        ContentCommand.prototype.autoClose = Command.prototype.close;
 
         /**
-         * elif命令节点类
+         * 节点自动闭合，解析结束
+         * contentplaceholder的自动结束逻辑为，在其开始位置后马上结束
+         * 所以，其自动结束时children应赋予其所属的parent，也就是master
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @param {Object} context 语法分析环境对象
          */
-        function ElifCommand( value, engine ) {
-            IfCommand.call( this, value, engine );
-        }
+        ContentPlaceHolderCommand.prototype.autoClose = function ( context ) {
+            var parentChildren = this.parent.children;
+            parentChildren.push.apply( parentChildren, this.children );
+            this.children.length = 0;
+            this.close( context );
+        };
+        
+        /**
+         * 添加子节点
+         * 
+         * @param {TextNode|Command} node 子节点
+         */
+        IfCommand.prototype.addChild = function ( node ) {
+            var elseCommand = this[ 'else' ];
+            ( elseCommand 
+                ? elseCommand.children 
+                : this.children
+            ).push( node );
+        };
 
-        ElifCommand.prototype = {
-            /**
-             * elif节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var ifCommand = context.position.top();
-                if ( !( ifCommand instanceof IfCommand ) ) {
-                    throw new Error( ifCommand.type + ' have not been closed!' );
-                }
-
-                var elseCommand = new ElseCommand( null, this.engine );
-                elseCommand.open( context );
-                ifCommand.addChild( this );
-                context.position.pop();
-                context.position.push( this );
+        /**
+         * elif节点open，解析开始
+         * 
+         * @param {Object} context 语法分析环境对象
+         */
+        ElifCommand.prototype.open = function ( context ) {
+            var ifCommand = context.position.top();
+            if ( !( ifCommand instanceof IfCommand ) ) {
+                throw new Error( ifCommand.type + ' have not been closed!' );
             }
+
+            var elseCommand = new ElseCommand( null, this.engine );
+            elseCommand.open( context );
+            ifCommand.addChild( this );
+            context.position.pop();
+            context.position.push( this );
         };
 
-        // 创建elif命令节点继承关系
-        inherits( ElifCommand, IfCommand );
-
         /**
-         * else命令节点类
+         * else节点open，解析开始
          * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
+         * @param {Object} context 语法分析环境对象
          */
-        function ElseCommand( value, engine ) {
-            Command.call( this, value, engine );
-        }
-
-        ElseCommand.prototype = {
-            /**
-             * else节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var ifCommand = context.position.top();
-                if ( !( ifCommand instanceof IfCommand ) ) {
-                    throw new Error( ifCommand.type + ' have not been closed!' );
-                }
-                
-                ifCommand[ 'else' ] = this;
-            },
-
-            /**
-             * else节点解析结束
-             * 由于else节点无需闭合，处理时不会入栈，闭合由if负责。所以将close置为空函数
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: new Function()
-        };
-
-        // 创建else命令节点继承关系
-        inherits( ElseCommand, Command );
-
-        /**
-         * Var命令节点类
-         * 
-         * @inner
-         * @constructor
-         * @param {string} value 命令节点的value
-         * @param {Engine} engine 引擎实例
-         */
-        function VarCommand( value, engine ) {
-            Command.call( this, value, engine );
-            if ( /^\s*([^=\s]+)\s*=(.*)$/.test( this.value ) ) {
-                this.varName = RegExp.$1;
-                this.varValue = RegExp.$2;
+        ElseCommand.prototype.open = function ( context ) {
+            var ifCommand = context.position.top();
+            if ( !( ifCommand instanceof IfCommand ) ) {
+                throw new Error( ifCommand.type + ' have not been closed!' );
             }
-        }
-
-        /**
-         * var的renderer body模板串
-         * 
-         * @inner
-         * @const
-         * @type {string}
-         */
-        var VAR_RENDERER_BODY = 'variables[{0}]={1};';
-
-        VarCommand.prototype = {
-            /**
-             * var节点open，解析开始
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            open: function ( context ) {
-                var parent = context.position.top();
-                this.parent = parent;
-                parent.addChild( this );
-            },
-
-            /**
-             * 节点解析结束
-             * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            close: new Function(),
-
-            /**
-             * 获取renderer body的生成代码
-             * 
-             * @return {string}
-             */
-            getRendererBody: function () {
-                if ( this.varValue ) {
-                    return stringFormat( 
-                        VAR_RENDERER_BODY,
-                        stringLiteralize( this.varName ),
-                        replaceGetVariableLiteral( this.varValue )
-                    );
-                }
-
-                return '';
-            },
-
-            /**
-             * 节点open前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeOpen: autoCreateTarget
+            
+            ifCommand[ 'else' ] = this;
         };
-
-        // 创建Var命令节点继承关系
-        inherits( VarCommand, Command );
-
+        
+        
+        
         /**
          * 命令类型集合
          * 
@@ -1571,111 +1351,96 @@ define(
         }
 
         /**
-         * 解析模板并编译的方法。返回第一个target编译后的renderer函数
+         * 配置引擎参数，设置的参数将被合并到现有参数中
+         * 
+         * @param {Object} options 参数对象
+         * @param {string=} options.commandOpen 命令语法起始串
+         * @param {string=} options.commandClose 命令语法结束串
+         */
+        Engine.prototype.config =  function ( options ) {
+            extend( this.options, options );
+        };
+
+        /**
+         * 解析模板并编译，返回第一个target编译后的renderer函数。
          * 
          * @param {string} source 模板源代码
          * @return {function(Object):string}
          */
-        function engineCompileMethod( source ) {
+        Engine.prototype.compile = 
+
+        /**
+         * 解析模板并编译，返回第一个target编译后的renderer函数。
+         * 该方法的存在为了兼容老模板引擎
+         * 
+         * @param {string} source 模板源代码
+         * @return {function(Object):string}
+         */
+        Engine.prototype.parse = function ( source ) {
             var targetNames = parseSource( source, this );
             if ( targetNames.length ) {
                 var firstTarget = this.targets[ targetNames[ 0 ] ];
                 return firstTarget.getRenderer();
             }
-        }
-
-        Engine.prototype = {
-            // 暴露出去的类，进行constructor修正
-            constructor: Engine,
-
-            /**
-             * 配置引擎参数，设置的参数将被合并到现有参数中
-             * 
-             * @param {Object} options 参数对象
-             * @param {string=} options.commandOpen 命令语法起始串
-             * @param {string=} options.commandClose 命令语法结束串
-             */
-            config: function ( options ) {
-                extend( this.options, options );
-            },
-
-            /**
-             * 解析模板并编译，返回第一个target编译后的renderer函数。
-             * 
-             * @param {string} source 模板源代码
-             * @return {function(Object):string}
-             */
-            compile: engineCompileMethod,
-
-            /**
-             * 解析模板并编译，返回第一个target编译后的renderer函数。
-             * 该方法的存在为了兼容老模板引擎
-             * 
-             * @param {string} source 模板源代码
-             * @return {function(Object):string}
-             */
-            parse: engineCompileMethod,
-
-            /**
-             * 根据target名称获取编译后的renderer函数
-             * 
-             * @param {string} name target名称
-             * @return {function(Object):string}
-             */
-            getRenderer: function ( name ) {
-                var target = this.targets[ name ];
-                if ( target ) {
-                    return target.getRenderer();
-                }
-            },
-
-            /**
-             * 根据target名称获取模板内容
-             * 
-             * @param {string} name target名称
-             * @return {string}
-             */
-            get: function ( name ) {
-                var target = this.targets[ name ];
-                if ( target ) {
-                    return target.getContent();
-                }
-
-                return '';
-            },
-
-            /**
-             * 执行模板渲染，返回渲染后的字符串。
-             * 
-             * @param {string} name target名称
-             * @param {Object=} data 模板数据。
-             *      可以是plain object，
-             *      也可以是带有 {string}get({string}name) 方法的对象
-             * @return {string}
-             */
-            render: function ( name, data ) {
-                var renderer = this.getRenderer( name );
-                if ( renderer ) {
-                    return renderer( data );
-                }
-
-                return '';
-            },
-
-            /**
-             * 增加过滤器
-             * 
-             * @param {string} name 过滤器名称
-             * @param {Function} filter 过滤函数
-             */
-            addFilter: function ( name, filter ) {
-                if ( typeof filter === 'function' ) {
-                    this.filters[ name ] = filter;
-                }
+        };
+        
+        /**
+         * 根据target名称获取编译后的renderer函数
+         * 
+         * @param {string} name target名称
+         * @return {function(Object):string}
+         */
+        Engine.prototype.getRenderer = function ( name ) {
+            var target = this.targets[ name ];
+            if ( target ) {
+                return target.getRenderer();
             }
         };
 
-        var COMMENT_RULE = /^\s*\/\//;
+        /**
+         * 根据target名称获取模板内容
+         * 
+         * @param {string} name target名称
+         * @return {string}
+         */
+        Engine.prototype.get = function ( name ) {
+            var target = this.targets[ name ];
+            if ( target ) {
+                return target.getContent();
+            }
+
+            return '';
+        };
+
+        /**
+         * 执行模板渲染，返回渲染后的字符串。
+         * 
+         * @param {string} name target名称
+         * @param {Object=} data 模板数据。
+         *      可以是plain object，
+         *      也可以是带有 {string}get({string}name) 方法的对象
+         * @return {string}
+         */
+        Engine.prototype.render= function ( name, data ) {
+            var renderer = this.getRenderer( name );
+            if ( renderer ) {
+                return renderer( data );
+            }
+
+            return '';
+        };
+
+        /**
+         * 增加过滤器
+         * 
+         * @param {string} name 过滤器名称
+         * @param {Function} filter 过滤函数
+         */
+        Engine.prototype.addFilter= function ( name, filter ) {
+            if ( typeof filter === 'function' ) {
+                this.filters[ name ] = filter;
+            }
+        };
 
         /**
          * 解析源代码
@@ -1724,20 +1489,13 @@ define(
              * @inner
              */
             function beNormalText( text ) {
-                if ( !COMMENT_RULE.test( text ) ) {
-                    textBuf.push( commandOpen );
-                    textBuf.push( text );
-                    textBuf.push( commandClose );
+                if ( !/^\s*\/\//.test( text ) ) {
+                    textBuf.push( commandOpen, text, commandClose );
                 }
             }
 
             // 先以 commandOpen(默认<!--) 进行split
             var texts = source.split( commandOpen );
-            var i = 0;
-            var len = texts.length;
-            if ( texts[ 0 ].length === 0 ) {
-                i++;
-            }
 
             var NodeType;
 
@@ -1753,7 +1511,7 @@ define(
                 return node instanceof NodeType;
             }
 
-            for ( ; i < len; i++ ) {
+            for ( var i = 0, len = texts.length; i < len; i++ ) {
                 // 对 commandOpen(默认<!--) 进行split的结果
                 // 挨个查找第一个 commandClose的位置
                 // 之前为注释内容，之后为正常html内容
@@ -1767,7 +1525,7 @@ define(
                 var closeIndex = text.indexOf( commandClose );
                 if ( closeIndex >= 0 ) {
                     var commentText = text.slice( 0, closeIndex );
-                    if ( COMMAND_RULE.test( commentText ) ) {
+                    if ( /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.test( commentText ) ) {
                         var commandName = RegExp.$2;
                         var commandIsClose = RegExp.$1;
                         var commandValue = RegExp.$4;
