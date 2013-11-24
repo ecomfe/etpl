@@ -59,14 +59,11 @@ define(
              * @return {*}
              */
             pop: function () {
-                if ( this.length < 0 ) {
-                    return null;
+                if ( this.length > 0 ) {
+                    var elem = this.raw[ --this.length ];
+                    this.raw.length = this.length;
+                    return elem;
                 }
-
-                var elem = this.raw[ --this.length ];
-                this.raw.length = this.length;
-
-                return elem;
             },
 
             /**
@@ -135,17 +132,6 @@ define(
         }
 
         /**
-         * 节点状态
-         * 
-         * @inner
-         */
-        var NodeState = {
-            READING: 1,
-            READED: 2,
-            READY: 3
-        };
-
-        /**
          * 构建类之间的继承关系
          * 
          * @inner
@@ -155,11 +141,10 @@ define(
         function inherits( subClass, superClass ) {
             var F = new Function();
             F.prototype = superClass.prototype;
-            var subClassPrototype = subClass.prototype;
-
             subClass.prototype = new F();
             subClass.prototype.constructor = subClass;
-            extend( subClass.prototype, subClassPrototype );
+            // 由于引擎内部的使用场景都是inherits后，逐个编写子类的prototype方法
+            // 所以，不考虑将原有子类prototype缓存再逐个拷贝回去
         }
 
         var HTML_ENTITY = {
@@ -192,21 +177,6 @@ define(
         };
 
         /**
-         * 自动创建target，用于匿名target的创建
-         * 
-         * @inner
-         * @param {Object} context 语法分析环境对象
-         */
-        function autoCreateTarget( context ) {
-            if ( context.position.bottom() ) {
-                return;
-            }
-
-            var target = new TargetCommand( generateGUID(), context.engine );
-            target.open( context );
-        }
-
-        /**
          * 字符串字面化
          * 
          * @inner
@@ -221,8 +191,8 @@ define(
                     .replace( /\x0A/g, '\\n' )
                     .replace( /\x09/g, '\\t' )
                     .replace( /\x0D/g, '\\r' )
-                    .replace( /\x08/g, '\\b' )
-                    .replace( /\x0C/g, '\\f' )
+                    // .replace( /\x08/g, '\\b' )
+                    // .replace( /\x0C/g, '\\f' )
                 + '"';
         }
 
@@ -248,8 +218,9 @@ define(
         var RENDER_STRING_ADD_END = ';';
         var RENDER_STRING_RETURN = 'return str;';
 
-        if ( typeof navigator !== 'undefined' 
-            && /msie/i.test( navigator.userAgent ) 
+        if ( typeof navigator != 'undefined' 
+            && /msie\s*([0-9]+)/i.test( navigator.userAgent )
+            && RegExp.$1 - 0 < 8
         ) {
             RENDER_STRING_DECLATION = 'var str=new StringBuffer();';
             RENDER_STRING_ADD_START = 'str.push(';
@@ -309,6 +280,28 @@ define(
             );
         }
 
+        function parseTextBlock( source, open, close, onInBlock, onOutBlock ) {
+            var closeLen = close.length;
+            var texts = source.split( open );
+            for ( var i = 0, len = texts.length; i < len; i++ ) {
+                var text = texts[ i ];
+                if ( i ) {
+                    var closeIndex = text.indexOf( close );
+                    if ( closeIndex >= 0 ) {
+                        onInBlock( text.slice( 0, closeIndex ) );
+                        onOutBlock( text.slice( closeIndex + closeLen ) );
+                    }
+                    else {
+                        onOutBlock( open );
+                        onOutBloc( text );
+                    }
+                }
+                else {
+                    onOutBlock( text );
+                }
+            }
+        }
+
         /**
          * 文本节点类
          * 
@@ -324,13 +317,6 @@ define(
         
         TextNode.prototype = {
             /**
-             * 结点添加到语法分析环境前的处理动作
-             * 
-             * @param {Object} context 语法分析环境对象
-             */
-            beforeAdd: autoCreateTarget,
-
-            /**
              * 获取renderer body的生成代码
              * 
              * @return {string}
@@ -338,61 +324,50 @@ define(
             getRendererBody: function () {
                 var defaultFilter = this.engine.options.defaultFilter;
                 var code = new ArrayBuffer();
-                var texts = this.value.split( '${' );
-                for ( var i = 0, len = texts.length; i < len; i++ ) {
-                    var text = texts[ i ];
-                    if ( i !== 0 ) {
-                        var rightIndex = text.indexOf( '}' );
-                        if ( rightIndex > 0 ) {
-                            var variableText = text.slice( 0, rightIndex );
-                            text = text.slice( rightIndex + 1 );
-                            generateVariableSubstitutionCode( variableText );
+                parseTextBlock(
+                    this.value, '${', '}',
+
+                    function ( text ) {
+                        if ( text.indexOf( '|' ) < 0 && defaultFilter ) {
+                            text += '|' + defaultFilter;
                         }
-                        else {
-                            text = '${' + text;
-                        }
-                    }
 
-                    code.push( 
-                        RENDER_STRING_ADD_START, 
-                        stringLiteralize( text ), 
-                        RENDER_STRING_ADD_END
-                    );
-                }
+                        var segs = text.split( /\s*\|\s*/ );
+                        var variableCode = [ toGetVariableLiteral( segs[ 0 ], 1 ) ];
+                        
+                        for ( var i = 1, len = segs.length; i < len; i++ ) {
+                            var seg = segs[ i ];
 
-                
-                function generateVariableSubstitutionCode( source ) {
-                    if ( source.indexOf( '|' ) < 0 && defaultFilter ) {
-                        source += '|' + defaultFilter;
-                    }
-                    code.push( RENDER_STRING_ADD_START );
+                            if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
+                                variableCode.unshift( 'fs["' + RegExp.$1 + '"](' );
 
-                    var segs = source.split( /\s*\|\s*/ );
-                    var codeTail = new ArrayBuffer();
-                    var codeHead = [];
-                    var variableName = segs[ 0 ];
+                                if ( RegExp.$3 ) {
+                                    variableCode.push( 
+                                        ',', 
+                                        replaceGetVariableLiteral( RegExp.$3 )
+                                    );
+                                }
 
-                    for ( var i = 1, len = segs.length; i < len; i++ ) {
-                        var seg = segs[ i ];
-
-                        if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
-                            codeHead.unshift( 'fs["' + RegExp.$1 + '"](' );
-
-                            if ( RegExp.$3 ) {
-                                codeTail.push( ',', replaceGetVariableLiteral( RegExp.$3 ) );
+                                variableCode.push( ')' );
                             }
-                            codeTail.push( ')' );
                         }
+
+                        code.push(
+                            RENDER_STRING_ADD_START,
+                            variableCode.join( '' ),
+                            RENDER_STRING_ADD_END
+                        );
+                    },
+
+                    function ( text ) {
+                        code.push( 
+                            RENDER_STRING_ADD_START, 
+                            stringLiteralize( text ), 
+                            RENDER_STRING_ADD_END
+                        );
                     }
-
-                    code.push( 
-                        codeHead.join( '' ),
-                        toGetVariableLiteral( variableName, 1 ),
-                        codeTail.join( '' ),
-                        RENDER_STRING_ADD_END
-                    );
-                }
-
+                );
+                
                 return code.join('');
             },
 
@@ -418,7 +393,6 @@ define(
             this.value = value;
             this.engine = engine;
             this.children = [];
-            this.realChildren = this.children;
         }
 
         Command.prototype = {
@@ -437,10 +411,10 @@ define(
              * @param {Object} context 语法分析环境对象
              */
             open: function ( context ) {
-                var parent = context.position.top();
+                var parent = context.stack.top();
                 this.parent = parent;
                 parent && parent.addChild( this );
-                context.position.push( this );
+                context.stack.push( this );
             },
 
             /**
@@ -449,7 +423,7 @@ define(
              * @param {Object} context 语法分析环境对象
              */
             close: function ( context ) {
-                while (context.position.pop().constructor !== this.constructor)
+                while (context.stack.pop().constructor !== this.constructor)
                     ;;
             },
 
@@ -469,7 +443,7 @@ define(
              */
             getRendererBody: function () {
                 var buf = new ArrayBuffer();
-                var children = this.realChildren;
+                var children = this.children;
                 for ( var i = 0; i < children.length; i++ ) {
                     buf.push( children[ i ].getRendererBody() );
                 }
@@ -514,12 +488,12 @@ define(
          * @param {Function=} CommandType 自闭合的节点类型
          */
         function autoCloseCommand( context, CommandType ) {
-            var position = context.position;
+            var stack = context.stack;
             var closeEnd = CommandType 
-                ? position.findReversed( function ( item ) {
+                ? stack.findReversed( function ( item ) {
                     return item instanceof CommandType;
                 } ) 
-                : position.bottom();
+                : stack.bottom();
 
             if ( !closeEnd ) {
                 return;
@@ -527,7 +501,7 @@ define(
 
             var node;
             do {
-                node = position.top();
+                node = stack.top();
 
                 // 如果节点对象不包含autoClose方法
                 // 则认为该节点不支持自动闭合，需要抛出错误
@@ -550,8 +524,8 @@ define(
             + 'data=data||{};'
             + 'var v={},fs=engine.filters,'
             + 'gv=typeof data.get==="function"'
-            +     '? function(n){return data.get(n);}'
-            +     ': function(n,ps){'
+            +     '?function(n){return data.get(n);}'
+            +     ':function(n,ps){'
             +         'var p=ps[0],d=v[p];'
             +         'd=d==null?data[p]:d;'
             +         'for(var i=1,l=ps.length;i<l;i++)if(d!=null)d = d[ps[i]];'
@@ -564,7 +538,7 @@ define(
             +     'return ""+v;'
             + '};'
         ;
-        
+
         /**
          * Target命令节点类
          * 
@@ -575,9 +549,8 @@ define(
          */
         function TargetCommand( value, engine ) {
             readNameAndMasterOfCommandValue( this, value );
-            var name = this.name;
-            if ( engine.targets[ name ] ) {
-                throw new Error( 'Target "' + name + '" is exists!' );
+            if ( engine.targets[ this.name ] ) {
+                throw new Error( 'Target "' + this.name + '" is exists!' );
             }
 
             Command.call( this, value, engine );
@@ -597,9 +570,8 @@ define(
          */
         function MasterCommand( value, engine ) {
             readNameAndMasterOfCommandValue( this, value );
-            var name = this.name;
-            if ( engine.masters[ name ] ) {
-                throw new Error( 'Master "' + name + '" is exists!' );
+            if ( engine.masters[ this.name ] ) {
+                throw new Error( 'Master "' + this.name + '" is exists!' );
             }
 
             Command.call( this, value, engine );
@@ -670,8 +642,8 @@ define(
                 throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
             }
 
-            this.varName = RegExp.$1;
-            this.varValue = RegExp.$2;
+            this.name = RegExp.$1;
+            this.expr = RegExp.$2;
             Command.call( this, value, engine );
         }
 
@@ -692,7 +664,7 @@ define(
             }
 
             this.name = RegExp.$1;
-            this.paramValue = RegExp.$3 || '';
+            this.args = RegExp.$3;
             Command.call( this, value, engine );
         }
 
@@ -713,7 +685,7 @@ define(
             }
 
             this.name = RegExp.$1;
-            this.paramValue = RegExp.$3 || '';
+            this.args = RegExp.$3;
             Command.call( this, value, engine );
         }
 
@@ -751,7 +723,6 @@ define(
          * @param {Engine} engine 引擎实例
          */
         function IfCommand( value, engine ) {
-            Command.call( this, value, engine );
             if ( !/^\s*([>=<!0-9a-z$\{\}\[\]\(\):\s'"\.\|&_]+)\s*$/i.test( value ) ) {
                 throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
             }
@@ -793,6 +764,18 @@ define(
         inherits( ElseCommand, Command ); 
         
         /**
+         * Target和Master的节点状态
+         * 
+         * @inner
+         */
+        var TMNodeState = {
+            READING: 1,
+            READED: 2,
+            APPLIED: 3,
+            READY: 4
+        };
+
+        /**
          * 节点闭合，解析结束
          * 
          * @param {Object} context 语法分析环境对象
@@ -820,7 +803,7 @@ define(
          */
         TargetCommand.prototype.autoClose = function ( context ) {
             Command.prototype.close.call( this, context );
-            this.state = NodeState.READED;
+            this.state = this.master ? TMNodeState.READED : TMNodeState.APPLIED;
             context.targetOrMaster = null;
         };
 
@@ -833,43 +816,68 @@ define(
          * 应用其继承的母版
          */
         MasterCommand.prototype.applyMaster = function () {
-            if ( this.state >= NodeState.READY ) {
-                return;
+            if ( this.state >= TMNodeState.APPLIED ) {
+                return 1;
             }
 
-            var masterName = this.master;
-            if ( masterName ) {
-                var masterNode = this.engine.masters[ masterName ];
-                if ( !masterNode ) {
-                    return;
-                }
-                masterNode.applyMaster();
+            var masterNode = this.engine.masters[ this.master ];
+            if ( masterNode && masterNode.applyMaster() ) {
+                this.children = [];
 
-                if ( masterNode.state < NodeState.READY ) {
-                    return;
-                }
-                
-                var masterChildren = masterNode.realChildren;
-                this.realChildren = [];
-
-                for ( var i = 0, len = masterChildren.length; i < len; i++ ) {
-                    var child = masterChildren[ i ];
+                for ( var i = 0, len = masterNode.children.length; i < len; i++ ) {
+                    var child = masterNode.children[ i ];
 
                     if ( child instanceof ContentPlaceHolderCommand ) {
-                        var contentNode = this.contents[ child.name ];
-                        
-                        this.realChildren.push.apply( 
-                            this.realChildren, 
-                            (contentNode || child).realChildren
+                        this.children.push.apply( 
+                            this.children, 
+                            (this.contents[ child.name ] || child).children
                         );
                     }
                     else {
-                        this.realChildren.push( child );
+                        this.children.push( child );
+                    }
+                }
+
+                this.state = TMNodeState.APPLIED;
+                return 1;
+            }
+        };
+
+        TargetCommand.prototype.isReady = function () {
+            if ( this.state >= TMNodeState.READY ) {
+                return 1;
+            }
+
+            var engine = this.engine;
+            var readyState = 1;
+
+            /**
+             * 递归检查节点的ready状态
+             * 
+             * @inner
+             * @param {Command|TextNode} node 目标节点
+             */
+            function checkReadyState( node ) {
+                for ( var i = 0, len = node.children.length; i < len; i++ ) {
+                    var child = node.children[ i ];
+                    if ( child instanceof ImportCommand 
+                        || child instanceof UseCommand
+                    ) {
+                        var target = engine.targets[ child.name ];
+                        readyState = readyState 
+                            && target && target.isReady( engine );
+                    }
+                    else if ( child instanceof Command ) {
+                        checkReadyState( child );
                     }
                 }
             }
 
-            this.state = NodeState.READY;
+            if ( this.applyMaster() ) {
+                checkReadyState( this );
+                readyState && (this.state = TMNodeState.READY);
+                return readyState;
+            }
         };
 
         /**
@@ -882,14 +890,10 @@ define(
                 return this.renderer;
             }
 
-            var engine = this.engine;
-            var StringBuffer = ArrayBuffer;
-            this.applyMaster();
-            
-            if ( this.state === NodeState.READY && this.isImportsReady() ) {
-                console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
-                    + this.getRendererBody() 
-                    + RENDER_STRING_RETURN)
+            if ( this.isReady() ) {
+                // console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
+                //     + this.getRendererBody() 
+                //     + RENDER_STRING_RETURN)
 
                 var realRenderer = new Function( 
                     'data', 'engine', 'StringBuffer',
@@ -900,6 +904,9 @@ define(
                         RENDER_STRING_RETURN
                     ].join( '\n' )
                 );
+
+                var engine = this.engine;
+                var StringBuffer = ArrayBuffer;
 
                 this.renderer = function ( data ) {
                     return realRenderer( data, engine, StringBuffer );
@@ -917,10 +924,9 @@ define(
          * @return {string}
          */
         TargetCommand.prototype.getContent = function () {
-            this.applyMaster();
-            if ( this.state === NodeState.READY && this.isImportsReady() ) {
+            if ( this.isReady() ) {
                 var buf = new ArrayBuffer();
-                var children = this.realChildren;
+                var children = this.children;
                 for ( var i = 0; i < children.length; i++ ) {
                     buf.push( children[ i ].getContent() );
                 }
@@ -929,48 +935,6 @@ define(
             }
 
             return '';
-        };
-
-        /**
-         * 判断target的imports是否准备完成
-         * 
-         * @return {boolean}
-         */
-        TargetCommand.prototype.isImportsReady = function () {
-            this.applyMaster();
-            if ( this.state < NodeState.READY ) {
-                return false;
-            }
-
-            var readyState = true;
-            var engine = this.engine;
-
-            /**
-             * 递归检查节点的ready状态
-             * 
-             * @inner
-             * @param {Command|TextNode} node 目标节点
-             */
-            function checkReadyState( node ) {
-                var children = node.realChildren;
-
-                for ( var i = 0, len = children.length; i < len; i++ ) {
-                    var child = children[ i ];
-                    if ( child instanceof ImportCommand 
-                        || child instanceof UseCommand
-                    ) {
-                        var target = engine.targets[ child.name ];
-                        readyState = readyState 
-                            && target && target.isImportsReady( engine );
-                    }
-                    else if ( child instanceof Command ) {
-                        checkReadyState( child );
-                    }
-                }
-            }
-
-            checkReadyState( this );
-            return readyState;
         };
 
         /**
@@ -984,7 +948,7 @@ define(
 
             var name = this.name;
             context.targetOrMaster = this;
-            this.state = NodeState.READING;
+            this.state = TMNodeState.READING;
             context.engine.targets[ name ] = this;
             context.targets.push( name );
         };
@@ -1000,7 +964,7 @@ define(
 
             var name = this.name;
             context.targetOrMaster = this;
-            this.state = NodeState.READING;
+            this.state = TMNodeState.READING;
             context.engine.masters[ name ] = this;
         };
 
@@ -1024,7 +988,7 @@ define(
          * @param {Object} context 语法分析环境对象
          */
         UseCommand.prototype.open = function ( context ) {
-            var parent = context.position.top();
+            var parent = context.stack.top();
             this.parent = parent;
             parent.addChild( this );
         };
@@ -1040,7 +1004,15 @@ define(
         VarCommand.prototype.beforeOpen = 
         ForCommand.prototype.beforeOpen = 
         FilterCommand.prototype.beforeOpen = 
-        IfCommand.prototype.beforeOpen = autoCreateTarget;
+        IfCommand.prototype.beforeOpen = 
+        TextNode.prototype.beforeAdd =  function ( context ) {
+            if ( context.stack.bottom() ) {
+                return;
+            }
+
+            var target = new TargetCommand( generateGUID(), context.engine );
+            target.open( context );
+        };
 
         /**
          * 节点解析结束
@@ -1075,44 +1047,15 @@ define(
         VarCommand.prototype.close = function () {};
         
         /**
-         * 获取renderer body的生成代码
+         * 获取内容
          * 
          * @return {string}
          */
-        UseCommand.prototype.getRendererBody = function () {
-            return stringFormat(
-                '{0}engine.render({2},{{3}}){1}',
-                RENDER_STRING_ADD_START,
-                RENDER_STRING_ADD_END,
-                stringLiteralize( this.name ),
-                replaceGetVariableLiteral( 
-                    this.paramValue.replace( 
-                        /(^|,)\s*([a-z0-9_]+)\s*=/ig,
-                        function ( match, start, paramName ) {
-                            return (start || '') + stringLiteralize( paramName ) + ':'
-                        }
-                    )
-                )
-            );
+        ImportCommand.prototype.getContent = function () {
+            var target = this.engine.targets[ this.name ];
+            return target.getContent();
         };
         
-        /**
-         * 获取renderer body的生成代码
-         * 
-         * @return {string}
-         */
-        VarCommand.prototype.getRendererBody = function () {
-            if ( this.varValue ) {
-                return stringFormat( 
-                    'v[{0}]={1};',
-                    stringLiteralize( this.varName ),
-                    replaceGetVariableLiteral( this.varValue )
-                );
-            }
-
-            return '';
-        };
-
         /**
          * 获取renderer body的生成代码
          * 
@@ -1128,20 +1071,38 @@ define(
          * 
          * @return {string}
          */
-        FilterCommand.prototype.getRendererBody = function () {
-            var filterParams = this.paramValue;
+        UseCommand.prototype.getRendererBody = function () {
             return stringFormat(
-                '{2}fs[{5}]((function(){{0}{4}{1}})(){6}){3}',
-                RENDER_STRING_DECLATION,
-                RENDER_STRING_RETURN,
+                '{0}engine.render({2},{{3}}){1}',
                 RENDER_STRING_ADD_START,
                 RENDER_STRING_ADD_END,
-                Command.prototype.getRendererBody.call( this ),
                 stringLiteralize( this.name ),
-                filterParams 
-                    ? ',' + replaceGetVariableLiteral( filterParams )
-                    : ''
+                replaceGetVariableLiteral( 
+                    this.args.replace( 
+                        /(^|,)\s*([a-z0-9_]+)\s*=/ig,
+                        function ( match, start, argName ) {
+                            return (start || '') + stringLiteralize( argName ) + ':'
+                        }
+                    )
+                )
             );
+        };
+        
+        /**
+         * 获取renderer body的生成代码
+         * 
+         * @return {string}
+         */
+        VarCommand.prototype.getRendererBody = function () {
+            if ( this.expr ) {
+                return stringFormat( 
+                    'v[{0}]={1};',
+                    stringLiteralize( this.name ),
+                    replaceGetVariableLiteral( this.expr )
+                );
+            }
+
+            return '';
         };
 
         /**
@@ -1194,16 +1155,23 @@ define(
         };
 
         /**
-         * 获取内容
+         * 获取renderer body的生成代码
          * 
          * @return {string}
          */
-        ImportCommand.prototype.getContent = function () {
-            var target = this.engine.targets[ this.name ];
-            return target.getContent();
+        FilterCommand.prototype.getRendererBody = function () {
+            var args = this.args;
+            return stringFormat(
+                '{2}fs[{5}]((function(){{0}{4}{1}})(){6}){3}',
+                RENDER_STRING_DECLATION,
+                RENDER_STRING_RETURN,
+                RENDER_STRING_ADD_START,
+                RENDER_STRING_ADD_END,
+                Command.prototype.getRendererBody.call( this ),
+                stringLiteralize( this.name ),
+                args ? ',' + replaceGetVariableLiteral( args ) : ''
+            );
         };
-
-
 
         /**
          * content节点open，解析开始
@@ -1266,16 +1234,16 @@ define(
          * @param {Object} context 语法分析环境对象
          */
         ElifCommand.prototype.open = function ( context ) {
-            var ifCommand = context.position.top();
+            var ifCommand = context.stack.top();
             if ( !( ifCommand instanceof IfCommand ) ) {
-                throw new Error( ifCommand.type + ' have not been closed!' );
+                throw new Error( 'Not expect parent: ' + ifCommand.type );
             }
 
-            var elseCommand = new ElseCommand( null, this.engine );
+            var elseCommand = new ElseCommand();
             elseCommand.open( context );
             ifCommand.addChild( this );
-            context.position.pop();
-            context.position.push( this );
+            context.stack.pop();
+            context.stack.push( this );
         };
 
         /**
@@ -1284,14 +1252,13 @@ define(
          * @param {Object} context 语法分析环境对象
          */
         ElseCommand.prototype.open = function ( context ) {
-            var ifCommand = context.position.top();
+            var ifCommand = context.stack.top();
             if ( !( ifCommand instanceof IfCommand ) ) {
-                throw new Error( ifCommand.type + ' have not been closed!' );
+                throw new Error( 'Not expect parent: ' + ifCommand.type );
             }
             
             ifCommand[ 'else' ] = this;
         };
-        
         
         
         /**
@@ -1309,10 +1276,8 @@ define(
          * @param {Function} Type 处理命令用到的类
          */
         function addCommandType( name, Type ) {
-            if ( !commandTypes[ name ] ) {
-                commandTypes[ name ] = Type;
-                Type.prototype.type = name;
-            }
+            commandTypes[ name ] = Type;
+            Type.prototype.type = name;
         }
 
         addCommandType( 'target', TargetCommand );
@@ -1379,8 +1344,7 @@ define(
         Engine.prototype.parse = function ( source ) {
             var targetNames = parseSource( source, this );
             if ( targetNames.length ) {
-                var firstTarget = this.targets[ targetNames[ 0 ] ];
-                return firstTarget.getRenderer();
+                return this.targets[ targetNames[ 0 ] ].getRenderer();
             }
         };
         
@@ -1421,7 +1385,7 @@ define(
          *      也可以是带有 {string}get({string}name) 方法的对象
          * @return {string}
          */
-        Engine.prototype.render= function ( name, data ) {
+        Engine.prototype.render = function ( name, data ) {
             var renderer = this.getRenderer( name );
             if ( renderer ) {
                 return renderer( data );
@@ -1436,8 +1400,8 @@ define(
          * @param {string} name 过滤器名称
          * @param {Function} filter 过滤函数
          */
-        Engine.prototype.addFilter= function ( name, filter ) {
-            if ( typeof filter === 'function' ) {
+        Engine.prototype.addFilter = function ( name, filter ) {
+            if ( typeof filter == 'function' ) {
                 this.filters[ name ] = filter;
             }
         };
@@ -1453,13 +1417,12 @@ define(
         function parseSource( source, engine ) {
             var commandOpen = engine.options.commandOpen;
             var commandClose = engine.options.commandClose;
-            var commandCloseLen = commandClose.length;
 
-            var position = new ArrayBuffer();
+            var stack = new ArrayBuffer();
             var analyseContext = {
                 engine: engine,
                 targets: [],
-                position: position
+                stack: stack
             };
 
             // text节点内容缓冲区，用于合并多text
@@ -1477,31 +1440,16 @@ define(
                 if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
                     var textNode = new TextNode( text, engine );
                     textNode.beforeAdd( analyseContext );
-                    position.top().addTextNode( textNode );
+                    stack.top().addTextNode( textNode );
                     textBuf = new ArrayBuffer();
                 }
             }
-
-            /**
-             * 将 commandOpen起始，commandClose结尾 的文本串 
-             * 作为不具有特殊含义的普通文本，写入流
-             *
-             * @inner
-             */
-            function beNormalText( text ) {
-                if ( !/^\s*\/\//.test( text ) ) {
-                    textBuf.push( commandOpen, text, commandClose );
-                }
-            }
-
-            // 先以 commandOpen(默认<!--) 进行split
-            var texts = source.split( commandOpen );
 
             var NodeType;
 
             /**
              * 判断节点是否是NodeType类型的实例
-             * 用于在position中fine提供filter
+             * 用于在stack中find提供filter
              * 
              * @inner
              * @param {Command} node 目标节点
@@ -1511,59 +1459,41 @@ define(
                 return node instanceof NodeType;
             }
 
-            for ( var i = 0, len = texts.length; i < len; i++ ) {
-                // 对 commandOpen(默认<!--) 进行split的结果
-                // 挨个查找第一个 commandClose的位置
-                // 之前为注释内容，之后为正常html内容
-                var text = texts[ i ];
-
-                if ( i === 0 ) {
-                    textBuf.push( text );
-                    continue;
-                }
-
-                var closeIndex = text.indexOf( commandClose );
-                if ( closeIndex >= 0 ) {
-                    var commentText = text.slice( 0, closeIndex );
-                    if ( /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.test( commentText ) ) {
-                        var commandName = RegExp.$2;
-                        var commandIsClose = RegExp.$1;
-                        var commandValue = RegExp.$4;
-
-                        NodeType = commandTypes[ commandName ];
-                        if ( typeof NodeType === 'function' ) {
-                            // 先将缓冲区中的text节点内容写入
-                            flushTextBuf(); 
-                            
-                            if ( commandIsClose ) {
-                                var closeNode = position.findReversed(
-                                    isInstanceofNodeType
-                                );
-                                closeNode && closeNode.close( analyseContext );
-                            }
-                            else {
-                                var openNode = new NodeType( commandValue, engine );
-                                if ( typeof openNode.beforeOpen === 'function' ) {
-                                    openNode.beforeOpen( analyseContext );
-                                }
-                                openNode.open( analyseContext );
-                            }
-                            NodeType = null;
+            parseTextBlock(
+                source, commandOpen, commandClose,
+                function ( text ) {
+                    var match = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.exec( text );
+                    if ( match 
+                        && ( NodeType = commandTypes[ match[2] ] )
+                        && typeof NodeType == 'function'
+                    ) {
+                        // 先将缓冲区中的text节点内容写入
+                        flushTextBuf(); 
+                        
+                        if ( match[1] ) {
+                            var closeNode = stack.findReversed(
+                                isInstanceofNodeType
+                            );
+                            closeNode && closeNode.close( analyseContext );
                         }
                         else {
-                            beNormalText( commentText );
+                            var openNode = new NodeType( match[4], engine );
+                            if ( typeof openNode.beforeOpen == 'function' ) {
+                                openNode.beforeOpen( analyseContext );
+                            }
+                            openNode.open( analyseContext );
                         }
                     }
-                    else {
-                        beNormalText( commentText );
+                    else if ( !/^\s*\/\//.test( text ) ) {
+                        textBuf.push( commandOpen, text, commandClose );
                     }
 
-                    textBuf.push( text.slice( closeIndex + commandCloseLen ) );
-                }
-                else {
+                    NodeType = null;
+                },
+                function ( text ) {
                     textBuf.push( text );
                 }
-            }
+            );
 
             flushTextBuf(); // 将缓冲区中的text节点内容写入
             autoCloseCommand( analyseContext );
