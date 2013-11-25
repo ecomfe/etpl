@@ -1,9 +1,9 @@
 # ETPL (Enterprise Template)
 
-ETPL是一个简单的模板引擎，适用于WEB前端应用中视图的生成。ETPL的语法特点是采用HTML注释的形式，模板在编写中不会丧失编辑器的HTML高亮和自动完成功能。
+ETPL是一个灵活、具有强大复用能力的高性能的模板引擎，适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用。
 
-- [了解ETPL的语法](#Syntax)
-- [浏览ETPL的API](#API)
+- [了解ETPL的语法](#syntax)
+- [浏览ETPL的API](#api)
 
 ## API
 
@@ -32,7 +32,20 @@ var helloRenderer = etpl.compile( 'Hello ${name}!' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
+#### {void} config( {Object}options )
 
+对默认引擎进行配置，配置参数将合并到引擎现有的参数中。
+
+- `{Object}`options - 配置参数对象
+- `{string}`options.commandOpen - 命令语法起始串，默认值为 **<!--**
+- `{string}`options.commandClose - 命令语法结束串，默认值为 **-->**
+- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 **html**
+
+```javascript
+etplEngine.config( {
+    defaultFilter: ''
+} );
+```
 
 #### {string} get( {string}name )
 
@@ -82,6 +95,8 @@ etpl.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 
 #### Engine
 
+*不同的引擎实例可有效避免target命名冲突的问题。*
+
 ##### 初始化
 
 下面的代码可以初始化一个新的引擎实例。
@@ -91,7 +106,15 @@ var etpl = require( 'etpl' );
 var etplEngine = new etpl.Engine();
 ```
 
-*不同的引擎实例可有效避免target命名冲突的问题。*
+引擎实例的初始化允许传入引擎参数。支持的引擎参数下面的见`config`方法。
+
+```javascript
+var etpl = require( 'etpl' );
+var etplEngine = new etpl.Engine({
+    commandOpen: '<%',
+    commandClose: '%>'
+});
+```
 
 
 ##### {Function} compile( {string}source )
@@ -105,6 +128,20 @@ var helloRenderer = etplEngine.compile( 'Hello ${name}!' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
+##### {void} config( {Object}options )
+
+对引擎进行配置，配置参数将合并到引擎现有的参数中。
+
+- `{Object}`options - 配置参数对象
+- `{string}`options.commandOpen - 命令语法起始串，默认值为 **<!--**
+- `{string}`options.commandClose - 命令语法结束串，默认值为 **-->**
+- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 **html**
+
+```javascript
+etplEngine.config( {
+    defaultFilter: ''
+} );
+```
 
 ##### {string} get( {string}name )
 
@@ -147,7 +184,7 @@ etplEngine.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 
 ## Compatibility
 
-ETPL的前身是[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎，基本与其前身完全兼容。但由于性能、体积等考虑因素，存在以下一些不兼容的地方。
+ETPL的前身是[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎，其基本与前身保持兼容。但由于性能、体积等考虑因素，存在以下一些不兼容的地方。
 
 ### merge
 
