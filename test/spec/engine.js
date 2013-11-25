@@ -24,7 +24,7 @@ define(
                 }
                 catch (ex) {
                     var msg = ex.message;
-                    if ( /^target "/i.test(msg) && /is exists/.test(msg) ) {
+                    if ( /^target /i.test(msg) && /is exists/.test(msg) ) {
                         expect(true).toBeTruthy();
                     }
                     else {
@@ -41,7 +41,7 @@ define(
                 }
                 catch (ex) {
                     var msg = ex.message;
-                    if ( /^master "/i.test(msg) && /is exists/.test(msg) ) {
+                    if ( /^master /i.test(msg) && /is exists/.test(msg) ) {
                         expect(true).toBeTruthy();
                     }
                     else {
