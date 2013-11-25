@@ -2,7 +2,8 @@
 <html>
 <head>
 <title>Render Time Test - artTemplate</title>
-<script src="artTemplate.js"></script>
+<script src="artTemplate.js" charset="UTF-8"></script>
+<script src="../loops.js"></script>
 <script src="../render-data.js"></script>
 <script src="../load-template.js"></script>
 </head>
@@ -11,7 +12,7 @@
 <script>
 var render = template.compile( loadTemplate('template.html') );
 var now = new Date();
-for ( var i = 0; i < 100; i++ ) {
+for ( var i = 0; i < loops; i++ ) {
     render( data );
 }
 

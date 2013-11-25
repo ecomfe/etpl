@@ -18,9 +18,17 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         {name: 'handlebars', url: 'handlebars/handlebars.html'},
         {name: 'ejs', url: 'ejs/ejs.html'},
         {name: 'dot', url: 'dot/dot.html'},
-        {name: 'baiduTemplate', url: 'baiduTemplate/baiduTemplate.html'},
-        {name: 'artTemplate', url: 'artTemplate/artTemplate.html'}
+        {name: 'artTemplate', url: 'artTemplate/artTemplate.html'},
+        {name: 'baiduTemplate', url: 'baiduTemplate/baiduTemplate.html'}
     ];
+
+    var loops = 100;
+    var dataLen = 10000;
+
+    if ( /^\?([0-9]+)\*([0-9]+)/.test(location.search) ) {
+        loops = parseInt( RegExp.$2, 10 );
+        dataLen = parseInt( RegExp.$1, 10 );
+    }
 
     var index = -1;
     var testIframe;
@@ -31,7 +39,7 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         }
 
         var test = tests[ index ];
-        testIframe.src = test.url;
+        testIframe.src = test.url + '?' + dataLen + '*' + loops;
     };
 
     global.receiveResult = function ( time ) {
@@ -39,12 +47,12 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         global.nextTest();
     };
 
-    global.start = function () {
+    global.showTests = function () {
         var ul = document.createElement( 'ul' );
         for ( var i = 0; i < tests.length; i++ ) {
             var li = document.createElement( 'li' );
             var item = tests[ i ];
-            li.innerHTML = '<a target="_blank" href="' + item.url + '">' + item.name + '</a><b></b>';
+            li.innerHTML = '<a target="_blank" href="' + item.url + '?' + dataLen + '*' + loops + '">' + item.name + '</a><b></b>';
             ul.appendChild( li );
         }
         document.body.appendChild( ul );
@@ -52,6 +60,9 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         testIframe = document.createElement('iframe');
         testIframe.style.display = 'none';
         document.body.appendChild(testIframe);
+    };
+
+    global.start = function () {
         global.nextTest();
     };
 })(this);
@@ -59,6 +70,11 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
 </script>
 </head>
 <body>
-    <script> start(); </script>
+<script> 
+showTests();
+if (location.search.indexOf('start') > 0) {
+    start(); 
+}
+</script>
 </body>
 </html>

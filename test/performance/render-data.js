@@ -1,6 +1,11 @@
 var data = { persons: [] };
 (function () {
-    for ( var i = 0; i < 10000; i++ ) {
+    var len = 10000;
+    if ( /^\?([0-9]+)\*([0-9]+)/.test(location.search) ) {
+        len = parseInt( RegExp.$1, 10 );
+    }
+
+    for ( var i = 0; i < len; i++ ) {
         data.persons.push( { 
             name: '<myname' + i,
             email: 'myname' + i + '@myemail.com',
