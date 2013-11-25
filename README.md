@@ -2,16 +2,32 @@
 
 ETPL是一个灵活、具有强大复用能力的高性能的模板引擎，适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用。
 
+- [开始](#start)
 - [了解ETPL的语法](#syntax)
 - [浏览ETPL的API](#api)
+- [与ER中模板引擎的兼容性](#compatibility)
 
-## API
+## Start
 
 ETPL可以在`CommonJS/AMD`的模块定义环境中使用，也可以直接在页面下通过`<script src=`的方式引用。`CommonJS/AMD`环境下需要通过如下代码得到ETPL的模块。
 
 ```javascript
 var etpl = require( 'etpl' );
 ```
+
+得到ETPL模块对象后，首先对模板源代码进行编译，就能够得到模板编译后的`function`。
+
+```javascript
+var render = etpl.compile( 'Hello ${name}!' );
+```
+
+然后执行这个`function`，传入数据对象，就能得到模板执行的结果了。
+
+```javascript
+var text = render( {name: 'etpl'} );
+```
+
+## API
 
 ### methods
 
