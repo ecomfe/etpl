@@ -127,7 +127,7 @@
      * @return {string}
      */
     function generateGUID() {
-        return '____' + (guidIndex++);
+        return '___' + (guidIndex++);
     }
 
     /**
@@ -228,24 +228,6 @@
     }
 
     /**
-     * getVariable调用的renderer body模板串
-     * 
-     * @inner
-     * @const
-     * @type {string}
-     */
-    var GET_VARIABLE_TPL = 'gv("{0}",["{1}"])';
-
-    /**
-     * getVariableStr调用的renderer body模板串
-     * 
-     * @inner
-     * @const
-     * @type {string}
-     */
-    var GET_VARIABLE_STR_TPL = 'gvs("{0}",["{1}"])';
-
-    /**
      * 将访问变量名称转换成getVariable调用的编译语句
      * 用于if、var等命令生成编译代码
      * 
@@ -256,7 +238,7 @@
      */
     function toGetVariableLiteral( name, isStr ) {
         return stringFormat(
-            (isStr ? GET_VARIABLE_STR_TPL : GET_VARIABLE_TPL),
+            (isStr ? 'gvs("{0}",["{1}"])' : 'gv("{0}",["{1}"])'),
             name,
             name.split( '.' ).join( '","' )
         );
@@ -452,35 +434,6 @@
     };
 
     /**
-     * 读取name形式的命令值
-     * 
-     * @inner
-     * @param {Command} node 命令节点
-     * @param {string} value 命令值
-     */
-    function readNameOfCommandValue( node, value ) {
-        if ( /^\s*([a-z0-9_-]+)\s*$/i.test( value ) ) {
-            node.name = RegExp.$1;
-        }
-    }
-
-    /**
-     * 读取name和master形式的命令值
-     * 
-     * @inner
-     * @param {Command} node 命令节点
-     * @param {string} value 命令值
-     */
-    function readNameAndMasterOfCommandValue( node, value ) {
-        if ( /^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i.test( value ) ) {
-            node.name = RegExp.$1;
-            if ( RegExp.$2 ) {
-                node.master = RegExp.$3;
-            }
-        }
-    }
-
-    /**
      * 命令自动闭合
      * 
      * @param {Object} context 语法分析环境对象
@@ -547,12 +500,18 @@
      * @param {Engine} engine 引擎实例
      */
     function TargetCommand( value, engine ) {
-        readNameAndMasterOfCommandValue( this, value );
+        if ( !/^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i.test( value ) ) {
+            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+        }
+        
+        node.master = RegExp.$3;
+        node.name = RegExp.$1;
+        Command.call( this, value, engine );
+
         if ( engine.targets[ this.name ] ) {
-            throw new Error( 'Target "' + this.name + '" is exists!' );
+            throw new Error( 'Target is exists: ' + this.name );
         }
 
-        Command.call( this, value, engine );
         this.contents = {};
     }
 
@@ -568,12 +527,18 @@
      * @param {Engine} engine 引擎实例
      */
     function MasterCommand( value, engine ) {
-        readNameAndMasterOfCommandValue( this, value );
+        if ( !/^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i.test( value ) ) {
+            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+        }
+        
+        node.master = RegExp.$3;
+        node.name = RegExp.$1;
+        Command.call( this, value, engine );
+
         if ( engine.masters[ this.name ] ) {
-            throw new Error( 'Master "' + this.name + '" is exists!' );
+            throw new Error( 'Master is exists: ' + this.name );
         }
 
-        Command.call( this, value, engine );
         this.contents = {};
     }
 
@@ -589,8 +554,12 @@
      * @param {Engine} engine 引擎实例
      */
     function ContentCommand( value, engine ) {
+        if ( !/^\s*([a-z0-9_-]+)\s*$/i.test( value ) ) {
+            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+        }
+
+        this.name = RegExp.$1;
         Command.call( this, value, engine );
-        readNameOfCommandValue( this, value );
     }
 
     // 创建Content命令节点继承关系
@@ -605,8 +574,12 @@
      * @param {Engine} engine 引擎实例
      */
     function ContentPlaceHolderCommand( value, engine ) {
+        if ( !/^\s*([a-z0-9_-]+)\s*$/i.test( value ) ) {
+            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+        }
+
+        this.name = RegExp.$1;
         Command.call( this, value, engine );
-        readNameOfCommandValue( this, value );
     }
 
     // 创建ContentPlaceHolder命令节点继承关系
@@ -621,8 +594,12 @@
      * @param {Engine} engine 引擎实例
      */
     function ImportCommand( value, engine ) {
+        if ( !/^\s*([a-z0-9_-]+)\s*$/i.test( value ) ) {
+            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
+        }
+
+        this.name = RegExp.$1;
         Command.call( this, value, engine );
-        readNameOfCommandValue( this, value );
     }
 
     // 创建Import命令节点继承关系
