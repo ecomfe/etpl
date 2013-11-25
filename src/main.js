@@ -10,6 +10,8 @@
 // 有的正则比较长，所以特别放开一些限制
 /* jshint maxdepth: 10, unused: false, white: false */
 
+// HACK: 可见的重复代码未抽取成function和var是为了gzip size，吐槽的一边去
+
 (function (root) {
     /**
      * 对象属性拷贝
