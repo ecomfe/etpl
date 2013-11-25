@@ -387,8 +387,7 @@
             parseTextBlock(
                 this.value, '${', '}',
 
-                // ${...}内文本的处理函数
-                function ( text ) {
+                function ( text ) { // ${...}内文本的处理函数
                     // 加入默认filter
                     if ( text.indexOf( '|' ) < 0 && defaultFilter ) {
                         text += '|' + defaultFilter;
@@ -424,8 +423,7 @@
                     );
                 },
 
-                // ${...}外普通文本的处理函数
-                function ( text ) {
+                function ( text ) { // ${...}外普通文本的处理函数
                     code.push( 
                         RENDER_STRING_ADD_START, 
                         stringLiteralize( text ), 
@@ -489,8 +487,7 @@
          * @param {Object} context 语法分析环境对象
          */
         close: function ( context ) {
-            while (context.stack.pop().constructor !== this.constructor)
-                ;;
+            while (context.stack.pop().constructor !== this.constructor) {}
         },
 
         /**
@@ -521,6 +518,7 @@
     /**
      * 命令自动闭合
      * 
+     * @inner
      * @param {Object} context 语法分析环境对象
      * @param {Function=} CommandType 自闭合的节点类型
      */
@@ -532,22 +530,23 @@
             } ) 
             : stack.bottom();
 
-        if ( !closeEnd ) {
-            return;
+        if ( closeEnd ) {
+            var node;
+
+            do {
+                node = stack.top();
+
+                // 如果节点对象不包含autoClose方法
+                // 则认为该节点不支持自动闭合，需要抛出错误
+                // for等节点不支持自动闭合
+                if ( !node.autoClose ) {
+                    throw new Error( node.type + ' must be closed manually: ' + node.value );
+                }
+                node.autoClose( context );
+            } while ( node !== closeEnd );
         }
 
-        var node;
-        do {
-            node = stack.top();
-
-            // 如果节点对象不包含autoClose方法
-            // 则认为该节点不支持自动闭合，需要抛出错误
-            // for、if等节点不支持自动闭合
-            if ( !node.autoClose ) {
-                throw new Error( node.type + ' must be closed manually!' );
-            }
-            node.autoClose( context );
-        } while ( node !== closeEnd );
+        return closeEnd;
     }
 
     /**
@@ -1120,38 +1119,6 @@
         var target = new TargetCommand( generateGUID(), context.engine );
         target.open( context );
     };
-
-    /**
-     * 节点解析结束
-     * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
-     * 
-     * @param {Object} context 语法分析环境对象
-     */
-    UseCommand.prototype.close = 
-
-    /**
-     * 节点解析结束
-     * 由于import节点无需闭合，处理时不会入栈，所以将close置为空函数
-     * 
-     * @param {Object} context 语法分析环境对象
-     */ 
-    ImportCommand.prototype.close = 
-
-    /**
-     * 节点解析结束
-     * 由于else节点无需闭合，处理时不会入栈，闭合由if负责。所以将close置为空函数
-     * 
-     * @param {Object} context 语法分析环境对象
-     */
-    ElseCommand.prototype.close = 
-
-    /**
-     * 节点解析结束
-     * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
-     * 
-     * @param {Object} context 语法分析环境对象
-     */
-    VarCommand.prototype.close = function () {};
     
     /**
      * 获取内容
@@ -1188,7 +1155,7 @@
                 this.args.replace( 
                     /(^|,)\s*([a-z0-9_]+)\s*=/ig,
                     function ( match, start, argName ) {
-                        return (start || '') + stringLiteralize( argName ) + ':'
+                        return (start || '') + stringLiteralize( argName ) + ':';
                     }
                 )
             )
@@ -1306,7 +1273,14 @@
      * 
      * @param {Object} context 语法分析环境对象
      */
-    ContentCommand.prototype.autoClose = Command.prototype.close;
+    ContentCommand.prototype.autoClose = 
+
+    /**
+     * 节点自动闭合，解析结束
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    IfCommand.prototype.autoClose = Command.prototype.close;
 
     /**
      * 节点自动闭合，解析结束
@@ -1341,15 +1315,11 @@
      * @param {Object} context 语法分析环境对象
      */
     ElifCommand.prototype.open = function ( context ) {
-        var ifCommand = context.stack.top();
-        if ( !( ifCommand instanceof IfCommand ) ) {
-            throw new Error( 'Not expect parent: ' + ifCommand.type );
-        }
-
         var elseCommand = new ElseCommand();
         elseCommand.open( context );
+
+        var ifCommand = autoCloseCommand( context, IfCommand );
         ifCommand.addChild( this );
-        context.stack.pop();
         context.stack.push( this );
     };
 
@@ -1359,14 +1329,11 @@
      * @param {Object} context 语法分析环境对象
      */
     ElseCommand.prototype.open = function ( context ) {
-        var ifCommand = context.stack.top();
-        if ( !( ifCommand instanceof IfCommand ) ) {
-            throw new Error( 'Not expect parent: ' + ifCommand.type );
-        }
+        var ifCommand = autoCloseCommand( context, IfCommand );
         
         ifCommand[ 'else' ] = this;
+        context.stack.push( ifCommand );
     };
-    
     
     /**
      * 命令类型集合
@@ -1569,8 +1536,7 @@
         parseTextBlock(
             source, commandOpen, commandClose,
 
-            // <!--...-->内文本的处理函数
-            function ( text ) {
+            function ( text ) { // <!--...-->内文本的处理函数
                 var match = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.exec( text );
 
                 // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
@@ -1604,8 +1570,7 @@
                 NodeType = null;
             },
 
-            // <!--...-->外，普通文本的处理函数
-            function ( text ) {
+            function ( text ) { // <!--...-->外，普通文本的处理函数
                 // 普通文本直接写入缓冲区
                 textBuf.push( text );
             }
