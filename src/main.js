@@ -1375,6 +1375,7 @@
      * @param {Object=} options 引擎参数
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
+     * @param {string=} options.defaultFilter 默认变量替换的filter
      */
     function Engine( options ) {
         this.options = {
@@ -1395,6 +1396,7 @@
      * @param {Object} options 参数对象
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
+     * @param {string=} options.defaultFilter 默认变量替换的filter
      */
     Engine.prototype.config =  function ( options ) {
         extend( this.options, options );
@@ -1598,18 +1600,4 @@
         // For <script src="..."
         root.etpl = etpl;
     }
-
-    /**
-     * 执行模板渲染，并将渲染后的字符串作为innerHTML填充到HTML元素中。
-     * 该方法的存在是为了兼容老版本的模板引擎api，不建议使用。
-     * 
-     * @param {HTMLElement} element 渲染字符串填充的HTML元素
-     * @param {string} name target名称
-     * @param {Object=} data 模板数据
-     */
-    etpl.merge = function ( element, name, data ) {
-        if ( element ) {
-            element.innerHTML = this.render( name, data );
-        }
-    };
 })(this);
