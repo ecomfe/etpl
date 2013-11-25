@@ -148,6 +148,13 @@
         // 所以，不考虑将原有子类prototype缓存再逐个拷贝回去
     }
 
+    /**
+     * HTML Filter替换的字符实体表
+     * 
+     * @const
+     * @inner
+     * @type {Object}
+     */
     var HTML_ENTITY = {
         '&': '&amp;',
         '<': '&lt;',
@@ -156,6 +163,13 @@
         "'": '&#39;'
     };
 
+    /**
+     * HTML Filter的替换函数
+     * 
+     * @inner
+     * @param {string} c 替换字符
+     * @return {string}
+     */
     function htmlFilterReplacer( c ) {
         return HTML_ENTITY[ c ];
     }
@@ -168,10 +182,30 @@
      * @type {Object}
      */
     var DEFAULT_FILTERS = {
+        /**
+         * HTML转义filter
+         * 
+         * @param {string} source 源串
+         * @return {string}
+         */
         html: function ( source ) {
             return source.replace( /[&<>"']/g, htmlFilterReplacer );
         },
+
+        /**
+         * URL编码filter
+         * 
+         * @param {string} source 源串
+         * @return {string}
+         */
         url: encodeURIComponent,
+
+        /**
+         * 源串filter，用于在默认开启HTML转义时获取源串，不进行转义
+         * 
+         * @param {string} source 源串
+         * @return {string}
+         */
         raw: function ( source ) {
             return source;
         }
@@ -214,11 +248,43 @@
             } );
     }
 
+    /**
+     * 用于render的字符串变量声明语句
+     * 
+     * @inner
+     * @const
+     * @type {string}
+     */
     var RENDER_STRING_DECLATION = 'var str="";';
+
+    /**
+     * 用于render的字符串内容添加语句（起始）
+     * 
+     * @inner
+     * @const
+     * @type {string}
+     */
     var RENDER_STRING_ADD_START = 'str+=';
+
+    /**
+     * 用于render的字符串内容添加语句（结束）
+     * 
+     * @inner
+     * @const
+     * @type {string}
+     */
     var RENDER_STRING_ADD_END = ';';
+
+    /**
+     * 用于render的字符串内容返回语句
+     * 
+     * @inner
+     * @const
+     * @type {string}
+     */
     var RENDER_STRING_RETURN = 'return str;';
 
+    // HACK: IE8-时，编译后的renderer使用push+join的策略进行字符串拼接
     if ( typeof navigator != 'undefined' 
         && /msie\s*([0-9]+)/i.test( navigator.userAgent )
         && RegExp.$1 - 0 < 8
@@ -263,6 +329,17 @@
         );
     }
 
+    /**
+     * 解析文本片段中以固定字符串开头和结尾的包含块
+     * 用于 命令串：<!-- ... --> 和 变量替换串：${...} 的解析
+     * 
+     * @inner
+     * @param {string} source 要解析的文本
+     * @param {string} open 包含块开头
+     * @param {string} close 包含块结束
+     * @param {function({string})} onInBlock 包含块内文本的处理函数
+     * @param {function({string})} onOutBlock 非包含块内文本的处理函数
+     */
     function parseTextBlock( source, open, close, onInBlock, onOutBlock ) {
         var closeLen = close.length;
         var texts = source.split( open );
@@ -310,14 +387,19 @@
             parseTextBlock(
                 this.value, '${', '}',
 
+                // ${...}内文本的处理函数
                 function ( text ) {
+                    // 加入默认filter
                     if ( text.indexOf( '|' ) < 0 && defaultFilter ) {
                         text += '|' + defaultFilter;
                     }
 
                     var segs = text.split( /\s*\|\s*/ );
+
+                    // variableCode最先有gvs调用，获取variable的string形式
+                    // 然后通过循环，在外面包filter的调用
+                    // 形成filter["b"](filter["a"](gvs(...)))
                     var variableCode = [ toGetVariableLiteral( segs[ 0 ], 1 ) ];
-                    
                     for ( var i = 1, len = segs.length; i < len; i++ ) {
                         var seg = segs[ i ];
 
@@ -342,6 +424,7 @@
                     );
                 },
 
+                // ${...}外普通文本的处理函数
                 function ( text ) {
                     code.push( 
                         RENDER_STRING_ADD_START, 
@@ -506,8 +589,8 @@
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
         
-        node.master = RegExp.$3;
-        node.name = RegExp.$1;
+        this.master = RegExp.$3;
+        this.name = RegExp.$1;
         Command.call( this, value, engine );
 
         if ( engine.targets[ this.name ] ) {
@@ -533,8 +616,8 @@
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
         
-        node.master = RegExp.$3;
-        node.name = RegExp.$1;
+        this.master = RegExp.$3;
+        this.name = RegExp.$1;
         Command.call( this, value, engine );
 
         if ( engine.masters[ this.name ] ) {
@@ -786,12 +869,16 @@
     };
 
     /**
-     * 应用其继承的母版
+     * 应用其继承的母版，返回是否成功应用母版
+     * 
+     * @return {boolean}
      */
     TargetCommand.prototype.applyMaster = 
 
     /**
-     * 应用其继承的母版
+     * 应用其继承的母版，返回是否成功应用母版
+     * 
+     * @return {boolean}
      */
     MasterCommand.prototype.applyMaster = function () {
         if ( this.state >= TMNodeState.APPLIED ) {
@@ -821,6 +908,12 @@
         }
     };
 
+    /**
+     * 判断target是否ready
+     * 包括是否成功应用母版，以及import和use语句依赖的target是否ready
+     * 
+     * @return {boolean}
+     */
     TargetCommand.prototype.isReady = function () {
         if ( this.state >= TMNodeState.READY ) {
             return 1;
@@ -978,11 +1071,47 @@
      * @param {Object} context 语法分析环境对象
      */
     UseCommand.prototype.beforeOpen = 
+
+    /**
+     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     ImportCommand.prototype.beforeOpen = 
+
+    /**
+     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     VarCommand.prototype.beforeOpen = 
+
+    /**
+     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     ForCommand.prototype.beforeOpen = 
+
+    /**
+     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     FilterCommand.prototype.beforeOpen = 
+
+    /**
+     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     IfCommand.prototype.beforeOpen = 
+
+    /**
+     * 文本节点被添加到分析环境前的处理动作：节点不在target中时，自动创建匿名target
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
     TextNode.prototype.beforeAdd =  function ( context ) {
         if ( context.stack.bottom() ) {
             return;
@@ -1439,8 +1568,13 @@
 
         parseTextBlock(
             source, commandOpen, commandClose,
+
+            // <!--...-->内文本的处理函数
             function ( text ) {
                 var match = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.exec( text );
+
+                // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
+                // 否则，为不具有command含义的普通文本
                 if ( match 
                     && ( NodeType = commandTypes[ match[2] ] )
                     && typeof NodeType == 'function'
@@ -1463,15 +1597,20 @@
                     }
                 }
                 else if ( !/^\s*\/\//.test( text ) ) {
+                    // 如果不是模板注释，则作为普通文本，写入缓冲区
                     textBuf.push( commandOpen, text, commandClose );
                 }
 
                 NodeType = null;
             },
+
+            // <!--...-->外，普通文本的处理函数
             function ( text ) {
+                // 普通文本直接写入缓冲区
                 textBuf.push( text );
             }
         );
+
 
         flushTextBuf(); // 将缓冲区中的text节点内容写入
         autoCloseCommand( analyseContext );
