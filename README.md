@@ -37,9 +37,9 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 对默认引擎进行配置，配置参数将合并到引擎现有的参数中。
 
 - `{Object}`options - 配置参数对象
-- `{string}`options.commandOpen - 命令语法起始串，默认值为 **<!--**
-- `{string}`options.commandClose - 命令语法结束串，默认值为 **-->**
-- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 **html**
+- `{string}`options.commandOpen - 命令语法起始串，默认值为 *<!--*
+- `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
+- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
 
 ```javascript
 etplEngine.config( {
@@ -106,7 +106,7 @@ var etpl = require( 'etpl' );
 var etplEngine = new etpl.Engine();
 ```
 
-引擎实例的初始化允许传入引擎参数。支持的引擎参数下面的见`config`方法。
+引擎实例的初始化允许传入引擎参数。支持的引擎参数见下面的`config`方法。
 
 ```javascript
 var etpl = require( 'etpl' );
@@ -133,9 +133,9 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 对引擎进行配置，配置参数将合并到引擎现有的参数中。
 
 - `{Object}`options - 配置参数对象
-- `{string}`options.commandOpen - 命令语法起始串，默认值为 **<!--**
-- `{string}`options.commandClose - 命令语法结束串，默认值为 **-->**
-- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 **html**
+- `{string}`options.commandOpen - 命令语法起始串，默认值为 *<!--*
+- `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
+- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
 
 ```javascript
 etplEngine.config( {
