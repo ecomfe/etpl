@@ -37,7 +37,7 @@ ETPL初始化时自动创建一个默认的引擎实例，并将其暴露。大�
 var etpl = require( 'etpl' );
 ```
 
-#### {Function} compile( {string}source )
+##### {Function} compile( {string}source )
 
 使用默认引擎编译模板。返回第一个target编译后的renderer函数。
 
@@ -48,7 +48,7 @@ var helloRenderer = etpl.compile( 'Hello ${name}!' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
-#### {void} config( {Object}options )
+##### {void} config( {Object}options )
 
 对默认引擎进行配置，配置参数将合并到引擎现有的参数中。
 
@@ -63,7 +63,7 @@ etplEngine.config( {
 } );
 ```
 
-#### {string} get( {string}name )
+##### {string} get( {string}name )
 
 从默认引擎中，根据target名称获取模板内容。
 
@@ -76,7 +76,7 @@ etpl.get( 'hello' ); // Hello ${name}!
 
 
 
-#### {Function} getRenderer( {string}name )
+##### {Function} getRenderer( {string}name )
 
 从默认引擎中，根据target名称获取编译后的renderer函数。
 
@@ -88,13 +88,13 @@ var helloRenderer = etpl.getRenderer( 'hello' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
-#### {Function} parse( {string}source )
+##### {Function} parse( {string}source )
 
 同`compile`方法。该方法的存在是为了兼容老版本的模板引擎api，不建议使用。
 
 
 
-#### {string} render( {string}name, {Object}data )
+##### {string} render( {string}name, {Object}data )
 
 使用默认引擎执行模板渲染，返回渲染后的字符串。
 
