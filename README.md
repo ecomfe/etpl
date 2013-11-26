@@ -27,6 +27,375 @@ var render = etpl.compile( 'Hello ${name}!' );
 var text = render( {name: 'etpl'} );
 ```
 
+## Syntax
+
+### 基础
+
+#### 语法形式
+
+ETPL的指令标签默认为HTML注释的形式，在指令标签内允许声明 `指令起始`、`指令结束`和`注释`。
+
+`指令起始`的语法形式为： *<!-- command-name: command-value -->*。其中， *command-value* 的具体语法形式详情请参见各指令相关章节。
+
+```html
+<!-- target: targetName -->
+<!-- if: ${number} > 0 -->
+<!-- for: ${persons} as ${person}, ${index} -->
+```
+
+`指令结束`的语法形式为： *<!-- /command-name -->*。
+
+```html
+<!-- /if -->
+<!-- /for -->
+<!-- /target -->
+```
+
+`注释`的语法形式为： *<!-- //message -->*，注释指令在render时将不输出。
+
+```html
+<!-- // just add some message -->
+```
+
+如果不期望使用HTML注释形式的指令标签，可以通过config API可以配置指令标签的形式：
+
+```javascript
+etpl.config({
+    commandOpen: '<%',
+    commandClose: '%>'
+});
+
+/* 
+配置指令标签的形式为“<% ... %>”，然后指令标签可以像下面一样声明:
+<% if: ${number} > 0 %>
+greater than zero
+<% /if %>
+*/
+```
+
+#### 自动结束
+
+为了减少开发者的工作量，部分指令标签支持`自动结束`，模板开发者无需手工编写`指令结束`。比如：当遇见target指令起始时，ETPL自动认为上一个target已经结束。
+
+具体指令的`自动结束`支持，请参考相应指令相关章节。
+
+
+#### target
+
+`target`是ETPL的基本单元，其含义是 **一个模版片段** 。`target`可用于render，也可用于被其他`target`所import或use。
+
+如果仅仅编写的是一个模板片段，可以省略`target`的声明。这样的编写方式与其他模板引擎类似，但模板片段将不可复用（不可被import或use，不可指定母版）。
+
+##### 语法
+
+target的语法形式为：
+
+    target: target-name
+    target: target-name(master=master-name)
+
+target声明可以为其指定相应的母版。母版功能请参考模板复用章节。
+
+
+##### 自动结束
+
+target支持自动结束，当遇见 *target* 或 *master* 时自动结束。
+
+
+##### 示例
+
+```html
+<!-- target: hello -->
+Hello <strong>ETPL</strong>!
+
+<!-- target: bye -->
+Bye <strong>ETPL</strong>!
+```
+
+#### 变量声明
+
+通过`var`指令可以在模板内部声明一个变量。声明的变量在整个`target`内有效。
+
+##### 语法
+
+var的语法形式为：
+
+    var: var-name=expression
+
+`expression`中可以使用静态或动态数据。
+
+##### 示例
+
+```html
+<!-- var: age = 18 -->
+<!-- var: age = ${person.age} -->
+<!-- var: name = 'etpl' -->
+```
+
+##### 自动结束
+
+var无需编写`指令结束`，其将在`指令起始`后立即自动结束。
+
+
+#### 变量替换
+
+绝大多数模板引擎都支持变量替换功能。ETPL变量替换的语法为：
+
+    ${variable-name}
+    ${variable-name|filter-name}
+    ${variable-name|filter-name(arguments)}
+    ${variable-name|filter1|filter2(arguments)|filter3|...}
+
+variable-name支持`.`形式的property access。
+
+编写模板时可以指定filter，默认使用html filter进行HTML转义。如果想要保留变量的原形式，需要手工指定使用名称为raw的filter，或者通过config API配置引擎的defaultFilter参数。
+
+    ${myVariable|raw}
+
+```javascript
+etpl.config({ 
+    defaultFilter: ''
+});
+```
+
+变量替换支持多filter处理。filter之间以类似管道的方式，前一个filter的输出做为后一个filter的输入，向后传递。
+
+    ${myVariable|html|url}
+
+filter支持参数传递，参数可以使用动态数据。
+
+    ${myVariable|comma(3)}
+    ${myVariable|comma(${commaLength})}
+    ${myVariable|comma(${commaLength}+1)}
+
+#### 内容块过滤
+
+除了在变量替换中可以使用filter进行处理，ETPL还可以通过`filter`指令，使用指定的filter对一个模板内容块进行过滤处理。
+
+##### 语法
+
+filter的语法形式为：
+
+    filter: filter-name
+    filter: filter-name(arguments)
+
+##### 示例
+
+下面的例子假定使用者实现了一个markdown的filter
+
+```html
+<!-- filter: markdown(${useExtra}, true) -->
+## markdown document
+
+This is the content, also I can use `${variables}`
+<!-- /filter -->
+```
+
+##### 自动结束
+
+filter指令不支持自动结束，必须手工编写`指令结束`。
+
+```html
+<!-- /filter -->
+```
+
+### 模板复用
+
+ETPL支持多种形式的模板复用方式，帮助模板开发者减少模板编写的重复劳动和维护成本。
+
+
+#### import
+
+通过import指令，可以在当前位置插入指定target的源码。
+
+##### 语法
+
+import的语法形式为：
+
+    import: target-name
+
+
+##### 示例
+
+```html
+<!-- target: hello -->
+Hello <strong>${name}</strong>!
+
+<!-- target: main -->
+<div class="main"><!-- import: hello --></div>
+```
+
+##### 自动结束
+
+import无需编写`指令结束`，其将在`指令起始`后立即自动结束。
+
+
+#### 母版
+
+通过`master`指令可以声明一个母版，母版中通过`contentplaceholder`指令声明可被替换的部分。
+
+`target`声明时通过 **master=master-name** 指定一个母版，就可以继承于这个母版的片段，并且通过`content`指令，替换母版中`contentplaceholder`指令声明部分的内容。指定母版的target中只允许包含`content`指令声明的片段。
+
+母版功能支持多层母版，`master`声明时也可以通过 **master=master-name** 指定一个母版。母板中的`contentplaceholder`不会再传递下去，即`contentplaceholder`只在一层有效。
+
+##### 语法
+
+master的语法形式为：
+
+    master: master-name
+    master: master-name(master=master-name)
+
+contentplaceholder的语法形式为：
+
+    contentplaceholder: content-name
+
+content的语法形式为：
+
+    content: content-name
+
+
+##### 示例
+
+```html
+<!-- master: myMaster -->
+<div class="title"><!-- contentplaceholder: title -->title<!-- /contentplaceholder --></div>
+<div class="main"><!-- contentplaceholder: main --></div>
+
+<!-- master: myMaster-has-sidebar(master=myMaster) -->
+<!-- content: title -->
+title for has sidebar
+<!-- content: main -->
+<div class="sidebar"><!-- contentplaceholder: sidebar --></div>
+<div class="article"><!-- contentplaceholder: article --></div>
+
+<!-- target: myTarget(master=myMaster) -->
+<!-- content: title -->
+Building WebKit from Xcode
+<!-- content: main -->
+<p>To build from within Xcode, you can use the WebKit workspace. </p>
+
+<!-- target: myTarget-has-sidebar(master=myMaster-has-sidebar) -->
+<!-- content: sidebar -->
+<ul class="navigator">...</ul>
+<!-- content: article -->
+<p>To build from within Xcode, you can use the WebKit workspace. </p>
+```
+
+##### 自动结束
+
+master支持自动结束，当遇见 *target* 或 *master* 时自动结束。
+
+contentplaceholder支持自动结束，当遇见 *contentplaceholder* 或 *target* 或 *master* 时，在`指令标签起始`后自动结束。
+
+content支持自动结束，当遇见 *content* 或 *target* 或 *master* 时自动结束。
+
+
+#### use
+
+通过`use`指令，可以调用指定`target`，在当前位置插入其render后的结果。允许使用静态或动态数据指定数据项。
+
+##### 语法
+
+use的语法形式为：
+
+    use: target-name
+    use: target-name(data-name=expression, data-name=expression)
+
+
+##### 示例
+
+```html
+<!-- target: info -->
+name: ${name}
+<!-- if: ${email} -->
+email: ${email}
+<!-- /if -->
+
+<!-- target: main -->
+<div class="main"><!-- use: info(name=${person.name}, email=${person.email}) --></div>
+```
+
+##### 自动结束
+
+use无需编写`指令结束`，其将在`指令起始`后立即自动结束。
+
+### 分支与循环
+
+#### if
+
+ETPL提供了分支的支持，相关指令有`if`、`elif`、`else`。
+
+##### 语法
+
+if的语法形式为：
+
+    if: conditional-expression
+
+elif的语法形式为：
+
+    elif: conditional-expression
+
+else的语法形式为：
+
+    else
+
+conditional-expression中可以使用动态数据，通过`${variable}`的形式，可以使用模板render的data。`${variable}`支持`.`的property accessor。
+
+##### 自动结束
+
+if指令不支持自动结束，必须手工编写指令结束`<!-- /if -->`。
+
+##### 示例
+
+```html
+<!-- if: ${number} > 0 -->
+larger than zero
+<!-- elif: ${number} == 0 -->
+zero
+<!-- else -->
+invalid
+<!-- /if -->
+```
+
+##### 自动结束
+
+if指令不支持自动结束，必须手工编写`指令结束`。
+
+```html
+<!-- /if -->
+```
+
+#### for
+
+通过for指令的支持，可以实现对Array和Object的遍历。Array为正序遍历，Object为不保证顺序的forin。
+
+##### 语法
+
+for的语法形式为：
+
+    for: ${variable} as ${item-variable}
+    for: ${variable} as ${item-variable}, ${index-variable}
+    for: ${variable} as ${item-variable}, ${key-variable}
+
+其中，`${variable}`为想要遍历的对象，支持`.`形式的property access。在遍历过程中，声明的`${item-variable}`和`${index-variable}`，分别代表数据项和索引（遍历Object时为键名）。
+
+##### 示例
+
+```html
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>
+```
+
+##### 自动结束
+
+for指令不支持自动结束，必须手工编写`指令结束`。
+
+```html
+<!-- /for -->
+```
+
 ## API
 
 ### methods
