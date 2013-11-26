@@ -143,20 +143,6 @@ define(
             it('default instance: "parse" method should reserved for backward compatibility, same as "compile" method', function() {
                 expect(etpl.parse).toBe(etpl.compile);
             });
-
-            it('default instance: "merge" method should be exists for backward compatibility', function() {
-                var div = document.createElement( 'div' );
-                var data = { 
-                    info: { 
-                        name:'etpl', 
-                        contributor: 'errorrik' 
-                    }
-                };
-                var renderer = etpl.compile(text['variable-tpl']);
-                etpl.merge(div, 'engineVariableTarget', data);
-                expect(div.innerHTML).toEqual(renderer(data));
-                div = null;
-            });
         });
     }
 );
