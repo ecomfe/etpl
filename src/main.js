@@ -1121,6 +1121,38 @@
     };
     
     /**
+     * 节点解析结束
+     * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    UseCommand.prototype.close = 
+
+    /**
+     * 节点解析结束
+     * 由于import节点无需闭合，处理时不会入栈，所以将close置为空函数
+     * 
+     * @param {Object} context 语法分析环境对象
+     */ 
+    ImportCommand.prototype.close = 
+
+    /**
+     * 节点解析结束
+     * 由于else节点无需闭合，处理时不会入栈，闭合由if负责。所以将close置为空函数
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    ElseCommand.prototype.close = 
+
+    /**
+     * 节点解析结束
+     * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    VarCommand.prototype.close = function () {};
+    
+    /**
      * 获取内容
      * 
      * @return {string}
