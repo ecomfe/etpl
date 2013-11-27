@@ -569,7 +569,7 @@ etplEngine.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 
 ## Compatibility
 
-ETPL的前身是[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎，其基本与前身保持兼容。但由于性能、体积等考虑因素，存在以下一些不兼容的地方。
+ETPL的前身是[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎，其基本与前身保持兼容。但由于一些考虑因素，存在以下一些不兼容的地方。
 
 ### merge
 
@@ -589,35 +589,4 @@ etpl.merge = function ( element, name, data ) {
         element.innerHTML = this.render( name, data );
     }
 };
-```
-
-### 命令名称大小写
-
-在[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎中，命令的声明是大小写不敏感的，以下几种方式均可以声明一个contentplacehloder：
-
-```html
-<!-- contentplaceholder: name -->
-<!-- ContentPlaceHolder: name -->
-<!-- ContentPlaceholder: name -->
-```
-
-在ETPL中，命令只允许使用小写字母。上面声明一个contentplacehloder的例子，只允许使用如下方式：
-
-```html
-<!-- contentplaceholder: name -->
-```
-
-### 变量的属性访问
-
-在[ER框架](https://github.com/ecomfe/er)自带的简易模板引擎中，允许使用`[]`的形式进行属性访问：
-
-```html
-${person['name']}
-${person.name}
-```
-
-在ETPL中，只允许通过`.`进行属性访问：
-
-```html
-${person.name}
 ```
