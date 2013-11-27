@@ -306,9 +306,16 @@
      */
     function toGetVariableLiteral( name, isStr ) {
         return stringFormat(
-            (isStr ? 'gvs("{0}",["{1}"])' : 'gv("{0}",["{1}"])'),
-            name,
-            name.split( '.' ).join( '","' )
+            (isStr ? 'gvs({0},["{1}"])' : 'gv({0},["{1}"])'),
+            stringLiteralize( name ),
+            name.replace(
+                /\[['"]?([^'"]+)['"]?\]/g, 
+                function ( match, name ) {
+                    return '.' + name;
+                }
+            )
+            .split( '.' )
+            .join( '","' )
         );
     }
 
@@ -322,7 +329,7 @@
      */
     function replaceGetVariableLiteral( source ) {
         return source.replace(
-            /\$\{([0-9a-z_\.]+)\}/ig,
+            /\$\{([0-9a-z_\.\[\]'"-]+)\}/ig,
             function( match, name ){
                 return toGetVariableLiteral( name );
             }
@@ -761,7 +768,7 @@
      * @param {Engine} engine 引擎实例
      */
     function ForCommand( value, engine ) {
-        if ( !/^\s*\$\{([0-9a-z_\.]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test( value ) ) {
+        if ( !/^\s*\$\{([0-9a-z_\.\[\]'"-]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test( value ) ) {
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
         
@@ -783,10 +790,6 @@
      * @param {Engine} engine 引擎实例
      */
     function IfCommand( value, engine ) {
-        if ( !/^\s*([>=<!0-9a-z$\{\}\[\]\(\):\s'"\.\|&_]+)\s*$/i.test( value ) ) {
-            throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
-        }
-
         Command.call( this, value, engine );
     }
 
@@ -1151,7 +1154,7 @@
      * @param {Object} context 语法分析环境对象
      */
     VarCommand.prototype.close = function () {};
-    
+
     /**
      * 获取内容
      * 
@@ -1576,7 +1579,7 @@
                 // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
                 // 否则，为不具有command含义的普通文本
                 if ( match 
-                    && ( NodeType = commandTypes[ match[2] ] )
+                    && ( NodeType = commandTypes[ match[2].toLowerCase() ] )
                     && typeof NodeType == 'function'
                 ) {
                     // 先将缓冲区中的text节点内容写入
