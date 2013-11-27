@@ -120,7 +120,7 @@
      * @inner
      * @type {number}
      */
-    var guidIndex = 0xCADB7;
+    var guidIndex = 0x2B845;
 
     /**
      * 获取唯一id，用于匿名target或编译代码的变量名生成
