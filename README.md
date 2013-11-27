@@ -406,6 +406,19 @@ ETPL初始化时自动创建一个默认的引擎实例，并将其暴露。大�
 var etpl = require( 'etpl' );
 ```
 
+##### {void} addFilter( {string}name, {function({string}, {...*}):string}filter )
+
+为默认引擎添加过滤器。过滤函数的第一个参数为过滤源字符串，其后的参数可由模板开发者传入。过滤函数必须返回string。
+
+- `{string}`name - 过滤器名称
+- `{Function}`filter - 过滤函数
+
+```javascript
+etpl.addFilter( 'markdown', function ( source, useExtra ) {
+    // ......
+} );
+```
+
 ##### {Function} compile( {string}source )
 
 使用默认引擎编译模板。返回第一个target编译后的renderer函数。
@@ -501,6 +514,18 @@ var etplEngine = new etpl.Engine({
 });
 ```
 
+##### {void} addFilter( {string}name, {function({string}, {...*}):string}filter )
+
+添加过滤器。过滤函数的第一个参数为过滤源字符串，其后的参数可由模板开发者传入。过滤函数必须返回string。
+
+- `{string}`name - 过滤器名称
+- `{Function}`filter - 过滤函数
+
+```javascript
+etplEngine.addFilter( 'markdown', function ( source, useExtra ) {
+    // ......
+} );
+```
 
 ##### {Function} compile( {string}source )
 
