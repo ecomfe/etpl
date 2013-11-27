@@ -9,6 +9,10 @@ define(
             persons: eval(text.persons),
             personsIndex: eval(text.personsIndex)
         };
+        data.ecomfe = {
+            persons: data.persons, 
+            personsIndex: data.personsIndex
+        };
         etpl.compile( text.tpl );
 
         describe('Array traversal', function() {
@@ -22,7 +26,12 @@ define(
                 expect(renderer(data)).toEqual(text['expect-forItemIndexTarget']);
             });
 
-            it('can use property accessor', function() {
+            it('can use property accessor in command tag', function() {
+                var renderer = etpl.getRenderer('forItemCommandPropertyAccessTarget');
+                expect(renderer(data)).toEqual(text['expect-forItemCommandPropertyAccessTarget']);
+            });
+
+            it('can use property accessor in traversal body', function() {
                 var renderer = etpl.getRenderer('forItemPropertyAccessTarget');
                 expect(renderer(data)).toEqual(text['expect-forItemPropertyAccessTarget']);
             });
@@ -39,7 +48,12 @@ define(
                 expect(renderer(data)).toEqual(text['expect-forOItemKeyTarget']);
             });
 
-            it('can use property accessor', function() {
+            it('can use property accessor in command tag', function() {
+                var renderer = etpl.getRenderer('forOItemCommandPropertyAccessTarget');
+                expect(renderer(data)).toEqual(text['expect-forOItemCommandPropertyAccessTarget']);
+            });
+
+            it('can use property accessor in traversal body', function() {
                 var renderer = etpl.getRenderer('forOItemPropertyAccessTarget');
                 expect(renderer(data)).toEqual(text['expect-forOItemPropertyAccessTarget']);
             });

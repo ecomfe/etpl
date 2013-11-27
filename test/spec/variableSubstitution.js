@@ -17,6 +17,8 @@ define(
             }
         };
 
+        data.contributors = [data.info.contributor];
+
         describe('Variable Substitution', function() {
             it(
                 'should encode html by default', 
@@ -55,6 +57,14 @@ define(
                 function() {
                     expect(etpl.getRenderer('variableSubstitution-property-accessor')(data))
                         .toEqual(text['expect-property-accessor']);
+                }
+            );
+
+            it(
+                'can use property accessor "[]"', 
+                function() {
+                    expect(etpl.getRenderer('variableSubstitution-property-accessor2')(data))
+                        .toEqual(text['expect-property-accessor2']);
                 }
             );
         });

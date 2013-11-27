@@ -18,6 +18,10 @@ Hello ${name|raw}!
 <!-- target: variableSubstitution-property-accessor -->
 Repos: ${info.repos}
 Contributor: ${info.contributor.name}[${info.contributor.email}]
+<!-- target: variableSubstitution-property-accessor2 -->
+Repos: ${info["repos"]}
+Contributor: ${contributors[0].name}[${contributors[0]['email']}]
+Contributor: ${info['contributor'].name}[${info["contributor"]["email"]}]
 <!-- target: variableSubstitution-mix -->
 Hello ${name} in ${address}! Bye ${name}! Raw is ${name|raw}!
 
@@ -40,6 +44,12 @@ Hello &lt;b&gt;ecom&amp;fe&lt;/b&gt; in baidu! Bye &lt;b&gt;ecom&amp;fe&lt;/b&gt
 ::expect-property-accessor::
 
 Repos: https://github.com/ecomfe/etpl
+Contributor: erik[errorrik@gmail.com]
+
+::expect-property-accessor2::
+
+Repos: https://github.com/ecomfe/etpl
+Contributor: erik[errorrik@gmail.com]
 Contributor: erik[errorrik@gmail.com]
 
 ::eof::

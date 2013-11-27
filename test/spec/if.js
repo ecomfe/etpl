@@ -28,6 +28,11 @@ define(
                 expect(renderer( {num:1,str:"1"} )).toEqual(text['expect-ifComplexTarget']);
             });
 
+            it('can use complex property accessor in variable', function() {
+                var renderer = etpl.getRenderer('ifComplexPropertyAccessTarget');
+                expect(renderer( {level1: [ 1, {num:1} ] } )).toEqual(text['expect-ifComplexTarget']);
+            });
+
             it('"if" can be nested', function() {
                 var renderer = etpl.getRenderer('ifNestedTarget');
                 expect(renderer( {num:1,str:"1"} ))

@@ -5,6 +5,10 @@
 <ul>
 <!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
 </ul>
+<!-- target:forItemCommandPropertyAccessTarget -->
+<ul>
+<!-- for: ${ecomfe['persons']} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
 <!-- target:forItemIndexTarget -->
 <!-- for: ${myList} as ${item}, ${idx} --><!--if:${idx}>0-->|<!--/if-->${item},${idx}<!-- /for -->
 <!-- target:forOItemTarget -->
@@ -14,6 +18,10 @@
 <!-- target:forOItemPropertyAccessTarget -->
 <ul>
 <!-- for: ${personsIndex} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forOItemCommandPropertyAccessTarget -->
+<ul>
+<!-- for: ${ecomfe.personsIndex} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
 </ul>
 <!-- target:forNestedTarget -->
 <!-- for: ${persons} as ${person} -->
@@ -49,7 +57,19 @@
 <li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
 </ul>
 
+::expect-forItemCommandPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
 ::expect-forOItemPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forOItemCommandPropertyAccessTarget::
 
 <ul>
 <li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>

@@ -15,6 +15,9 @@
 <!-- target:ifComplexTarget -->
 <!-- if: !( 0 && 0 ) -->1<!--else-->2<!--/if-->
 <!-- if: !0 && 0 -->1<!--else-->2<!--/if-->
+<!--target:ifComplexPropertyAccessTarget-->
+<!-- if: ${level1[1]['num']} -->1<!--else-->2<!--/if-->
+<!-- if: ${level1[0].num} -->1<!--else-->2<!--/if-->
 <!-- target:ifNestedTarget -->
 <!-- if: ${num} == ${str} -->
     <!-- if: ${num} === ${str} -->same type<!-- else -->different type<!-- /if -->
@@ -34,6 +37,11 @@
 1
 1
 2
+1
+2
+
+::expect-ifComplexTarget::
+
 1
 2
 
