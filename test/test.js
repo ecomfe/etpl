@@ -15,6 +15,7 @@ define(
         require('spec/filter');
         require('spec/engine');
         require('spec/comment');
+        require('spec/amdplugin');
 
         return {
             start: function () {

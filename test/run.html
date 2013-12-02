@@ -12,6 +12,11 @@
 
 <body>
   <script>
+  require.config({
+    packages: [
+      {name: 'etpl', location: 'etpl'}
+    ]
+  });
   require(
     [ 'test' ], 
     function (test) {

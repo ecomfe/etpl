@@ -8,7 +8,11 @@
 
 <body>
 <script>
-require.config( { baseUrl: '../' } );
+require.config( { 
+    packages: [
+        {name: 'etpl', location: '../etpl'}
+    ]
+} );
 require(
     [ 'etpl' ], 
     function (etpl) {
