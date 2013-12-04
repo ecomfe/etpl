@@ -11,11 +11,11 @@ define(
         var etpl = require( '.' );
 
         return {
-            load: function ( resourceId, require, load, config ) {
+            load: function ( resourceId, req, load, config ) {
                 var xhr = window.XMLHttpRequest 
                     ? new XMLHttpRequest()
                     : new ActiveXObject( 'Microsoft.XMLHTTP' );
-                xhr.open( 'GET', resourceId, true );
+                xhr.open( 'GET', req.toUrl( resourceId ), true );
                 xhr.onreadystatechange = function () {
                     if ( xhr.readyState == 4 ) {
                         if ( xhr.status >= 200 && xhr.status < 300 ) {
@@ -36,37 +36,6 @@ define(
                 };
 
                 xhr.send( null );
-            },
-
-            normalize: function ( resourceId ) {
-                var url = resourceId;
-
-                if ( !/^([a-z]{2,10}:\/)?\//i.test( url ) ) {
-                    var baseSegs = location.pathname.split( '/' );
-                    var relativeSegs = url.split( '/' );
-
-                    var levelPoint = baseSegs.length - 2;
-                    for ( var i = 0, len = relativeSegs.length; i < len; i++ ) {
-                        var seg = relativeSegs[ i ];
-                        switch ( seg ) {
-                            case '.':
-                                break;
-                            case '..':
-                                if ( levelPoint > 0 ) {
-                                    levelPoint--;
-                                }
-                                break;
-                            default:
-                                baseSegs[ ++levelPoint ] = seg;
-                                break;
-                        }
-                    }
-
-                    baseSegs.length = levelPoint + 1;
-                    url = baseSegs.join( '/' );
-                }
-
-                return url;
             }
         };
     }
