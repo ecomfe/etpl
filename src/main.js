@@ -587,7 +587,7 @@
     // gvs: getVariableString
     // n: name
     // ps: properties
-    // da: directAccess
+    // hg: hasGetter
 
     /**
      * Target命令节点类
