@@ -30,4 +30,10 @@ Hello ${name}!
 ::expect-around::
 
 Hello etpl!
+::tpl-data-getter::
+<!-- target: varDataGetterTarget --><!-- var: myVar = 'etpl' -->
+Hello ${myVar}!
+::expect-data-getter::
+
+Hello etpl!
 ::eof::

@@ -23,6 +23,10 @@
 <ul>
 <!-- for: ${ecomfe.personsIndex} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
 </ul>
+<!-- target:forDataGetterTarget -->
+<ul>
+<!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
 <!-- target:forNestedTarget -->
 <!-- for: ${persons} as ${person} -->
     <!-- for: ${person} as ${value},${key} -->
@@ -91,4 +95,10 @@ email:errorrik@gmail.com
 name:firede
 ::except-nested-4::
 email:firede@gmail.com
+::except-forDataGetterTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
 ::eof::

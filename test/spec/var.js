@@ -35,6 +35,12 @@ define(
                 expect(etpl.render('varAroundTarget'))
                     .toEqual(text['expect-around']);
             });
+
+            it('can be read when data has getter method', function() {
+                etpl.compile( text['tpl-data-getter'] );
+                expect(etpl.render('varDataGetterTarget', {get: function() {}}))
+                    .toEqual(text['expect-data-getter']);
+            });
         });
     }
 );

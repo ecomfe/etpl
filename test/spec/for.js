@@ -68,6 +68,17 @@ define(
                 expect(result.indexOf(text['except-nested-3'])).toBeGreaterThan(-1);
                 expect(result.indexOf(text['except-nested-4'])).toBeGreaterThan(-1);
             });
+
+            it('variable can be read when data has getter method', function() {
+                var renderer = etpl.getRenderer('forDataGetterTarget');
+                var dataHasGetter = {
+                    get: function (name) {
+                        return data[ name ];
+                    }
+                };
+                var result = renderer(dataHasGetter);
+                expect(result).toEqual(text['except-forDataGetterTarget']);
+            });
         });
     }
 );
