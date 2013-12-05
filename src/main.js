@@ -289,9 +289,8 @@
         && /msie\s*([0-9]+)/i.test( navigator.userAgent )
         && RegExp.$1 - 0 < 8
     ) {
-        RENDER_STRING_DECLATION = 'var str=new StringBuffer();';
-        RENDER_STRING_ADD_START = 'str.push(';
-        RENDER_STRING_ADD_END = ');';
+        RENDER_STRING_DECLATION = 'var str=[],stri=0;';
+        RENDER_STRING_ADD_START = 'str[stri++]=';
         RENDER_STRING_RETURN = 'return str.join("");';
     }
 
@@ -565,15 +564,16 @@
      */
     var RENDERER_BODY_START = ''
         + 'data=data||{};'
-        + 'var v={},fs=engine.filters,'
-        + 'gv=typeof data.get==="function"'
-        +     '?function(n){return data.get(n);}'
-        +     ':function(n,ps){'
-        +         'var p=ps[0],d=v[p];'
-        +         'd=d==null?data[p]:d;'
-        +         'for(var i=1,l=ps.length;i<l;i++)if(d!=null)d = d[ps[i]];'
-        +         'return d;'
-        +     '},'
+        + 'var v={},fs=engine.filters,hg=typeof data.get=="function",'
+        + 'gv=function(n,ps){'
+        +     'var p=ps[0],d=v[p];'
+        +     'if(d==null){'
+        +         'if(hg){return data.get(n);}'
+        +         'd=data[p];'
+        +     '}'
+        +     'for(var i=1,l=ps.length;i<l;i++)if(d!=null)d = d[ps[i]];'
+        +     'return d;'
+        + '},'
         + 'gvs=function(n,ps){'
         +     'var v=gv(n,ps);'
         +     'if(typeof v==="string"){return v;}'
@@ -581,6 +581,13 @@
         +     'return ""+v;'
         + '};'
     ;
+    // v: variables
+    // fs: filters
+    // gv: getVariable
+    // gvs: getVariableString
+    // n: name
+    // ps: properties
+    // da: directAccess
 
     /**
      * Target命令节点类
@@ -969,7 +976,7 @@
             //     + RENDER_STRING_RETURN)
 
             var realRenderer = new Function( 
-                'data', 'engine', 'StringBuffer',
+                'data', 'engine',
                 [
                     RENDERER_BODY_START,
                     RENDER_STRING_DECLATION,
@@ -979,10 +986,9 @@
             );
 
             var engine = this.engine;
-            var StringBuffer = ArrayBuffer;
 
             this.renderer = function ( data ) {
-                return realRenderer( data, engine, StringBuffer );
+                return realRenderer( data, engine );
             };
 
             return this.renderer;
