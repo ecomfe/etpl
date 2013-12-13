@@ -1,0 +1,122 @@
+body, ul, ol, li, dl, dt, dd, p, h1, h2, h3 {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	font-family: arial;
+}
+
+.header{
+	background: #E7E7E7;
+	padding-bottom: 40px;
+}
+
+h1 { 
+	font-size: 70px;
+	padding: 75px 0 30px;
+	text-align: center; 
+}
+
+h2 { 
+	font-size: 32px; 
+	font-style: italic; 
+	width: 780px;
+	padding-top: 20px;
+	margin: 0 auto;
+}
+
+h3 { 
+	font-size: 20px; 
+	font-style: italic; 
+	padding: 20px 0 10px;
+}
+
+.desc { 
+	font-size: 22px; 
+	line-height: 130%; 
+	text-align: center; 
+	width: 800px;
+	margin: 0 auto;
+}
+
+.nav {
+	margin: 20px 0 0;
+	text-align: center; 
+}
+
+.nav a {
+	display: inline-block;
+	color: white; 
+	font-size: 22px; 
+	letter-spacing: 2px;
+	text-align: center; 
+	background: #4cbef2;
+	text-decoration: none;
+	width: 220px;
+	height: 60px;
+	line-height: 60px;
+	margin-right: 20px;
+	border-radius: 12px;
+}
+
+p {
+	font-size: 16px; 
+	width: 780px;
+	margin: 12px auto;
+	line-height: 120%; 
+}
+
+ol {
+	width: 780px;
+	margin: 12px auto;
+}
+
+li {
+    color: #979797;
+	font-size: 15px; 
+	width: 740px;
+	margin: 10px auto;
+	line-height: 120%; 
+}
+
+code {
+	color: red;
+	background: #E7E7E7;
+	padding: 2px;
+	line-height: 160%; 
+}
+
+.try-template {
+	float: left;
+	width: 390px;
+}
+
+.try-data {
+	float: right;
+	width: 390px;
+}
+
+.try-template h3, .try-data h3, .try-result h3 {
+	text-align: center;
+}
+
+.try-template textarea {
+	background:#DFF6FE;
+	width: 384px;
+	height: 180px;
+	resize: none;
+}
+
+.try-data textarea {
+	background:#E0F9E4;
+	width: 384px;
+	height: 180px;
+	resize: none;
+}
+
+.try-result {
+	clear: both;
+	margin-bottom: 40px;
+}
