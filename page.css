@@ -6,17 +6,23 @@ body, ul, ol, li, dl, dt, dd, p, h1, h2, h3 {
 
 body {
 	font-family: arial;
+	background: #efefef;
+	color: #333;
+	font-size:14px;
 }
 
 .header{
-	background: #E7E7E7;
+	background: #333;
 	padding-bottom: 40px;
+	color: #f1f1f1;
 }
 
 h1 { 
-	font-size: 70px;
+	font-size: 60px;
 	padding: 75px 0 30px;
 	text-align: center; 
+	font-family: 'helvetica neue', helvetica-neue, helvetica;
+	font-weight: bold;
 }
 
 h2 { 
@@ -34,7 +40,7 @@ h3 {
 }
 
 .desc { 
-	font-size: 22px; 
+	font-size: 16px; 
 	line-height: 130%; 
 	text-align: center; 
 	width: 800px;
@@ -48,24 +54,47 @@ h3 {
 
 .nav a {
 	display: inline-block;
-	color: white; 
-	font-size: 22px; 
+	color: #fff1f1; 
+	font-size: 18px; 
+	font-family: arial;
 	letter-spacing: 2px;
 	text-align: center; 
-	background: #4cbef2;
+	background: #ccc;
 	text-decoration: none;
-	width: 220px;
-	height: 60px;
-	line-height: 60px;
+	width: 140px;
+	height: 40px;
+	line-height: 40px;
 	margin-right: 20px;
 	border-radius: 12px;
 }
 
-p {
+.nav .down {
+	background: #e66000;
+	background-image: linear-gradient(#e66000, #e66000 50%, #d35800 51%, #d35800);
+}
+
+.nav .doc {
+	background: #0095dd;
+	background-image: linear-gradient(#0095dd, #0095dd 50%, #0083C2 51%, #0083C2);
+}
+
+.nav .source {
+	background: #97c03d;
+	background-image: linear-gradient(#97c03d, #97c03d 50%, #82A733 51%, #82A733);
+}
+
+.use {
 	font-size: 16px; 
 	width: 780px;
 	margin: 12px auto;
 	line-height: 120%; 
+}
+
+.use em {
+	font-family: 'Courier New';
+	background:#fff;
+	border: 1px solid #666;
+	margin:0 5px;
 }
 
 ol {
@@ -74,18 +103,19 @@ ol {
 }
 
 li {
-    color: #979797;
+    color: #666;
 	font-size: 15px; 
 	width: 740px;
-	margin: 10px auto;
+	margin: 20px auto;
 	line-height: 120%; 
 }
 
 code {
-	color: red;
+	color: #999;
 	background: #E7E7E7;
 	padding: 2px;
 	line-height: 160%; 
+	font-family: 'Courier New';
 }
 
 .try-template {
@@ -102,21 +132,31 @@ code {
 	text-align: center;
 }
 
+textarea {
+	font-size:14px;
+	font-family: 'Courier New';
+	border: 1px solid #666;
+}
+
 .try-template textarea {
 	background:#DFF6FE;
 	width: 384px;
-	height: 180px;
-	resize: none;
+	height: 200px;
 }
 
 .try-data textarea {
 	background:#E0F9E4;
 	width: 384px;
-	height: 180px;
-	resize: none;
+	height: 200px;
 }
 
 .try-result {
 	clear: both;
 	margin-bottom: 40px;
+}
+
+.try-result textarea {
+	width:794px; 
+	height:180px; 
+	background:#E7E7E7;
 }

@@ -10,11 +10,11 @@
 		<h1>ETPL</h1>
 		<p class="desc">Enterprise Template是一个灵活、具有强大复用能力的高性能模板引擎<br />适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用</p>
 		<div class="nav">
-			<a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip">↓Download</a><a href="https://github.com/ecomfe/etpl#start" target="_blank">→Document</a>
+			<a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down">Download</a><a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc">Document</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source">Source</a>
 		</div>
 	</div>
 	<h2>Start</h2>
-	<p>ETPL可以在CommonJS/AMD的模块定义环境中使用，也能直接在页面下通过script src=的方式引用：</p>
+	<p class="use">ETPL可以在CommonJS/AMD的模块定义环境中使用，也能直接在页面下通过<em>&lt;script src=</em>引用：</p>
 	<ol>
 		<li>CommonJS/AMD环境下需要通过如下代码得到ETPL的模块。<br /><code>var etpl = require( 'etpl' );</code></li>
 		<li>得到ETPL模块对象后，首先对模板源代码进行编译，会能得到编译后的function。<br /><code>var render = etpl.compile( 'Hello ${name}!' );</code></li>
@@ -24,18 +24,19 @@
 	<div style="width:800px; margin:0 auto;">
 		<div class="try-template">
 			<h3>Template</h3>
-			<textarea></textarea>
+			<textarea id="text-template"></textarea>
 		</div>
 		<div class="try-data">
 			<h3>Data</h3>
-			<textarea></textarea>
+			<textarea id="text-data"></textarea>
 		</div>
 		<div class="try-result">
 			<h3>Result</h3>
-			<textarea style="width:794px; height:180px; background:#E7E7E7; "></textarea>
+			<textarea id="text-result" disabled="1"></textarea>
 		</div>
 	</div>
+	<script src="etpl.js"></script>
 	<script src="try.js"></script>
-	<script>alert(2);</script>
 </body>
 </html>
+<!-- product by ci -->
