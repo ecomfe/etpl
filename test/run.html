@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>ETPL Spec Runner - use jasmine-1.3.0</title>
+
+  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.0/jasmine.css">
+  <script src="lib/jasmine-1.3.0/jasmine.js"></script>
+  <script src="lib/jasmine-1.3.0/jasmine-html.js"></script>
+  <script src="lib/esl-1.6.6.js"></script>
+</head>
+
+<body>
+  <script>
+  require.config({
+    packages: [
+      {name: 'etpl', location: 'etpl'}
+    ]
+  });
+  require(
+    [ 'test' ], 
+    function (test) {
+      test.start();
+    }
+  );
+  </script>
+</body>
+</html>

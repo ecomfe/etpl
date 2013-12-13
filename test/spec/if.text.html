@@ -1,0 +1,77 @@
+::tpl::
+<!-- target:ifNumTarget -->
+<!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if -->
+<!-- target:ifUnaryTarget -->
+<!-- if: ${num} -->1<!--/if-->
+<!-- if: !${unknown} -->1<!--/if-->
+<!-- if: ${unknown} -->1<!--else-->2<!--/if-->
+<!-- target:ifBinaryTarget -->
+<!-- if: ${num} || 1 -->1<!--/if-->
+<!-- if: ${num} && 1 -->1<!--/if-->
+<!-- if: ${num} == ${str} -->1<!--/if-->
+<!-- if: ${num} === ${str} -->1<!--else-->2<!--/if-->
+<!-- if: ${str} == "1" -->${str}<!--else-->2<!--/if-->
+<!-- if: ${str} === 1 -->${str}<!--else-->2<!--/if-->
+<!-- target:ifComplexTarget -->
+<!-- if: !( 0 && 0 ) -->1<!--else-->2<!--/if-->
+<!-- if: !0 && 0 -->1<!--else-->2<!--/if-->
+<!--target:ifComplexPropertyAccessTarget-->
+<!-- if: ${level1[1]['num']} -->1<!--else-->2<!--/if-->
+<!-- if: ${level1[0].num} -->1<!--else-->2<!--/if-->
+<!-- target:ifNestedTarget -->
+<!-- if: ${num} == ${str} -->
+    <!-- if: ${num} === ${str} -->same type<!-- else -->different type<!-- /if -->
+<!-- else -->
+    different value
+<!--/if-->
+
+::expect-ifUnaryTarget::
+
+1
+1
+2
+
+::expect-ifBinaryTarget::
+
+1
+1
+1
+2
+1
+2
+
+::expect-ifComplexTarget::
+
+1
+2
+
+::expect-ifComplexTarget::
+
+1
+2
+
+::expect-ifNestedTarget-samevalue::
+
+
+    different type
+
+
+::expect-ifNestedTarget-differentvalue::
+
+
+    different value
+
+
+::expect-number-1::
+
+1
+
+::expect-number-0::
+
+zero
+
+::expect-number-invalid::
+
+invalid
+
+::eof::

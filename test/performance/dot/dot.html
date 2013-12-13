@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Render Time Test - doT</title>
+<script src="dot.js"></script>
+<script src="../loops.js"></script>
+<script src="../render-data.js"></script>
+<script src="../load-template.js"></script>
+</head>
+
+<body>
+<script>
+var render = doT.template(loadTemplate('template.html'));
+var now = new Date();
+for ( var i = 0; i < loops; i++ ) {
+    render( data );
+}
+var renderTime = (new Date) - now;
+if (parent && parent.receiveResult) {
+    parent.receiveResult( renderTime );
+} else {
+    alert( renderTime );
+    var resultArea = document.createElement('textarea');
+    resultArea.style.width = '800px';
+    resultArea.style.height = '600px';
+    resultArea.value = render( data );
+    document.body.appendChild( resultArea );
+}
+</script>
+</body>
+</html>

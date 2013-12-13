@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>ETPL - Enterprise Template</title>
+	<link rel="stylesheet" href="page.css" />
+</head>
+<body>
+	<div class="header">
+		<h1>ETPL</h1>
+		<p class="desc">Enterprise Template是一个灵活、具有强大复用能力的高性能模板引擎<br />适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用</p>
+		<div class="nav">
+			<a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip">↓Download</a><a href="https://github.com/ecomfe/etpl#start" target="_blank">→Document</a>
+		</div>
+	</div>
+	<h2>Start</h2>
+	<p>ETPL可以在CommonJS/AMD的模块定义环境中使用，也能直接在页面下通过script src=的方式引用：</p>
+	<ol>
+		<li>CommonJS/AMD环境下需要通过如下代码得到ETPL的模块。<br /><code>var etpl = require( 'etpl' );</code></li>
+		<li>得到ETPL模块对象后，首先对模板源代码进行编译，会能得到编译后的function。<br /><code>var render = etpl.compile( 'Hello ${name}!' );</code></li>
+		<li>然后执行这个function，传入数据对象，就能得到模板执行的结果了。<br /><code>var text = render( {name: 'etpl'} );</code></li>
+	</ol>
+	<h2>Try</h2>
+	<div style="width:800px; margin:0 auto;">
+		<div class="try-template">
+			<h3>Template</h3>
+			<textarea></textarea>
+		</div>
+		<div class="try-data">
+			<h3>Data</h3>
+			<textarea></textarea>
+		</div>
+		<div class="try-result">
+			<h3>Result</h3>
+			<textarea style="width:794px; height:180px; background:#E7E7E7; "></textarea>
+		</div>
+	</div>
+	<script src="try.js"></script>
+	<script>alert(2);</script>
+</body>
+</html>

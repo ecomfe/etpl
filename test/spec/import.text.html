@@ -1,0 +1,40 @@
+::name::
+etpl
+::simple::
+<!-- target: importHello -->Hello, I am ${name}!
+<!-- target: importCopy -->Copyright ${name}
+<!-- target: importPara --><p><!-- import: importHello --></p>
+<!-- master: importMaster -->
+<header><!-- contentplaceholder: header --></header>
+<footer><!-- import: importCopy --></footer>
+<!-- master: importMaster2 -->
+<header><!-- contentplaceholder: header --></header>
+<footer><!-- import: importCopy2 --></footer>
+<!-- target: importMasterTarget2(master=importMaster2) -->
+<!-- content: header --><!-- import: importHello2 -->
+<!-- target: importMasterTarget(master=importMaster) -->
+<!-- content: header --><!-- import: importHello -->
+::other-imported::
+<!-- target: importHello2 -->Hello, ${name}!
+<!-- target: importCopy2 -->Copyright ${name} 2013
+
+::expect-importPara::
+<p>Hello, I am etpl!
+</p>
+
+::expect-importMasterTarget::
+
+<header>Hello, I am etpl!
+</header>
+<footer>Copyright etpl
+</footer>
+
+::expect-importMasterTarget2::
+
+<header>Hello, etpl!
+
+</header>
+<footer>Copyright etpl 2013
+</footer>
+
+::eof::

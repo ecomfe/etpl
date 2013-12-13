@@ -1,0 +1,55 @@
+::name::
+<b>ecom&fe</b>
+::info-repos::
+https://github.com/ecomfe/etpl
+::info-contributor-name::
+erik
+::info-contributor-email::
+errorrik@gmail.com
+::address::
+baidu
+::tpl::
+<!-- target: variableSubstitution-filters -->
+Hello ${name|html|url}!
+<!-- target: variableSubstitution-normal -->
+Hello ${name}!
+<!-- target: variableSubstitution-raw -->
+Hello ${name|raw}!
+<!-- target: variableSubstitution-property-accessor -->
+Repos: ${info.repos}
+Contributor: ${info.contributor.name}[${info.contributor.email}]
+<!-- target: variableSubstitution-property-accessor2 -->
+Repos: ${info["repos"]}
+Contributor: ${contributors[0].name}[${contributors[0]['email']}]
+Contributor: ${info['contributor'].name}[${info["contributor"]["email"]}]
+<!-- target: variableSubstitution-mix -->
+Hello ${name} in ${address}! Bye ${name}! Raw is ${name|raw}!
+
+::expect-normal::
+
+Hello &lt;b&gt;ecom&amp;fe&lt;/b&gt;!
+
+::expect-raw::
+
+Hello <b>ecom&fe</b>!
+
+::expect-filters::
+
+Hello %26lt%3Bb%26gt%3Becom%26amp%3Bfe%26lt%3B%2Fb%26gt%3B!
+
+::expect-mix::
+
+Hello &lt;b&gt;ecom&amp;fe&lt;/b&gt; in baidu! Bye &lt;b&gt;ecom&amp;fe&lt;/b&gt;! Raw is <b>ecom&fe</b>!
+
+::expect-property-accessor::
+
+Repos: https://github.com/ecomfe/etpl
+Contributor: erik[errorrik@gmail.com]
+
+::expect-property-accessor2::
+
+Repos: https://github.com/ecomfe/etpl
+Contributor: erik[errorrik@gmail.com]
+Contributor: erik[errorrik@gmail.com]
+
+::eof::

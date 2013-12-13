@@ -1,0 +1,39 @@
+::tpl-simple::
+<!-- target: varSimpleTarget --><!-- var: myVar = 'etpl' -->
+Hello ${myVar}!
+::expect-simple::
+
+Hello etpl!
+::tpl-prior::
+<!-- target: varPriorNoVarTarget -->Hello ${name}!
+<!-- target: varPriorVarTarget --><!-- var: name = '<b>etpl</b>' -->Hello ${name}!
+
+::expect-prior-novar::
+Hello etpl!
+
+::expect-prior-var::
+Hello &lt;b&gt;etpl&lt;/b&gt;!
+
+::tpl-ba::
+<!-- target: varBATarget -->
+Hello ${name}!
+<!-- var: name = '<b>etpl</b>' -->
+Hello ${name}!
+::expect-ba::
+
+Hello etpl!
+
+Hello &lt;b&gt;etpl&lt;/b&gt;!
+::tpl-around::
+<!-- target: varAroundTarget --><!-- if: true --><!-- var: name = 'etpl' --><!-- /if -->
+Hello ${name}!
+::expect-around::
+
+Hello etpl!
+::tpl-data-getter::
+<!-- target: varDataGetterTarget --><!-- var: myVar = 'etpl' -->
+Hello ${myVar}!
+::expect-data-getter::
+
+Hello etpl!
+::eof::

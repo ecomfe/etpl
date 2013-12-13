@@ -1,0 +1,114 @@
+::simple::
+<!-- target:masterSimpleTarget( master = masterSimple ) -->
+<!-- content:content1 -->abc<!-- /content -->
+
+<!-- master:masterSimple --><!-- contentplaceholder:content1 -->def
+
+::expect-simple::
+abcdef
+
+::simple2::
+<!-- target:masterSimple2Target( master = masterSimple2 ) -->
+<!-- content:header -->header
+<!-- content:body -->body
+<!-- content:footer -->footer
+<!-- master:masterSimple2 -->
+<header><!-- contentplaceholder: header --></header>
+<div><!-- contentplaceholder: body --></div>
+<footer><!-- contentplaceholder: footer --></footer>
+::expect-simple2::
+
+<header>header
+</header>
+<div>body
+</div>
+<footer>footer
+</footer>
+::default-cph::
+<!-- master:masterDefaultCPH -->
+<div class="header">
+<!-- contentplaceholder:header -->header<!-- /contentplaceholder -->
+</div>
+<div class="body">
+<!-- contentplaceholder:body -->body<!-- /contentplaceholder -->
+</div>
+<!-- target:masterDefaultCPHTarget(master=masterDefaultCPH) -->
+<!-- content:body -->body2
+
+::expect-default-cph::
+
+<div class="header">
+header
+</div>
+<div class="body">
+body2
+
+</div>
+
+::applyto-master::
+<!-- master:masterFather -->
+<div class="header">
+<!-- contentplaceholder:header -->header<!-- /contentplaceholder -->
+</div>
+<div class="body">
+<!-- contentplaceholder:body -->body<!-- /contentplaceholder -->
+</div>
+<!-- master:masterChild(master=masterFather) -->
+<!-- content: header -->child header
+<!-- content: body --><!-- contentplaceholder:body-head -->
+<!-- contentplaceholder:body -->child body<!-- /contentplaceholder -->
+
+<!-- target:masterChildTargetNoContent(master=masterChild) -->
+<!-- target:masterChildTargetBodyContent(master=masterChild) -->
+<!-- content: body -->child body2
+<!-- target:masterChildTargetBHContent(master=masterChild) -->
+<!-- content: body-head -->child head
+::expect-masterChildTargetNoContent::
+
+<div class="header">
+child header
+
+</div>
+<div class="body">
+
+child body
+
+
+</div>
+
+::expect-masterChildTargetBodyContent::
+
+<div class="header">
+child header
+
+</div>
+<div class="body">
+
+child body2
+
+
+
+</div>
+
+::expect-masterChildTargetBHContent::
+
+<div class="header">
+child header
+
+</div>
+<div class="body">
+child head
+child body
+
+
+</div>
+
+::lazy-target::
+<!-- target:masterLazyTarget(master=masterLazy) -->
+<!-- content: content -->content
+::lazy-master::
+<!-- master:masterLazy --><!-- contentplaceholder: content -->
+::expect-lazy-target::
+content
+::eof::
+

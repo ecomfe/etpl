@@ -1,0 +1,86 @@
+::default-tpl::
+<!-- target: engineTarget -->default engine
+::myengine-tpl::
+<!-- target: engineTarget -->my engine
+::variable-tpl::
+<!-- target: engineVariableTarget -->Hello ${info.name}!
+::repeat-tpl::
+<!-- target: engineRepeatTarget -->default engine
+::repeat-master-tpl::
+<!-- master: engineRepeatMaster -->default engine
+::data-tpl::
+<!-- target: engineDataTarget -->Hello ${info.name} by ${info.contributor.name}[${info.contributor.email}]!
+::custom-filter-tpl::
+<!-- target: engineCustomFilterTarget -->Hello ${name}!
+::custom-filter-tpl2::
+<!-- target: engineCustomFilterTarget2 -->Hello ${name}!
+::upper-tpl::
+<!-- target: engineUpperTarget -->Hello ${name|upper}!
+::upper-tpl2::
+<!-- target: engineUpperTarget2 -->Hello ${name|upper2()}! Hello ${name | upper2(true)}!
+::data::
+({
+    info: {
+        name: 'etpl', 
+        contributor: {
+            name:'errorrik', 
+            email:'errorrik@gmail.com'
+        }
+    }
+})
+::data-getter::
+({
+    get: function (name){
+        if ( name == 'info.name' ) {
+            return 'etpl';
+        }
+        if ( name == 'info.contributor.name' ) {
+            return 'errorrik';
+        }
+        if ( name == 'info.contributor.email' ) {
+            return 'errorrik@gmail.com';
+        }
+    }
+})
+::custom-options::
+<% target: engineCustomTarget %><!-- import: a -->
+::expect-default::
+default engine
+::expect-myengine::
+my engine
+::expect-custom-options::
+<!-- import: a -->
+::get-tpl::
+<!-- target: engineGetSimpleTarget -->Hello etpl!
+<!-- target: engineGetImportTarget -->
+<div><!--import: engineGetSimpleTarget --></div>
+<!-- target: engineGetMasterTarget(master=engineGetMaster) -->
+<!-- content: header -->header by target
+<!-- master: engineGetMaster -->
+<header><!-- contentplaceholder: header -->my header<!-- /contentplaceholder --></header>
+<div><!--import: engineGetSimpleTarget --></div>
+<footer><!-- contentplaceholder: footer -->my footer<!-- /contentplaceholder --></footer>
+::expect-engineGetSimpleTarget::
+Hello etpl!
+
+::expect-engineGetImportTarget::
+
+<div>Hello etpl!
+</div>
+
+::expect-engineGetMasterTarget::
+
+<header>header by target
+</header>
+<div>Hello etpl!
+</div>
+<footer>my footer</footer>
+::expect-custom-filter-raw::
+Hello <b>etpl</b>!
+::expect-custom-filter-html::
+Hello &lt;b&gt;etpl&lt;/b&gt;!
+::expect-engineUpperTarget::
+Hello ETPL!
+::expect-engineUpperTarget2::
+Hello ETPL! Hello Etpl!
+::eof::

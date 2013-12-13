@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>ETPL Compile Time Test</title>
+<script src="../lib/esl-1.6.6.js"></script>
+</head>
+
+<body>
+<script>
+require.config( { 
+    packages: [
+        {name: 'etpl', location: '../etpl'}
+    ]
+} );
+require(
+    [ 'etpl' ], 
+    function (etpl) {
+        var xhr = window.XMLHttpRequest 
+            ? new XMLHttpRequest() 
+            : new ActiveXObject( 'Microsoft.XMLHTTP' );
+        xhr.open( 'GET', 'compile-time-tpl.html', false );
+        xhr.send( null );
+
+        if ( xhr.status >= 200 && xhr.status < 300 ) {
+            var text = xhr.responseText;
+            var now = new Date();
+            etpl.compile( text );
+            alert( 'Compile use ' + ( new Date() - now ) + 'ms, text length ' + text.length );
+        }
+    }
+);
+</script>
+</body>
+</html>

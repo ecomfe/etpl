@@ -1,0 +1,104 @@
+::tpl::
+<!-- target:forItemTarget -->
+<!-- for: ${myList} as ${item} -->${item}|<!-- /for -->
+<!-- target:forItemPropertyAccessTarget -->
+<ul>
+<!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forItemCommandPropertyAccessTarget -->
+<ul>
+<!-- for: ${ecomfe['persons']} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forItemIndexTarget -->
+<!-- for: ${myList} as ${item}, ${idx} --><!--if:${idx}>0-->|<!--/if-->${item},${idx}<!-- /for -->
+<!-- target:forOItemTarget -->
+<!-- for: ${myObj} as ${item} -->${item}|<!-- /for -->
+<!-- target:forOItemKeyTarget -->
+<!-- for: ${myList} as ${item}, ${key} --><!--if:${key}!='0'-->|<!--/if-->${item},${key}<!-- /for -->
+<!-- target:forOItemPropertyAccessTarget -->
+<ul>
+<!-- for: ${personsIndex} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forOItemCommandPropertyAccessTarget -->
+<ul>
+<!-- for: ${ecomfe.personsIndex} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forDataGetterTarget -->
+<ul>
+<!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forNestedTarget -->
+<!-- for: ${persons} as ${person} -->
+    <!-- for: ${person} as ${value},${key} -->
+    ${key}:${value}
+    <!-- /for -->
+<!-- /for -->
+::myList::
+[1,2,3,4,5]
+::myObj::
+({ "0":1, "1":2, "2":3, "3":4, "4":5 })
+::persons::
+[
+    {name: 'erik', email: 'errorrik@gmail.com'},
+    {name: 'firede', email: 'firede@gmail.com'}
+]
+::personsIndex::
+({
+    erik: {name: 'erik', email: 'errorrik@gmail.com'},
+    firede: {name: 'firede', email: 'firede@gmail.com'}
+})
+::expect-forItemTarget::
+
+1|2|3|4|5|
+
+::expect-forOItemTarget::
+
+1|2|3|4|5|
+
+::expect-forItemPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forItemCommandPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forOItemPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forOItemCommandPropertyAccessTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forItemIndexTarget::
+
+1,0|2,1|3,2|4,3|5,4
+
+::expect-forOItemKeyTarget::
+
+1,0|2,1|3,2|4,3|5,4
+
+::except-nested-1::
+name:erik
+::except-nested-2::
+email:errorrik@gmail.com
+::except-nested-3::
+name:firede
+::except-nested-4::
+email:firede@gmail.com
+::except-forDataGetterTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::eof::

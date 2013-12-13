@@ -1,0 +1,11 @@
+{
+    "name": "etpl",
+    "version": "2.0.6",
+    "contributors": [
+        { "name": "erik", "email": "errorrik@gmail.com" },
+        { "name": "otakustay", "email": "otakustay@gmail.com" }
+    ],
+    "main": "main",
+    "homepage": "https://github.com/ecomfe/etpl",
+    "repository": "git://github.com/ecomfe/etpl"
+}
