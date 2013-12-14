@@ -162,6 +162,18 @@
                 'Hello ${name}!'
             ].join( '\n' ),
             data: '{ "name": "ETPL" }'
+        },
+        'dg': {
+            template: [
+                'Hello ${ETPL}!'
+            ].join( '\n' ),
+            data: [
+                '{ ',
+                '    get: function (name) {',
+                '        return name + ":D";',
+                '    }',
+                '}'
+            ].join( '\n' ),
         }
     };
 
