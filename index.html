@@ -15,13 +15,23 @@
 	</div>
 	<h2>Start</h2>
 	<p class="use">ETPL可以在CommonJS/AMD的模块定义环境中使用，也能直接在页面下通过<em>&lt;script src=</em>引用：</p>
-	<ol>
+	<ol class="use-step">
 		<li>CommonJS/AMD环境下需要通过如下代码得到ETPL的模块。<br /><code>var etpl = require( 'etpl' );</code></li>
 		<li>得到ETPL模块对象后，首先对模板源代码进行编译，会能得到编译后的function。<br /><code>var render = etpl.compile( 'Hello ${name}!' );</code></li>
 		<li>然后执行这个function，传入数据对象，就能得到模板执行的结果了。<br /><code>var text = render( {name: 'etpl'} );</code></li>
 	</ol>
 	<h2>Try</h2>
-	<div style="width:800px; margin:0 auto;">
+	<div class="try-panel">
+		<ul class="try-nav" id="try-nav">
+			<li data-nav="vs">变量替换</li>
+			<li data-nav="if">分支</li>
+			<li data-nav="for">循环</li>
+			<li>import</li>
+			<li data-nav="master">母版</li>
+			<li>use</li>
+			<li data-nav="filter">内容块过滤</li>
+			<li data-nav="var">声明变量</li>
+		</ul>
 		<div class="try-template">
 			<h3>Template</h3>
 			<textarea id="text-template"></textarea>

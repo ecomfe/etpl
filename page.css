@@ -36,7 +36,7 @@ h2 {
 h3 { 
 	font-size: 20px; 
 	font-style: italic; 
-	padding: 20px 0 10px;
+	padding: 10px 0 10px;
 }
 
 .desc { 
@@ -97,12 +97,12 @@ h3 {
 	margin:0 5px;
 }
 
-ol {
+.use-step {
 	width: 780px;
 	margin: 12px auto;
 }
 
-li {
+.use-step li {
     color: #666;
 	font-size: 15px; 
 	width: 740px;
@@ -110,7 +110,7 @@ li {
 	line-height: 120%; 
 }
 
-code {
+.use-step code {
 	color: #999;
 	background: #E7E7E7;
 	padding: 2px;
@@ -118,14 +118,42 @@ code {
 	font-family: 'Courier New';
 }
 
+.try-panel {
+	width:800px; 
+	margin:0 auto;
+}
+
+.try-nav {
+	height: 30px;
+	padding: 20px 0 0 10px;
+}
+
+.try-nav li {
+	margin-right: 10px;
+	float: left;
+	list-style: none;
+	background: #ddd;
+	padding: 0 20px;
+	cursor: pointer;
+	font-family: Helvetica, arial;
+	color: #666;
+	line-height: 22px;
+	border-radius: 3px;
+}
+
+.try-nav li:hover {
+	background: #aaa;
+	color: #333;
+}
+
 .try-template {
 	float: left;
-	width: 390px;
+	width: 490px;
 }
 
 .try-data {
 	float: right;
-	width: 390px;
+	width: 290px;
 }
 
 .try-template h3, .try-data h3, .try-result h3 {
@@ -140,13 +168,13 @@ textarea {
 
 .try-template textarea {
 	background:#DFF6FE;
-	width: 384px;
+	width: 484px;
 	height: 200px;
 }
 
 .try-data textarea {
 	background:#E0F9E4;
-	width: 384px;
+	width: 284px;
 	height: 200px;
 }
 
