@@ -43,6 +43,9 @@ var render = etpl.compile( 'Hello ${name}!' );
 var text = render( {name: 'etpl'} );
 ```
 
+编写模板和数据前，如果对执行结果有疑虑，就去ETPL的[homepage](http://ecomfe.github.io/etpl/)试试看吧。
+
+
 ## Syntax
 
 ### 基础
