@@ -359,7 +359,7 @@
                 }
                 else {
                     onOutBlock( open );
-                    onOutBloc( text );
+                    onOutBlock( text );
                 }
             }
             else {
