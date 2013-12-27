@@ -3,8 +3,11 @@ define(
         var etpl = require( 'etpl' );
         var readText = require( 'readTextSync' );
         var text = readText( 'spec/variableSubstitution.text.html' );
-
+        etpl.addFilter( 'slice', function (source, begin, end) {
+            return source.slice( begin, end );
+        } );
         etpl.compile( text['tpl'] );
+
         var data = {
             name: text['name'],
             address: text['address'],
@@ -14,7 +17,9 @@ define(
                     name: text['info-contributor-name'],
                     email: text['info-contributor-email']
                 }
-            }
+            },
+            first: parseInt( text.first, 10 ),
+            end: parseInt( text.end, 10 )
         };
 
         data.contributors = [data.info.contributor];
@@ -41,6 +46,14 @@ define(
                 function() {
                     expect(etpl.getRenderer('variableSubstitution-filters')(data))
                         .toEqual(text['expect-filters']);
+                }
+            );
+
+            it(
+                'can accept data in filter', 
+                function() {
+                    expect(etpl.getRenderer('variableSubstitution-filter-arg')(data))
+                        .toEqual(text['expect-filter-arg']);
                 }
             );
 
