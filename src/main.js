@@ -343,28 +343,56 @@
      * @param {string} source 要解析的文本
      * @param {string} open 包含块开头
      * @param {string} close 包含块结束
+     * @param {boolean} greedy 是否贪婪匹配
      * @param {function({string})} onInBlock 包含块内文本的处理函数
      * @param {function({string})} onOutBlock 非包含块内文本的处理函数
      */
-    function parseTextBlock( source, open, close, onInBlock, onOutBlock ) {
+    function parseTextBlock( source, open, close, greedy, onInBlock, onOutBlock ) {
         var closeLen = close.length;
         var texts = source.split( open );
+        var level = 0;
+        var buf = [];
+
         for ( var i = 0, len = texts.length; i < len; i++ ) {
             var text = texts[ i ];
+
             if ( i ) {
-                var closeIndex = text.indexOf( close );
-                if ( closeIndex >= 0 ) {
-                    onInBlock( text.slice( 0, closeIndex ) );
-                    onOutBlock( text.slice( closeIndex + closeLen ) );
+                level++;
+                while ( 1 ) {
+                    var closeIndex = text.indexOf( close );
+                    if ( closeIndex < 0 ) {
+                        buf.push( text );
+                        break;
+                    }
+                    else {
+                        level = greedy ? level - 1 : 0;
+                        buf.push( 
+                            level > 0 ? open : '',
+                            text.slice( 0, closeIndex ),
+                            level > 0 ? close : ''
+                        );
+                        text = text.slice( closeIndex + closeLen );
+                        
+                        if ( level === 0 ) {
+                            break;
+                        }
+                    }
                 }
-                else {
-                    onOutBlock( open );
-                    onOutBlock( text );
+
+                if ( level === 0 ) {
+                    onInBlock( buf.join( '' ) );
+                    text && onOutBlock( text );
+                    buf = [];
                 }
             }
             else {
                 onOutBlock( text );
             }
+        }
+
+        if ( level > 0 && buf.length > 0 ) {
+            onOutBlock( open );
+            onOutBlock( buf.join( '' ) );
         }
     }
 
@@ -391,7 +419,7 @@
             var defaultFilter = this.engine.options.defaultFilter;
             var code = new ArrayBuffer();
             parseTextBlock(
-                this.value, '${', '}',
+                this.value, '${', '}', 1,
 
                 function ( text ) { // ${...}内文本的处理函数
                     // 加入默认filter
@@ -1577,7 +1605,7 @@
         }
 
         parseTextBlock(
-            source, commandOpen, commandClose,
+            source, commandOpen, commandClose, 0,
 
             function ( text ) { // <!--...-->内文本的处理函数
                 var match = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.exec( text );
