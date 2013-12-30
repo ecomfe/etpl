@@ -300,21 +300,20 @@
      * 
      * @inner
      * @param {string} name 访问变量名
-     * @param {boolean} isStr 是否字符串形式的访问
      * @return {string}
      */
-    function toGetVariableLiteral( name, isStr ) {
+    function toGetVariableLiteral( name ) {
         return stringFormat(
-            (isStr ? 'gvs({0},["{1}"])' : 'gv({0},["{1}"])'),
+            'gv({0},["{1}"])',
             stringLiteralize( name ),
             name.replace(
-                /\[['"]?([^'"]+)['"]?\]/g, 
-                function ( match, name ) {
-                    return '.' + name;
-                }
-            )
-            .split( '.' )
-            .join( '","' )
+                    /\[['"]?([^'"]+)['"]?\]/g, 
+                    function ( match, name ) {
+                        return '.' + name;
+                    }
+                )
+                .split( '.' )
+                .join( '","' )
         );
     }
 
@@ -372,7 +371,7 @@
                             level > 0 ? close : ''
                         );
                         text = text.slice( closeIndex + closeLen );
-                        
+
                         if ( level === 0 ) {
                             break;
                         }
@@ -429,10 +428,23 @@
 
                     var segs = text.split( /\s*\|\s*/ );
 
-                    // variableCode最先有gvs调用，获取variable的string形式
+                    // variableCode最先通过gv和ts调用，取得variable的string形式
                     // 然后通过循环，在外面包filter的调用
                     // 形成filter["b"](filter["a"](gvs(...)))
-                    var variableCode = [ toGetVariableLiteral( segs[ 0 ], 1 ) ];
+                    // 当variableName以*起始时，忽略toString，直接传递原值给filter
+                    var variableName = segs[ 0 ];
+                    var toStringHead = 'ts(';
+                    var toStringFoot = ')';
+                    if ( variableName.indexOf( '*' ) === 0 ) {
+                        variableName = variableName.slice( 1 );
+                        toStringHead = toStringFoot = '';
+                    }
+                    var variableCode = [ 
+                        toStringHead,
+                        toGetVariableLiteral( variableName ),
+                        toStringFoot
+                    ];
+
                     for ( var i = 1, len = segs.length; i < len; i++ ) {
                         var seg = segs[ i ];
 
@@ -602,17 +614,16 @@
         +     'for(var i=1,l=ps.length;i<l;i++)if(d!=null)d = d[ps[i]];'
         +     'return d;'
         + '},'
-        + 'gvs=function(n,ps){'
-        +     'var v=gv(n,ps);'
-        +     'if(typeof v==="string"){return v;}'
-        +     'if(v==null){v="";}'
-        +     'return ""+v;'
+        + 'ts=function(s){'
+        +     'if(typeof s==="string"){return s;}'
+        +     'if(s==null){s="";}'
+        +     'return ""+s;'
         + '};'
     ;
     // v: variables
     // fs: filters
     // gv: getVariable
-    // gvs: getVariableString
+    // ts: toString
     // n: name
     // ps: properties
     // hg: hasGetter
