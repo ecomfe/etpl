@@ -12,6 +12,8 @@ baidu
 0
 ::end::
 10
+::date::
+(function() {return new Date(2011, 10, 11);})()
 ::tpl::
 <!-- target: variableSubstitution-filters -->
 Hello ${name|html|url}!
@@ -19,6 +21,8 @@ Hello ${name|html|url}!
 Hello ${name}!
 <!-- target: variableSubstitution-raw -->
 Hello ${name|raw}!
+<!-- target: variableSubstitution-rawvalue -->
+Date: ${*date|dateFormat}
 <!-- target: variableSubstitution-filter-arg -->
 Hello ${name | slice( ${first}+3, ${end} ) }!
 <!-- target: variableSubstitution-property-accessor -->
@@ -38,6 +42,10 @@ Hello &lt;b&gt;ecom&amp;fe&lt;/b&gt;!
 ::expect-raw::
 
 Hello <b>ecom&fe</b>!
+
+::expect-rawvalue::
+
+Date: 2011-11-11
 
 ::expect-filters::
 

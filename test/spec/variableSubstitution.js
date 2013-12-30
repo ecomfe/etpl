@@ -6,6 +6,9 @@ define(
         etpl.addFilter( 'slice', function (source, begin, end) {
             return source.slice( begin, end );
         } );
+        etpl.addFilter( 'dateFormat', function (source) {
+            return source.getFullYear() + '-' + (source.getMonth() + 1) + '-' + source.getDate();
+        } );
         etpl.compile( text['tpl'] );
 
         var data = {
@@ -19,7 +22,8 @@ define(
                 }
             },
             first: parseInt( text.first, 10 ),
-            end: parseInt( text.end, 10 )
+            end: parseInt( text.end, 10 ),
+            date: eval( text.date )
         };
 
         data.contributors = [data.info.contributor];
@@ -46,6 +50,14 @@ define(
                 function() {
                     expect(etpl.getRenderer('variableSubstitution-filters')(data))
                         .toEqual(text['expect-filters']);
+                }
+            );
+
+            it(
+                'should use raw value when prefix "*"', 
+                function() {
+                    expect(etpl.getRenderer('variableSubstitution-rawvalue')(data))
+                        .toEqual(text['expect-rawvalue']);
                 }
             );
 
