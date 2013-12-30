@@ -32,26 +32,24 @@
     }
 
     /**
-     * 随手写了个数组作为string buffer和stack
+     * 随手写了个栈
      *
      * @inner
      * @constructor
      */
-    function ArrayBuffer() {
+    function Stack() {
         this.raw = [];
         this.length = 0;
     }
 
-    ArrayBuffer.prototype = {
+    Stack.prototype = {
         /**
-         * 添加元素到数组末端
+         * 添加元素进栈
          *
-         * @param {...*} elem 添加项
+         * @param {*} elem 添加项
          */
-        push: function () {
-            for ( var i = 0, len = arguments.length; i < len; i++ ) {
-                this.raw[ this.length++ ] = arguments[ i ];
-            }
+        push: function ( elem ) {
+            this.raw[ this.length++ ] = elem;
         },
 
         /**
@@ -86,22 +84,12 @@
         },
 
         /**
-         * 连接数组项
-         *
-         * @param {string} split 分隔串
-         * @return {string}
-         */
-        join: function ( split ) {
-            return this.raw.join( split );
-        },
-
-        /**
-         * 根据查询条件获取元素，逆序查找
+         * 根据查询条件获取元素
          * 
          * @param {Function} condition 查询函数
          * @return {*}
          */
-        findReversed: function ( condition ) {
+        find: function ( condition ) {
             var index = this.length;
             while ( index-- ) {
                 var item = this.raw[ index ];
@@ -109,8 +97,6 @@
                     return item;
                 }
             }
-
-            return null;
         }
     };
 
@@ -416,7 +402,7 @@
          */
         getRendererBody: function () {
             var defaultFilter = this.engine.options.defaultFilter;
-            var code = new ArrayBuffer();
+            var code = [];
             parseTextBlock(
                 this.value, '${', '}', 1,
 
@@ -478,7 +464,7 @@
                 }
             );
             
-            return code.join('');
+            return code.join( '' );
         },
 
         /**
@@ -551,7 +537,7 @@
          * @return {string}
          */
         getRendererBody: function () {
-            var buf = new ArrayBuffer();
+            var buf = [];
             var children = this.children;
             for ( var i = 0; i < children.length; i++ ) {
                 buf.push( children[ i ].getRendererBody() );
@@ -571,7 +557,7 @@
     function autoCloseCommand( context, CommandType ) {
         var stack = context.stack;
         var closeEnd = CommandType 
-            ? stack.findReversed( function ( item ) {
+            ? stack.find( function ( item ) {
                 return item instanceof CommandType;
             } ) 
             : stack.bottom();
@@ -1043,7 +1029,7 @@
      */
     TargetCommand.prototype.getContent = function () {
         if ( this.isReady() ) {
-            var buf = new ArrayBuffer();
+            var buf = [];
             var children = this.children;
             for ( var i = 0; i < children.length; i++ ) {
                 buf.push( children[ i ].getContent() );
@@ -1574,7 +1560,7 @@
         var commandOpen = engine.options.commandOpen;
         var commandClose = engine.options.commandClose;
 
-        var stack = new ArrayBuffer();
+        var stack = new Stack();
         var analyseContext = {
             engine: engine,
             targets: [],
@@ -1582,7 +1568,7 @@
         };
 
         // text节点内容缓冲区，用于合并多text
-        var textBuf = new ArrayBuffer();
+        var textBuf = [];
 
         /**
          * 将缓冲区中的text节点内容写入
@@ -1597,7 +1583,7 @@
                 var textNode = new TextNode( text, engine );
                 textNode.beforeAdd( analyseContext );
                 stack.top().addTextNode( textNode );
-                textBuf = new ArrayBuffer();
+                textBuf = [];
             }
         }
 
@@ -1631,7 +1617,7 @@
                     flushTextBuf(); 
                     
                     if ( match[1] ) {
-                        var closeNode = stack.findReversed(
+                        var closeNode = stack.find(
                             isInstanceofNodeType
                         );
                         closeNode && closeNode.close( analyseContext );
