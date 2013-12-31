@@ -176,15 +176,34 @@ etpl.config({
 });
 ```
 
+ETPL默认支持3种filters，可以通过引擎的`addFilter`方法自定义扩展filter。
+
+- html: html转义
+- url: url转义
+- raw: 不进行任何转义
+
+
 变量替换支持多filter处理。filter之间以类似管道的方式，前一个filter的输出做为后一个filter的输入，向后传递。
 
-    ${myVariable|html|url}
+```html
+${myVariable|html|url}
+```
 
 filter支持参数传递，参数可以使用动态数据。
 
-    ${myVariable|comma(3)}
-    ${myVariable|comma(${commaLength})}
-    ${myVariable|comma(${commaLength}+1)}
+```html
+<!-- // 假设存在扩展filter: comma -->
+${myVariable|comma(3)}
+${myVariable|comma(${commaLength})}
+${myVariable|comma(${commaLength}+1)}
+```
+
+在变量替换中，引擎会默认将数据toString后传递给filter，以保证filter输入输出的类型一致性。如果filter期望接受的是原始数据，模板开发者需要通过前缀的`*`手工指定。
+
+```html
+<!-- // 假设存在扩展filter: dateFormat -->
+${*myDate|dateFormat('yyyy-MM-dd')}
+```
 
 #### 内容块过滤
 
