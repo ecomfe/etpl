@@ -198,7 +198,7 @@ ${myVariable|comma(${commaLength})}
 ${myVariable|comma(${commaLength}+1)}
 ```
 
-在变量替换中，引擎会默认将数据toString后传递给filter，以保证filter输入输出的类型一致性。如果filter期望接受的是原始数据，模板开发者需要通过前缀的`*`手工指定。
+在变量替换中，引擎会默认将数据toString后传递给filter，以保证filter输入输出的类型一致性。如果filter期望接受的是原始数据，模板开发者需要通过前缀的`*`指定。
 
 ```html
 <!-- // 假设存在扩展filter: dateFormat -->
