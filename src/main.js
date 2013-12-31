@@ -241,7 +241,7 @@
      * @const
      * @type {string}
      */
-    var RENDER_STRING_DECLATION = 'var str="";';
+    var RENDER_STRING_DECLATION = 'var r="";';
 
     /**
      * 用于render的字符串内容添加语句（起始）
@@ -250,7 +250,7 @@
      * @const
      * @type {string}
      */
-    var RENDER_STRING_ADD_START = 'str+=';
+    var RENDER_STRING_ADD_START = 'r+=';
 
     /**
      * 用于render的字符串内容添加语句（结束）
@@ -268,16 +268,16 @@
      * @const
      * @type {string}
      */
-    var RENDER_STRING_RETURN = 'return str;';
+    var RENDER_STRING_RETURN = 'return r;';
 
     // HACK: IE8-时，编译后的renderer使用push+join的策略进行字符串拼接
     if ( typeof navigator != 'undefined' 
         && /msie\s*([0-9]+)/i.test( navigator.userAgent )
         && RegExp.$1 - 0 < 8
     ) {
-        RENDER_STRING_DECLATION = 'var str=[],stri=0;';
-        RENDER_STRING_ADD_START = 'str[stri++]=';
-        RENDER_STRING_RETURN = 'return str.join("");';
+        RENDER_STRING_DECLATION = 'var r=[],ri=0;';
+        RENDER_STRING_ADD_START = 'r[ri++]=';
+        RENDER_STRING_RETURN = 'return r.join("");';
     }
 
     /**
