@@ -35,6 +35,11 @@ define(
                 var renderer = etpl.getRenderer('forItemPropertyAccessTarget');
                 expect(renderer(data)).toEqual(text['expect-forItemPropertyAccessTarget']);
             });
+
+            it('command literal allow break line', function() {
+                var renderer = etpl.getRenderer('forItemIndexTargetBreakLine');
+                expect(renderer(data)).toEqual(text['expect-forItemIndexTarget']);
+            });
         });
 
         describe('Object traversal', function() {

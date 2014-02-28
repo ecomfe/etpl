@@ -1,6 +1,8 @@
 ::tpl::
 <!-- target:ifNumTarget -->
-<!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0-->zero<!--else-->invalid<!-- /if -->
+<!-- if: ${num} > 0 -->${num}<!--elif: ${num} == 0
+    && true
+-->zero<!--else-->invalid<!-- /if -->
 <!-- target:ifUnaryTarget -->
 <!-- if: ${num} -->1<!--/if-->
 <!-- if: !${unknown} -->1<!--/if-->
@@ -15,6 +17,16 @@
 <!-- target:ifComplexTarget -->
 <!-- if: !( 0 && 0 ) -->1<!--else-->2<!--/if-->
 <!-- if: !0 && 0 -->1<!--else-->2<!--/if-->
+<!-- target:ifComplexTargetBreakLine -->
+<!-- if: !( 
+        0 
+        && 0
+    ) 
+-->1<!--else-->2<!--/if-->
+<!-- if: 
+    !0 
+    && 0 
+-->1<!--else-->2<!--/if-->
 <!--target:ifComplexPropertyAccessTarget-->
 <!-- if: ${level1[1]['num']} -->1<!--else-->2<!--/if-->
 <!-- if: ${level1[0].num} -->1<!--else-->2<!--/if-->

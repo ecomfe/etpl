@@ -10,6 +10,11 @@ define(
                 expect(renderer()).toEqual(text['expect-simple']);
             });
 
+            it('command literal allow break line', function() {
+                var renderer = etpl.compile( text['tpl-breakline'] );
+                expect(renderer()).toEqual(text['expect-breakline']);
+            });
+
             it('has higher priority than data variable', function() {
                 var data = {
                     name: 'etpl'

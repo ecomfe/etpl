@@ -4,6 +4,13 @@ Hello ${myVar}!
 ::expect-simple::
 
 Hello etpl!
+::tpl-breakline::
+<!-- target: varBreakLineTarget --><!-- var: erik = {
+    age: 29,
+    sex: 1
+} --><!-- if: ${erik.sex} -->male<!-- else -->female<!-- /if -->
+::expect-breakline::
+male
 ::tpl-prior::
 <!-- target: varPriorNoVarTarget -->Hello ${name}!
 <!-- target: varPriorVarTarget --><!-- var: name = '<b>etpl</b>' -->Hello ${name}!

@@ -4,8 +4,9 @@ define(
         var readText = require( 'readTextSync' );
         var text = readText( 'spec/simpleTarget.text.html' );
 
+        
         var render = etpl.compile( text['normal'] );
-        var renderAutoclose = etpl.compile( text['auto-close'] );
+        var renderAutoclose = etpl.getRenderer( 'simpleTarget-autoclose' );
 
         describe('Simple Target', function() {
             it('should parse correctly when closed manually', function() {

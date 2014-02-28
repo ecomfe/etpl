@@ -12,6 +12,14 @@ abcdef
 <!-- content:header -->header
 <!-- content:body -->body
 <!-- content:footer -->footer
+<!-- 
+target:masterSimple2TargetBreakline( 
+    master = masterSimple2 
+) 
+-->
+<!-- content:header -->header
+<!-- content:body -->body
+<!-- content:footer -->footer
 <!-- master:masterSimple2 -->
 <header><!-- contentplaceholder: header --></header>
 <div><!-- contentplaceholder: body --></div>
@@ -53,7 +61,13 @@ body2
 <div class="body">
 <!-- contentplaceholder:body -->body<!-- /contentplaceholder -->
 </div>
-<!-- master:masterChild(master=masterFather) -->
+<!-- 
+    master:
+        masterChild 
+        (
+            master = masterFather
+        ) 
+-->
 <!-- content: header -->child header
 <!-- content: body --><!-- contentplaceholder:body-head -->
 <!-- contentplaceholder:body -->child body<!-- /contentplaceholder -->

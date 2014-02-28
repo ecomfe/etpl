@@ -15,6 +15,11 @@ define(
                 expect(renderer(data)).toEqual(text['expect-useSimpleTarget']);
             });
 
+            it('command literal allow break line', function() {
+                var renderer = etpl.getRenderer('useSimpleTargetBreakLine');
+                expect(renderer(data)).toEqual(text['expect-useSimpleTarget']);
+            });
+
             it('can not read data of caller', function() {
                 var renderer = etpl.getRenderer('useEngineTarget');
                 expect(renderer(data)).toEqual(text['expect-useEngineTarget']);

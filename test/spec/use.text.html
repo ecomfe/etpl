@@ -7,6 +7,17 @@
 <!-- use: usePersonTarget( name = ${person.name} , email=${person.email} ) -->
 <!-- /for -->
 </ul>
+<!-- target: useSimpleTargetBreakLine -->
+<ul>
+<!-- for: ${persons} as ${person} -->
+<!-- 
+    use: usePersonTarget( 
+        name = ${person.name}, 
+        email = ${person.email}
+    ) 
+-->
+<!-- /for -->
+</ul>
 <!-- target: usePersonTarget --><li>${name}[${email}]
 ::tpl-dep-target::
 <!-- target: useDepTarget( master = useDepMaster ) -->

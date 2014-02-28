@@ -33,6 +33,11 @@ define(
                 expect(renderer( {level1: [ 1, {num:1} ] } )).toEqual(text['expect-ifComplexTarget']);
             });
 
+            it('command literal allow break line', function() {
+                var renderer = etpl.getRenderer('ifComplexTargetBreakLine');
+                expect(renderer( {num:1,str:"1"} )).toEqual(text['expect-ifComplexTarget']);
+            });
+
             it('"if" can be nested', function() {
                 var renderer = etpl.getRenderer('ifNestedTarget');
                 expect(renderer( {num:1,str:"1"} ))
