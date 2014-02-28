@@ -737,7 +737,7 @@
      * @param {Engine} engine 引擎实例
      */
     function VarCommand( value, engine ) {
-        if ( !/^\s*([a-z0-9_]+)\s*=(.*)$/i.test( value ) ) {
+        if ( !/^\s*([a-z0-9_]+)\s*=([\s\S]*)$/i.test( value ) ) {
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
 
@@ -758,7 +758,7 @@
      * @param {Engine} engine 引擎实例
      */
     function FilterCommand( value, engine ) {
-        if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
+        if ( !/^\s*([a-z0-9_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test( value ) ) {
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
 
@@ -779,7 +779,7 @@
      * @param {Engine} engine 引擎实例
      */
     function UseCommand( value, engine ) {
-        if ( !/^\s*([a-z0-9_-]+)\s*(\((.*)\))?\s*$/i.test( value ) ) {
+        if ( !/^\s*([a-z0-9_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test( value ) ) {
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
 
@@ -1605,7 +1605,7 @@
             source, commandOpen, commandClose, 0,
 
             function ( text ) { // <!--...-->内文本的处理函数
-                var match = /^\s*(\/)?([a-z]+)\s*(:(.*))?$/.exec( text );
+                var match = /^\s*(\/)?([a-z]+)\s*(:([\s\S]*))?$/.exec( text );
 
                 // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
                 // 否则，为不具有command含义的普通文本
