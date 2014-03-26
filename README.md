@@ -103,7 +103,17 @@ greater than zero
 
 `target`是ETPL的基本单元，其含义是 **一个模版片段** 。`target`可用于render，也可用于被其他`target`所import或use。
 
-如果仅仅编写的是一个模板片段，可以省略`target`的声明。这样的编写方式与其他模板引擎类似，但模板片段将不可复用（不可被import或use，不可指定母版）。
+如果仅仅编写的是一个模板片段，可以省略`target`的声明。这样的编写方式与其他模板引擎类似，ETPL将默认生成匿名target，但模板片段将不可复用（不可被import或use，不可指定母版）。
+
+匿名target应位于模板源码起始。下面例子中，位于其他target后的模板片段`Bye`将没有任何作用。
+
+```
+<!-- use: hello(name=${name}) -->
+<!-- target: hello -->
+Hello ${name}!
+<!-- /target -->
+Bye
+```
 
 ##### 语法
 
