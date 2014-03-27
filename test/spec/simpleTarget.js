@@ -18,6 +18,10 @@ define(
                 expect(renderAutoclose({})).toEqual(text.expect);
                 expect(renderAutoclose).toBe(etpl.getRenderer('simpleTarget-autoclose'));
             });
+
+            it('parse empty string should return a renderer which return empty string ""', function() {
+                expect(etpl.compile('')()).toEqual('');
+            });
         });
     }
 );
