@@ -630,11 +630,6 @@
         this.master = RegExp.$3;
         this.name = RegExp.$1;
         Command.call( this, value, engine );
-
-        if ( engine.targets[ this.name ] ) {
-            throw new Error( 'Target is exists: ' + this.name );
-        }
-
         this.contents = {};
     }
 
@@ -657,11 +652,6 @@
         this.master = RegExp.$3;
         this.name = RegExp.$1;
         Command.call( this, value, engine );
-
-        if ( engine.masters[ this.name ] ) {
-            throw new Error( 'Master is exists: ' + this.name );
-        }
-
         this.contents = {};
     }
 
@@ -1042,20 +1032,44 @@
     };
 
     /**
+     * 将target或master节点对象添加到语法分析环境中
+     * 
+     * @inner
+     * @param {TargetCommand|MasterCommand} targetOrMaster target或master节点对象
+     * @param {Object} context 语法分析环境对象
+     */
+    function addTargetOrMasterToContext( targetOrMaster, context ) {
+        context.targetOrMaster = targetOrMaster;
+
+        var engine = context.engine;
+        var name = targetOrMaster.name;
+        var isTarget = targetOrMaster instanceof TargetCommand;
+        var prop = isTarget ? 'targets' : 'masters';
+
+        if ( engine[ prop ][ name ] ) {
+            switch ( engine.options.namingConflict ) {
+                case 'override':
+                    engine[ prop ][ name ] = targetOrMaster;
+                    isTarget && context.targets.push( name );
+                case 'ignore':
+                    break;
+                default:
+                    throw new Error( ( isTarget ? 'Target' :'Master' ) 
+                        + ' is exists: ' + name );
+            }
+        }
+        else {
+            engine[ prop ][ name ] = targetOrMaster;
+            isTarget && context.targets.push( name );
+        }
+    }
+
+    /**
      * target节点open，解析开始
      * 
      * @param {Object} context 语法分析环境对象
      */
-    TargetCommand.prototype.open = function ( context ) {
-        autoCloseCommand( context );
-        Command.prototype.open.call( this, context );
-
-        var name = this.name;
-        context.targetOrMaster = this;
-        this.state = TMNodeState.READING;
-        context.engine.targets[ name ] = this;
-        context.targets.push( name );
-    };
+    TargetCommand.prototype.open = 
 
     /**
      * master节点open，解析开始
@@ -1065,11 +1079,8 @@
     MasterCommand.prototype.open = function ( context ) {
         autoCloseCommand( context );
         Command.prototype.open.call( this, context );
-
-        var name = this.name;
-        context.targetOrMaster = this;
         this.state = TMNodeState.READING;
-        context.engine.masters[ name ] = this;
+        addTargetOrMasterToContext( this, context );
     };
 
     /**
@@ -1442,6 +1453,7 @@
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
      * @param {string=} options.defaultFilter 默认变量替换的filter
+     * @param {string=} options.namingConflict target或master名字冲突时的处理策略
      */
     function Engine( options ) {
         this.options = {
@@ -1463,6 +1475,7 @@
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
      * @param {string=} options.defaultFilter 默认变量替换的filter
+     * @param {string=} options.namingConflict target或master名字冲突时的处理策略
      */
     Engine.prototype.config =  function ( options ) {
         extend( this.options, options );
