@@ -83,6 +83,42 @@ define(
                 });
             });
 
+            it('"config" method can setup naming conflict "ignore"', function() {
+                mytpl.config({
+                    namingConflict: 'ignore'
+                });
+
+                mytpl.compile(text['repeat-tpl-ignore-first']);
+                mytpl.compile(text['repeat-tpl-ignore-second']);
+                expect(mytpl.render('engineRepeatIgnoreTarget')).toEqual('ignore');
+                
+                mytpl.compile(text['repeat-master-tpl-ignore-first']);
+                mytpl.compile(text['repeat-master-tpl-ignore-second']);
+                expect(mytpl.render('engineRepeatIgnoreMasterTarget')).toEqual('ignore erik');
+
+                mytpl.config({
+                    namingConflict: 'error'
+                });
+            });
+
+            it('"config" method can setup naming conflict "override"', function() {
+                mytpl.config({
+                    namingConflict: 'override'
+                });
+
+                mytpl.compile(text['repeat-tpl-override-first']);
+                mytpl.compile(text['repeat-tpl-override-second']);
+                expect(mytpl.render('engineRepeatOverrideTarget')).toEqual('override');
+                
+                mytpl.compile(text['repeat-master-tpl-override-first']);
+                mytpl.compile(text['repeat-master-tpl-override-second']);
+                expect(mytpl.render('engineRepeatOverrideMasterTarget')).toEqual('override erik');
+
+                mytpl.config({
+                    namingConflict: 'error'
+                });
+            });
+
             it('"render" method returns the same value as renderer call', function() {
                 var renderer = mytpl.compile(text['variable-tpl']);
                 var data = { 
