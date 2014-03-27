@@ -1575,11 +1575,13 @@
          *
          * @inner
          */
-        function flushTextBuf() {
+        function flushTextBuf( noCheckEmpty ) {
             var len = textBuf.length;
             var text;
 
-            if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
+            if ( len > 0 
+                && ( (text = textBuf.join( '' )) || noCheckEmpty )
+            ) {
                 var textNode = new TextNode( text, engine );
                 textNode.beforeAdd( analyseContext );
                 stack.top().addTextNode( textNode );
@@ -1645,7 +1647,7 @@
         );
 
 
-        flushTextBuf(); // 将缓冲区中的text节点内容写入
+        flushTextBuf( 1 ); // 将缓冲区中的text节点内容写入
         autoCloseCommand( analyseContext );
 
         return analyseContext.targets;
