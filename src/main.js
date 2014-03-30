@@ -961,9 +961,7 @@
         function checkReadyState( node ) {
             for ( var i = 0, len = node.children.length; i < len; i++ ) {
                 var child = node.children[ i ];
-                if ( child instanceof ImportCommand 
-                    || child instanceof UseCommand
-                ) {
+                if ( child instanceof ImportCommand ) {
                     var target = engine.targets[ child.name ];
                     readyState = readyState 
                         && target && target.isReady( engine );
