@@ -27,6 +27,34 @@
 <!-- master: engineRepeatOverrideMaster -->override <!--contentplaceholder:name-->
 ::data-tpl::
 <!-- target: engineDataTarget -->Hello ${info.name} by ${info.contributor.name}[${info.contributor.email}]!
+::strip-tpl::
+<!-- target: engineStripTarget -->  
+    <ul>
+    <!-- for: ${persons} as ${person}, ${index} -->  
+        <!-- if: ${index} > 0 -->  
+        <li>${person}</li>
+        <!-- /if -->  
+    <!-- /for -->  
+    </ul>
+<!-- target: engineStripTargetIf -->  
+<!-- var: lang = 1--><!-- if: ${lang} -->
+lang
+<!-- /if -->
+<!-- target: engineStripTargetSimple -->  
+Hello World!
+::strip-data::
+({persons:['erik', 'firede', 'leeight']})
+::strip-expect::
+    <ul>
+        <li>firede</li>
+        <li>leeight</li>
+    </ul>
+
+::strip-simple-expect::
+Hello World!
+::strip-if-expect::
+lang
+
 ::custom-filter-tpl::
 <!-- target: engineCustomFilterTarget -->Hello ${name}!
 ::custom-filter-tpl2::

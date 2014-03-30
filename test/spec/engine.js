@@ -119,6 +119,19 @@ define(
                 });
             });
 
+            it('"config" method can setup "strip" to clean break line and whiteletter before and after command', function() {
+                mytpl.config({ strip: true });
+
+                var render = mytpl.compile(text['strip-tpl']);
+                expect(render(eval(text['strip-data']))).toEqual(text['strip-expect']);
+                expect(mytpl.getRenderer('engineStripTargetSimple')())
+                    .toEqual(text['strip-simple-expect']);
+                expect(mytpl.getRenderer('engineStripTargetIf')())
+                    .toEqual(text['strip-if-expect']);
+
+                mytpl.config({ strip: false });
+            });
+
             it('"render" method returns the same value as renderer call', function() {
                 var renderer = mytpl.compile(text['variable-tpl']);
                 var data = { 
