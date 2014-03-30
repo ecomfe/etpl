@@ -3,7 +3,6 @@ define(
         var tplSource = require( 'etpl/tpl!spec/amdplugin.text.html' );
         var tplSourceRelative = require( 'etpl/tpl!./amdplugin-relative.text.html' );
         var tplSourceAbsolute = require( 'etpl/tpl!/spec/amdplugin-absolute.text.html' );
-        var plugin = require( 'etpl/tpl' );
         var etpl = require( 'etpl' );
 
         describe('AMD Plugin', function() {

@@ -7,22 +7,55 @@
   <link rel="stylesheet" type="text/css" href="lib/jasmine-1.3.0/jasmine.css">
   <script src="lib/jasmine-1.3.0/jasmine.js"></script>
   <script src="lib/jasmine-1.3.0/jasmine-html.js"></script>
+  <script src="spec/readTextSync.js"></script>
+  <script src="etpl/main.js"></script>
   <script src="lib/esl-1.6.6.js"></script>
-</head>
-
-<body>
   <script>
   require.config({
     packages: [
       {name: 'etpl', location: 'etpl'}
     ]
   });
-  require(
-    [ 'test' ], 
-    function (test) {
-      test.start();
-    }
-  );
+  var eslRequire = require;
+  require = function (id) {
+    if (id === 'etpl' || id === '../../src/main') return etpl;
+    if (id === './readTextSync') return readTextSync;
+
+    return eslRequire.call(this, arguments);
+  };
+  </script>
+
+  <script src="spec/simpleTarget.spec.js"></script>
+  <script src="spec/noTarget.spec.js"></script>
+  <script src="spec/manyTargets.spec.js"></script>
+  <script src="spec/variableSubstitution.spec.js"></script>
+  <script src="spec/master.spec.js"></script>
+  <script src="spec/import.spec.js"></script>
+  <script src="spec/use.spec.js"></script>
+  <script src="spec/for.spec.js"></script>
+  <script src="spec/if.spec.js"></script>
+  <script src="spec/var.spec.js"></script>
+  <script src="spec/filter.spec.js"></script>
+  <script src="spec/engine.spec.js"></script>
+  <script src="spec/comment.spec.js"></script>
+
+</head>
+
+<body>
+  <script>
+  eslRequire(['spec/amdplugin'], function () {
+    var jasmineEnv = jasmine.getEnv();
+    jasmineEnv.updateInterval = 1000;
+
+    var htmlReporter = new jasmine.HtmlReporter();
+    jasmineEnv.addReporter(htmlReporter);
+    jasmineEnv.specFilter = function (spec) {
+        return htmlReporter.specFilter(spec);
+    };
+
+    jasmineEnv.execute();
+  });
+  
   </script>
 </body>
 </html>
