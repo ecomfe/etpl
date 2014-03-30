@@ -3,9 +3,17 @@
     "version": "2.0.10",
     "contributors": [
         { "name": "erik", "email": "errorrik@gmail.com" },
-        { "name": "otakustay", "email": "otakustay@gmail.com" }
+        { "name": "otakustay", "email": "otakustay@gmail.com" },
+        { "name": "firede", "email": "firede@firede.us" }
     ],
     "main": "main",
     "homepage": "http://ecomfe.github.io/etpl/",
-    "repository": "git://github.com/ecomfe/etpl"
+    "repository": "git://github.com/ecomfe/etpl",
+    "description": "ETPL是一个灵活、具有强大复用能力的高性能Javascript模板引擎，适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用。",
+    "scripts": {
+        "test": "jasmine-node test/spec"
+    },
+    "devDependencies": {
+        "jasmine-node": "~1.14.2"
+    }
 }
