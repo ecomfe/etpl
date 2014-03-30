@@ -28,6 +28,79 @@
 <div><!-- use: useDepBodyTarget( name=${engine} ) --></div>
 <!-- target: useDepBodyTarget -->${name}
 <!-- target: useDepHeaderTarget -->header
+::tpl-recursion::
+<!-- target: useRecursionTarget --><!-- use: useRecursionMenuTarget(children=${menu}) --><!-- /target -->
+
+<!-- target: useRecursionMenuTarget -->
+<ul>
+    <!-- for: ${children} as ${item} -->
+    <li><a href="#">${item.text}</a>
+        <!-- if: ${item.children} && ${item.children.length} --><!-- use: useRecursionMenuTarget(children=${item.children}) --><!-- /if -->
+    </li>
+    <!-- /for -->
+</ul>
+<!-- /target -->
+::data-recursion::
+({
+    menu: [
+        {text: 'a'},
+        {text: 'b', children: [
+            {text: 'b1', children:[
+                {text: 'b11'},
+                {text: 'b12'}
+            ]},
+            {text: 'b2'},
+            {text: 'b3'}
+        ]},
+        {text: 'c'}
+    ]
+})
+::expect-useRecursionTarget::
+
+<ul>
+    
+    <li><a href="#">a</a>
+        
+    </li>
+    
+    <li><a href="#">b</a>
+        
+<ul>
+    
+    <li><a href="#">b1</a>
+        
+<ul>
+    
+    <li><a href="#">b11</a>
+        
+    </li>
+    
+    <li><a href="#">b12</a>
+        
+    </li>
+    
+</ul>
+
+    </li>
+    
+    <li><a href="#">b2</a>
+        
+    </li>
+    
+    <li><a href="#">b3</a>
+        
+    </li>
+    
+</ul>
+
+    </li>
+    
+    <li><a href="#">c</a>
+        
+    </li>
+    
+</ul>
+
 ::data-persons::
 [
     {name:'errorrik', email:'errorrik@gmail.com'},

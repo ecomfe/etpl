@@ -34,6 +34,13 @@ define(
                 renderer = etpl.getRenderer('useDepTarget');
                 expect(renderer(data)).toEqual(text['expect-useDepTarget']);
             });
+
+            it('yourself should be allowed (recursion)', function() {
+                etpl.compile(text['tpl-recursion'])
+                var renderer = etpl.getRenderer('useRecursionTarget');
+                expect(renderer(eval(text['data-recursion'])))
+                    .toEqual(text['expect-useRecursionTarget']);
+            });
         });
         
     }
