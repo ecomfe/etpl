@@ -1,5 +1,7 @@
 # ETPL (Enterprise Template)
 
+[![Build Status](https://travis-ci.org/ecomfe/etpl.svg?branch=master)](https://travis-ci.org/ecomfe/etpl)
+
 ETPL是一个灵活、具有强大复用能力的高性能的模板引擎，适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用。
 
 - [开始](#start)
@@ -487,7 +489,7 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 - `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
 - `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
 - `{boolean}`options.strip - 是否清除命令标签前后的空白字符，默认值为 *false*
-- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是 *error|ignore|override* ，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
+- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是`error` | `ignore` | `override`，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
 
 ```javascript
 etplEngine.config( {
@@ -597,7 +599,7 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 - `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
 - `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
 - `{boolean}`options.strip - 是否清除命令标签前后的空白字符，默认值为 *false*
-- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是 *error|ignore|override* ，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
+- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是`error` | `ignore` | `override`，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
 
 ```javascript
 etplEngine.config( {
