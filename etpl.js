@@ -366,12 +366,12 @@
 
                 if ( level === 0 ) {
                     onInBlock( buf.join( '' ) );
-                    text && onOutBlock( text );
+                    onOutBlock( text );
                     buf = [];
                 }
             }
             else {
-                onOutBlock( text );
+                text && onOutBlock( text );
             }
         }
 
@@ -401,6 +401,12 @@
          * @return {string}
          */
         getRendererBody: function () {
+            if ( !this.value 
+                 || ( this.engine.options.strip && /^\s*$/.test( this.value ) )
+            ) {
+                return '';
+            }
+
             var defaultFilter = this.engine.options.defaultFilter;
             var code = [];
             parseTextBlock(
@@ -630,11 +636,6 @@
         this.master = RegExp.$3;
         this.name = RegExp.$1;
         Command.call( this, value, engine );
-
-        if ( engine.targets[ this.name ] ) {
-            throw new Error( 'Target is exists: ' + this.name );
-        }
-
         this.contents = {};
     }
 
@@ -657,11 +658,6 @@
         this.master = RegExp.$3;
         this.name = RegExp.$1;
         Command.call( this, value, engine );
-
-        if ( engine.masters[ this.name ] ) {
-            throw new Error( 'Master is exists: ' + this.name );
-        }
-
         this.contents = {};
     }
 
@@ -965,9 +961,7 @@
         function checkReadyState( node ) {
             for ( var i = 0, len = node.children.length; i < len; i++ ) {
                 var child = node.children[ i ];
-                if ( child instanceof ImportCommand 
-                    || child instanceof UseCommand
-                ) {
+                if ( child instanceof ImportCommand ) {
                     var target = engine.targets[ child.name ];
                     readyState = readyState 
                         && target && target.isReady( engine );
@@ -1042,20 +1036,44 @@
     };
 
     /**
+     * 将target或master节点对象添加到语法分析环境中
+     * 
+     * @inner
+     * @param {TargetCommand|MasterCommand} targetOrMaster target或master节点对象
+     * @param {Object} context 语法分析环境对象
+     */
+    function addTargetOrMasterToContext( targetOrMaster, context ) {
+        context.targetOrMaster = targetOrMaster;
+
+        var engine = context.engine;
+        var name = targetOrMaster.name;
+        var isTarget = targetOrMaster instanceof TargetCommand;
+        var prop = isTarget ? 'targets' : 'masters';
+
+        if ( engine[ prop ][ name ] ) {
+            switch ( engine.options.namingConflict ) {
+                case 'override':
+                    engine[ prop ][ name ] = targetOrMaster;
+                    isTarget && context.targets.push( name );
+                case 'ignore':
+                    break;
+                default:
+                    throw new Error( ( isTarget ? 'Target' :'Master' ) 
+                        + ' is exists: ' + name );
+            }
+        }
+        else {
+            engine[ prop ][ name ] = targetOrMaster;
+            isTarget && context.targets.push( name );
+        }
+    }
+
+    /**
      * target节点open，解析开始
      * 
      * @param {Object} context 语法分析环境对象
      */
-    TargetCommand.prototype.open = function ( context ) {
-        autoCloseCommand( context );
-        Command.prototype.open.call( this, context );
-
-        var name = this.name;
-        context.targetOrMaster = this;
-        this.state = TMNodeState.READING;
-        context.engine.targets[ name ] = this;
-        context.targets.push( name );
-    };
+    TargetCommand.prototype.open = 
 
     /**
      * master节点open，解析开始
@@ -1065,11 +1083,8 @@
     MasterCommand.prototype.open = function ( context ) {
         autoCloseCommand( context );
         Command.prototype.open.call( this, context );
-
-        var name = this.name;
-        context.targetOrMaster = this;
         this.state = TMNodeState.READING;
-        context.engine.masters[ name ] = this;
+        addTargetOrMasterToContext( this, context );
     };
 
     /**
@@ -1442,6 +1457,8 @@
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
      * @param {string=} options.defaultFilter 默认变量替换的filter
+     * @param {boolean=} options.strip 是否清除命令标签前后的空白字符
+     * @param {string=} options.namingConflict target或master名字冲突时的处理策略
      */
     function Engine( options ) {
         this.options = {
@@ -1463,6 +1480,8 @@
      * @param {string=} options.commandOpen 命令语法起始串
      * @param {string=} options.commandClose 命令语法结束串
      * @param {string=} options.defaultFilter 默认变量替换的filter
+     * @param {boolean=} options.strip 是否清除命令标签前后的空白字符
+     * @param {string=} options.namingConflict target或master名字冲突时的处理策略
      */
     Engine.prototype.config =  function ( options ) {
         extend( this.options, options );
@@ -1484,10 +1503,14 @@
      * @return {function(Object):string}
      */
     Engine.prototype.parse = function ( source ) {
-        var targetNames = parseSource( source, this );
-        if ( targetNames.length ) {
-            return this.targets[ targetNames[ 0 ] ].getRenderer();
+        if ( source ) {
+            var targetNames = parseSource( source, this );
+            if ( targetNames.length ) {
+                return this.targets[ targetNames[ 0 ] ].getRenderer();
+            }
         }
+
+        return new Function('return ""');
     };
     
     /**
@@ -1576,14 +1599,20 @@
          * @inner
          */
         function flushTextBuf() {
-            var len = textBuf.length;
-            var text;
-
-            if ( len > 0 && (text = textBuf.join( '' )) !== '' ) {
+            if ( textBuf.length > 0 ) {
+                var text = textBuf.join( '' );
                 var textNode = new TextNode( text, engine );
                 textNode.beforeAdd( analyseContext );
+
                 stack.top().addTextNode( textNode );
                 textBuf = [];
+
+                if ( engine.options.strip 
+                    && analyseContext.current instanceof Command 
+                ) {
+                    textNode.value = text.replace( /^[\x20\t\r]*\n/, '' );
+                }
+                analyseContext.current = textNode;
             }
         }
 
@@ -1615,20 +1644,26 @@
                 ) {
                     // 先将缓冲区中的text节点内容写入
                     flushTextBuf(); 
-                    
+
+                    var currentNode = analyseContext.current;
+                    if ( engine.options.strip && currentNode instanceof TextNode ) {
+                        currentNode.value = currentNode.value
+                            .replace( /\r?\n[\x20\t]*$/, '\n' );
+                    }
+
                     if ( match[1] ) {
-                        var closeNode = stack.find(
-                            isInstanceofNodeType
-                        );
-                        closeNode && closeNode.close( analyseContext );
+                        currentNode = stack.find( isInstanceofNodeType );
+                        currentNode && currentNode.close( analyseContext );
                     }
                     else {
-                        var openNode = new NodeType( match[4], engine );
-                        if ( typeof openNode.beforeOpen == 'function' ) {
-                            openNode.beforeOpen( analyseContext );
+                        currentNode = new NodeType( match[4], engine );
+                        if ( typeof currentNode.beforeOpen == 'function' ) {
+                            currentNode.beforeOpen( analyseContext );
                         }
-                        openNode.open( analyseContext );
+                        currentNode.open( analyseContext );
                     }
+
+                    analyseContext.current = currentNode;
                 }
                 else if ( !/^\s*\/\//.test( text ) ) {
                     // 如果不是模板注释，则作为普通文本，写入缓冲区
