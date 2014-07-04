@@ -270,7 +270,7 @@
      */
     var RENDER_STRING_RETURN = 'return r;';
 
-    // HACK: IE8-时，编译后的renderer使用push+join的策略进行字符串拼接
+    // HACK: IE8-时，编译后的renderer使用join Array的策略进行字符串拼接
     if ( typeof navigator != 'undefined' 
         && /msie\s*([0-9]+)/i.test( navigator.userAgent )
         && RegExp.$1 - 0 < 8
@@ -289,6 +289,7 @@
      * @return {string}
      */
     function toGetVariableLiteral( name ) {
+        name = name.replace( /^\s*\*/, '' );
         return stringFormat(
             'gv({0},["{1}"])',
             stringLiteralize( name ),
@@ -300,23 +301,6 @@
                 )
                 .split( '.' )
                 .join( '","' )
-        );
-    }
-
-    /**
-     * 替换字符串中的${...}成getVariable调用的编译语句
-     * 用于if、var等命令生成编译代码
-     *
-     * @inner
-     * @param {string} source 源字符串
-     * @return {string}
-     */
-    function replaceGetVariableLiteral( source ) {
-        return source.replace(
-            /\$\{([0-9a-z_\.\[\]'"-]+)\}/ig,
-            function( match, name ){
-                return toGetVariableLiteral( name );
-            }
         );
     }
 
@@ -342,25 +326,26 @@
             var text = texts[ i ];
 
             if ( i ) {
+                var openBegin = 1;
                 level++;
                 while ( 1 ) {
                     var closeIndex = text.indexOf( close );
                     if ( closeIndex < 0 ) {
-                        buf.push( text );
+                        buf.push( level > 1 && openBegin ? open : '', text );
                         break;
                     }
-                    else {
-                        level = greedy ? level - 1 : 0;
-                        buf.push( 
-                            level > 0 ? open : '',
-                            text.slice( 0, closeIndex ),
-                            level > 0 ? close : ''
-                        );
-                        text = text.slice( closeIndex + closeLen );
 
-                        if ( level === 0 ) {
-                            break;
-                        }
+                    level = greedy ? level - 1 : 0;
+                    buf.push( 
+                        level > 0 && openBegin ? open : '',
+                        text.slice( 0, closeIndex ),
+                        level > 0 ? close : ''
+                    );
+                    text = text.slice( closeIndex + closeLen );
+                    openBegin = 0;
+
+                    if ( level === 0 ) {
+                        break;
                     }
                 }
 
@@ -379,6 +364,104 @@
             onOutBlock( open );
             onOutBlock( buf.join( '' ) );
         }
+    }
+
+    /**
+     * 编译变量访问和变量替换的代码
+     * 用于普通文本或if、var、filter等命令生成编译代码
+     * 
+     * @inner
+     * @param {string} source 源代码
+     * @param {boolean} forText 是否为输出文本的变量替换
+     * @param {string} defaultFilter 默认的filter，当forText模式时有效
+     * @return {string}
+     */
+    function compileVariable( source, forText, defaultFilter ) {
+        var code = [];
+        var toStringHead = '';
+        var toStringFoot = '';
+        var wrapHead = '';
+        var wrapFoot = '';
+
+        if ( forText ) {
+            toStringHead = 'ts(';
+            toStringFoot = ')';
+            wrapHead = RENDER_STRING_ADD_START;
+            wrapFoot = RENDER_STRING_ADD_END;
+        }
+
+        parseTextBlock(
+            source, '${', '}', 1,
+
+            function ( text ) { // ${...}内文本的处理函数
+                // 加入默认filter
+                // 只有当处理forText时，需要加入默认filter
+                // 处理if/var/use等command时，不需要加入默认filter
+                if ( forText && text.indexOf( '|' ) < 0 && defaultFilter ) {
+                    text += '|' + defaultFilter;
+                }
+
+                // variableCode是一个gv调用，然后通过循环，在外面包filter的调用
+                // 形成filter["b"](filter["a"](gv(...)))
+                // 
+                // 当forText模式，处理的是文本中的变量替换时
+                // 传递给filter的需要是字符串形式，所以gv外需要包一层ts调用
+                // 形成filter["b"](filter["a"](ts(gv(...))))
+                // 
+                // 当variableName以*起始时，忽略ts调用，直接传递原值给filter
+                var filterCharIndex = text.indexOf( '|' );
+                var variableName = (filterCharIndex > 0
+                    ? text.slice( 0, filterCharIndex )
+                    : text).replace( /^\s+/, '' ).replace( /\s+$/, '' );
+                var filterSource = filterCharIndex > 0
+                    ? text.slice( filterCharIndex + 1 )
+                    : '';
+
+                var variableRawValue = variableName.indexOf( '*' ) === 0;
+                var variableCode = [
+                    variableRawValue ? '' : toStringHead,
+                    toGetVariableLiteral( variableName ),
+                    variableRawValue ? '' : toStringFoot
+                ];
+
+                if ( filterSource ) {
+                    filterSource = compileVariable( filterSource );
+                    var filterSegs = filterSource.split( '|' );
+                    for ( var i = 0, len = filterSegs.length; i < len; i++ ) {
+                        var seg = filterSegs[ i ];
+
+                        if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
+                            variableCode.unshift( 'fs["' + RegExp.$1 + '"](' );
+
+                            if ( RegExp.$3 ) {
+                                variableCode.push( 
+                                    ',', 
+                                    RegExp.$3
+                                );
+                            }
+
+                            variableCode.push( ')' );
+                        }
+                    }
+                }
+
+                code.push(
+                    wrapHead,
+                    variableCode.join( '' ),
+                    wrapFoot
+                );
+            },
+
+            function ( text ) { // ${...}外普通文本的处理函数
+                code.push( 
+                    wrapHead, 
+                    forText ? stringLiteralize( text ) : text, 
+                    wrapFoot
+                );
+            }
+        );
+
+        return code.join( '' );
     }
 
     /**
@@ -401,76 +484,14 @@
          * @return {string}
          */
         getRendererBody: function () {
-            if ( !this.value 
-                 || ( this.engine.options.strip && /^\s*$/.test( this.value ) )
-            ) {
+            var value = this.value;
+            var options = this.engine.options;
+
+            if ( !value || ( options.strip && /^\s*$/.test( value ) ) ) {
                 return '';
             }
 
-            var defaultFilter = this.engine.options.defaultFilter;
-            var code = [];
-            parseTextBlock(
-                this.value, '${', '}', 1,
-
-                function ( text ) { // ${...}内文本的处理函数
-                    // 加入默认filter
-                    if ( text.indexOf( '|' ) < 0 && defaultFilter ) {
-                        text += '|' + defaultFilter;
-                    }
-
-                    var segs = text.split( /\s*\|\s*/ );
-
-                    // variableCode最先通过gv和ts调用，取得variable的string形式
-                    // 然后通过循环，在外面包filter的调用
-                    // 形成filter["b"](filter["a"](gvs(...)))
-                    // 当variableName以*起始时，忽略toString，直接传递原值给filter
-                    var variableName = segs[ 0 ];
-                    var toStringHead = 'ts(';
-                    var toStringFoot = ')';
-                    if ( variableName.indexOf( '*' ) === 0 ) {
-                        variableName = variableName.slice( 1 );
-                        toStringHead = toStringFoot = '';
-                    }
-                    var variableCode = [ 
-                        toStringHead,
-                        toGetVariableLiteral( variableName ),
-                        toStringFoot
-                    ];
-
-                    for ( var i = 1, len = segs.length; i < len; i++ ) {
-                        var seg = segs[ i ];
-
-                        if ( /^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test( seg ) ) {
-                            variableCode.unshift( 'fs["' + RegExp.$1 + '"](' );
-
-                            if ( RegExp.$3 ) {
-                                variableCode.push( 
-                                    ',', 
-                                    replaceGetVariableLiteral( RegExp.$3 )
-                                );
-                            }
-
-                            variableCode.push( ')' );
-                        }
-                    }
-
-                    code.push(
-                        RENDER_STRING_ADD_START,
-                        variableCode.join( '' ),
-                        RENDER_STRING_ADD_END
-                    );
-                },
-
-                function ( text ) { // ${...}外普通文本的处理函数
-                    code.push( 
-                        RENDER_STRING_ADD_START, 
-                        stringLiteralize( text ), 
-                        RENDER_STRING_ADD_END
-                    );
-                }
-            );
-            
-            return code.join( '' );
+            return compileVariable( value, 1, options.defaultFilter );
         },
 
         /**
@@ -796,7 +817,7 @@
      * @param {Engine} engine 引擎实例
      */
     function ForCommand( value, engine ) {
-        if ( !/^\s*\$\{([0-9a-z_\.\[\]'"-]+)\}\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test( value ) ) {
+        if ( !/^\s*(\$\{[\s\S]+\})\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test( value ) ) {
             throw new Error( 'Invalid ' + this.type + ' syntax: ' + value );
         }
         
@@ -990,9 +1011,10 @@
         }
 
         if ( this.isReady() ) {
+            // console.log( this.name + ' ------------------' );
             // console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
             //     + this.getRendererBody() 
-            //     + RENDER_STRING_RETURN)
+            //     + RENDER_STRING_RETURN);
 
             var realRenderer = new Function( 
                 'data', 'engine',
@@ -1005,7 +1027,6 @@
             );
 
             var engine = this.engine;
-
             this.renderer = function ( data ) {
                 return realRenderer( data, engine );
             };
@@ -1232,13 +1253,11 @@
             RENDER_STRING_ADD_START,
             RENDER_STRING_ADD_END,
             stringLiteralize( this.name ),
-            replaceGetVariableLiteral( 
-                this.args.replace( 
-                    /(^|,)\s*([a-z0-9_]+)\s*=/ig,
-                    function ( match, start, argName ) {
-                        return (start || '') + stringLiteralize( argName ) + ':';
-                    }
-                )
+            compileVariable( this.args ).replace( 
+                /(^|,)\s*([a-z0-9_]+)\s*=/ig,
+                function ( match, start, argName ) {
+                    return (start || '') + stringLiteralize( argName ) + ':';
+                }
             )
         );
     };
@@ -1253,7 +1272,7 @@
             return stringFormat( 
                 'v[{0}]={1};',
                 stringLiteralize( this.name ),
-                replaceGetVariableLiteral( this.expr )
+                compileVariable( this.expr )
             );
         }
 
@@ -1268,7 +1287,7 @@
     IfCommand.prototype.getRendererBody = function () {
         var rendererBody = stringFormat(
             'if({0}){{1}}',
-            replaceGetVariableLiteral( this.value ),
+            compileVariable( this.value ),
             Command.prototype.getRendererBody.call( this )
         );
 
@@ -1300,7 +1319,7 @@
             + 'else if(typeof {0}==="object")'
             +     'for(var {4} in {0}){v[{2}]={4};v[{3}]={0}[{4}];{6}}',
             generateGUID(),
-            toGetVariableLiteral( this.list ),
+            compileVariable( this.list ),
             stringLiteralize( this.index || generateGUID() ),
             stringLiteralize( this.item ),
             generateGUID(),
@@ -1324,7 +1343,7 @@
             RENDER_STRING_ADD_END,
             Command.prototype.getRendererBody.call( this ),
             stringLiteralize( this.name ),
-            args ? ',' + replaceGetVariableLiteral( args ) : ''
+            args ? ',' + compileVariable( args ) : ''
         );
     };
 
