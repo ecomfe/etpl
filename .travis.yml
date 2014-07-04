@@ -6,3 +6,4 @@ branches:
   - master
 before_script:
   - "npm i -g jasmine-node@1.14.2"
+  - "jasmine-node --version"
