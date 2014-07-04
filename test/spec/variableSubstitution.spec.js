@@ -3,12 +3,20 @@
     var etpl = require( '../../src/main' );
     var readText = require( './readTextSync' );
     var text = readText( 'variableSubstitution.text.html' );
-    etpl.addFilter( 'slice', function (source, begin, end) {
+    etpl.addFilter( 'vs-slice', function (source, begin, end) {
         return source.slice( begin, end );
     } );
-    etpl.addFilter( 'dateFormat', function (source) {
+    etpl.addFilter( 'vs-dateFormat', function (source) {
         return source.getFullYear() + '-' + (source.getMonth() + 1) + '-' + source.getDate();
     } );
+
+    etpl.addFilter('vs-add', function (source) {
+        for (var i = 1; i < arguments.length; i++) {
+            source += arguments[i];
+        }
+
+        return source;
+    });
     etpl.compile( text['tpl'] );
 
     var data = {
@@ -62,10 +70,18 @@
         );
 
         it(
-            'can accept data in filter', 
+            'can pass variable in filter', 
             function() {
                 expect(etpl.getRenderer('variableSubstitution-filter-arg')(data))
                     .toEqual(text['expect-filter-arg']);
+            }
+        );
+
+        it(
+            'can pass variable which use filter in filter', 
+            function() {
+                expect(etpl.getRenderer('variableSubstitution-filter-filter')(data))
+                    .toEqual(text['expect-filter-filter']);
             }
         );
 

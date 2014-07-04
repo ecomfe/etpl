@@ -4,10 +4,29 @@
     var readText = require( './readTextSync' );
     var text = readText( 'var.text.html' );
 
+    etpl.addFilter('var-emphasis', function (source, level) {
+        level = level || 1;
+        while (level--) {
+            source = source + '!';
+        }
+
+        return source;
+    });
+
     describe('Var', function() {
         it('can declare user variable', function() {
             var renderer = etpl.compile( text['tpl-simple'] );
             expect(renderer()).toEqual(text['expect-simple']);
+        });
+
+        it('can use filter in user variable assignment', function() {
+            var renderer = etpl.compile( text['tpl-simple-filter'] );
+            expect(renderer()).toEqual(text['expect-simple-filter']);
+        });
+
+        it('can use filter and pass arg in user variable assignment', function() {
+            var renderer = etpl.compile( text['tpl-simple-filter-arg'] );
+            expect(renderer()).toEqual(text['expect-simple-filter-arg']);
         });
 
         it('command literal allow break line', function() {

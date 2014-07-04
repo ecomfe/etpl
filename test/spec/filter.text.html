@@ -13,6 +13,12 @@
 ::tpl-param::
 <!-- target: filterParamTarget -->
 <!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: filter-lower(true) -->ETPL<!-- /filter -->
+::tpl-param-variable::
+<!-- target: filterParamVariableTarget --><!-- var: arg = 1 -->
+<!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: filter-lower(!!${arg}) -->ETPL<!-- /filter -->
+::tpl-param-variable-filter::
+<!-- target: filterParamVariableFilterTarget --><!-- var: arg = 1 -->
+<!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: filter-lower(!${arg | filter-not}) -->ETPL<!-- /filter -->
 ::tpl-param-break-line::
 <!-- target: filterParamTargetBreakLine -->
 <!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: 

@@ -11,6 +11,10 @@
         return source.toLowerCase();
     });
 
+    etpl.addFilter( 'filter-not', function (source) {
+        return !source;
+    });
+
     describe('Filter', function() {
         it('can filter a piece of text', function() {
             var renderer = etpl.compile( text['tpl-simple'] );
@@ -24,6 +28,16 @@
 
         it('param can be passed', function() {
             var renderer = etpl.compile( text['tpl-param'] );
+            expect(renderer()).toEqual(text['expect-param']);
+        });
+
+        it('param can use variable', function() {
+            var renderer = etpl.compile( text['tpl-param-variable'] );
+            expect(renderer()).toEqual(text['expect-param']);
+        });
+
+        it('param can use variable which has filter', function() {
+            var renderer = etpl.compile( text['tpl-param-variable-filter'] );
             expect(renderer()).toEqual(text['expect-param']);
         });
 

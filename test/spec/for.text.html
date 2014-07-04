@@ -1,6 +1,10 @@
 ::tpl::
 <!-- target:forItemTarget -->
 <!-- for: ${myList} as ${item} -->${item}|<!-- /for -->
+<!-- target:forListFilterTarget -->
+<!-- for: ${myList|for-incream} as ${item} -->${item}|<!-- /for -->
+<!-- target:forListFilterComplexTarget --><!-- var: inc = 3 -->
+<!-- for: ${myList | for-incream( ${inc} + 2 )} as ${item} -->${item}|<!-- /for -->
 <!-- target:forItemPropertyAccessTarget -->
 <ul>
 <!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
@@ -57,6 +61,14 @@
 ::expect-forItemTarget::
 
 1|2|3|4|5|
+
+::expect-forListFilterTarget::
+
+2|3|4|5|6|
+
+::expect-forListFilterComplexTarget::
+
+6|7|8|9|10|
 
 ::expect-forOItemTarget::
 

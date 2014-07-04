@@ -5,6 +5,14 @@
     var text = readText( 'if.text.html' );
     etpl.compile( text.tpl );
 
+    etpl.addFilter('if-sum', function (source) {
+        for (var i = 1; i < arguments.length; i++) {
+            source += arguments[i];
+        }
+
+        return source;
+    });
+
     describe('Conditional', function() {
         it('use "if-elif-else" should be render correctly', function() {
             var renderer = etpl.getRenderer('ifNumTarget');
@@ -31,6 +39,16 @@
         it('can use complex property accessor in variable', function() {
             var renderer = etpl.getRenderer('ifComplexPropertyAccessTarget');
             expect(renderer( {level1: [ 1, {num:1} ] } )).toEqual(text['expect-ifComplexTarget']);
+        });
+
+        it('can use filter in variable when command if', function() {
+            var renderer = etpl.compile(text['tpl-variable-filter-if']);
+            expect(renderer()).toEqual(text['expect-variable-filter-if']);
+        });
+
+        it('can use filter in variable when command elif', function() {
+            var renderer = etpl.compile(text['tpl-variable-filter-elif']);
+            expect(renderer()).toEqual(text['expect-variable-filter-elif']);
         });
 
         it('command literal allow break line', function() {

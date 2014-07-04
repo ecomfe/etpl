@@ -4,6 +4,18 @@ Hello ${myVar}!
 ::expect-simple::
 
 Hello etpl!
+::tpl-simple-filter::
+<!-- target: varSimpleFilterTarget --><!-- var: word = 'etpl' --><!-- var: myVar = ${word|var-emphasis} -->
+Hello ${myVar}
+::expect-simple-filter::
+
+Hello etpl!
+::tpl-simple-filter-arg::
+<!-- target: varSimpleFilterArgTarget --><!-- var: word = 'etpl' --><!--var:level=3--><!-- var: myVar = ${word | var-emphasis( ${level} )} -->
+Hello ${myVar}
+::expect-simple-filter-arg::
+
+Hello etpl!!!
 ::tpl-breakline::
 <!-- target: varBreakLineTarget --><!-- var: erik = {
     age: 29,

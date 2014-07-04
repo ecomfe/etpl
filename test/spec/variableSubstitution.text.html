@@ -22,9 +22,11 @@ Hello ${name}!
 <!-- target: variableSubstitution-raw -->
 Hello ${name|raw}!
 <!-- target: variableSubstitution-rawvalue -->
-Date: ${*date|dateFormat}
+Date: ${*date|vs-dateFormat}
 <!-- target: variableSubstitution-filter-arg -->
-Hello ${name | slice( ${first}+3, ${end} ) }!
+Hello ${name | vs-slice( ${first}+3 + 6 - 2 - 4, ${end} - 3 + 5 - 2 ) }!
+<!-- target: variableSubstitution-filter-filter --><!--var:a=1-->
+Hello ${name | vs-slice( ${first | vs-add(${a}, ${a | vs-add(3, ${a})}) } - 3, ${end} ) }!
 <!-- target: variableSubstitution-property-accessor -->
 Repos: ${info.repos}
 Contributor: ${info.contributor.name}[${info.contributor.email}]
@@ -52,6 +54,10 @@ Date: 2011-11-11
 Hello %26lt%3Bb%26gt%3Becom%26amp%3Bfe%26lt%3B%2Fb%26gt%3B!
 
 ::expect-filter-arg::
+
+Hello ecom&fe!
+
+::expect-filter-filter::
 
 Hello ecom&fe!
 

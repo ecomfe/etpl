@@ -86,4 +86,16 @@ zero
 
 invalid
 
+::tpl-variable-filter-if::
+<!-- target:ifVariableFilterIfTarget --><!--var:myNum=10--><!--var:myNum2=6-->
+<!-- if: ${myNum | if-sum(9, 8, 7, ${myNum2 | if-sum(5, 4)}, 3, 2, 1)} * 2 === 11 * 10 -->ok<!--else-->not ok<!-- /if -->
+::expect-variable-filter-if::
+
+ok
+::tpl-variable-filter-elif::
+<!-- target:ifVariableFilterElifTarget --><!--var:myNum=10--><!--var:myNum2=6-->
+<!-- if: 1>2 -->not ok<!-- elif: ${*myNum | if-sum(9, 8, 7, ${*myNum2 | if-sum(5, 4)}, 3, 2, 1)} * 2 === 11 * 10 -->ok<!--else-->not ok<!-- /if -->
+::expect-variable-filter-elif::
+
+ok
 ::eof::

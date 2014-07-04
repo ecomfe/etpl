@@ -15,6 +15,16 @@
     };
     etpl.compile( text.tpl );
 
+    etpl.addFilter('for-incream', function (source, increament) {
+        increament = increament || 1;
+        var result = [];
+        for (var i = 0; i < source.length; i++) {
+            result[i] = source[i] + increament;
+        }
+
+        return result;
+    });
+
     describe('Array traversal', function() {
         it('can read "item" variable', function() {
             var renderer = etpl.getRenderer('forItemTarget');
@@ -39,6 +49,16 @@
         it('command literal allow break line', function() {
             var renderer = etpl.getRenderer('forItemIndexTargetBreakLine');
             expect(renderer(data)).toEqual(text['expect-forItemIndexTarget']);
+        });
+
+        it('can use filter to process "list" variable', function() {
+            var renderer = etpl.getRenderer('forListFilterTarget');
+            expect(renderer(data)).toEqual(text['expect-forListFilterTarget']);
+        });
+
+        it('can pass args when use filter to process "list" variable', function() {
+            var renderer = etpl.getRenderer('forListFilterComplexTarget');
+            expect(renderer(data)).toEqual(text['expect-forListFilterComplexTarget']);
         });
     });
 

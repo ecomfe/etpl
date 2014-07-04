@@ -7,6 +7,18 @@
 <!-- use: usePersonTarget( name = ${person.name} , email=${person.email} ) -->
 <!-- /for -->
 </ul>
+<!-- target: useSimpleFilterTarget -->
+<ul>
+<!-- for: ${persons} as ${person} -->
+<!-- use: usePersonTarget( name = ${person.name|use-prefix} , email=${person.email} ) -->
+<!-- /for -->
+</ul>
+<!-- target: useSimpleFilterArgTarget --><!-- var: pre = 'halfbrain' -->
+<ul>
+<!-- for: ${persons} as ${person} -->
+<!-- use: usePersonTarget( name = ${person.name|use-prefix( ${pre} )} , email=${person.email} ) -->
+<!-- /for -->
+</ul>
 <!-- target: useSimpleTargetBreakLine -->
 <ul>
 <!-- for: ${persons} as ${person} -->
@@ -115,6 +127,26 @@ default
 <li>errorrik[errorrik@gmail.com]
 
 <li>otakustay[otakustay@gmail.com]
+
+</ul>
+
+::expect-useSimpleFilterTarget::
+
+<ul>
+
+<li>sb-errorrik[errorrik@gmail.com]
+
+<li>sb-otakustay[otakustay@gmail.com]
+
+</ul>
+
+::expect-useSimpleFilterArgTarget::
+
+<ul>
+
+<li>halfbrain-errorrik[errorrik@gmail.com]
+
+<li>halfbrain-otakustay[otakustay@gmail.com]
 
 </ul>
 

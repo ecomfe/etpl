@@ -9,6 +9,11 @@
     };
     etpl.compile( text.tpl );
 
+    etpl.addFilter('use-prefix', function (source, prefix) {
+        prefix = prefix || 'sb';
+        return prefix + '-' + source;
+    });
+
     describe('Use', function() {
         it('can pass arguments to call a target', function() {
             var renderer = etpl.getRenderer('useSimpleTarget');
@@ -40,6 +45,16 @@
             var renderer = etpl.getRenderer('useRecursionTarget');
             expect(renderer(eval(text['data-recursion'])))
                 .toEqual(text['expect-useRecursionTarget']);
+        });
+
+        it('can use filter to process arguments', function() {
+            var renderer = etpl.getRenderer('useSimpleFilterTarget');
+            expect(renderer(data)).toEqual(text['expect-useSimpleFilterTarget']);
+        });
+
+        it('can pass args when use filter to process arguments', function() {
+            var renderer = etpl.getRenderer('useSimpleFilterArgTarget');
+            expect(renderer(data)).toEqual(text['expect-useSimpleFilterArgTarget']);
         });
     });
         
