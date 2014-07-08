@@ -372,28 +372,34 @@
      * 
      * @inner
      * @param {string} source 源代码
+     * @param {Engine} engine 引擎实例
      * @param {boolean} forText 是否为输出文本的变量替换
-     * @param {string} defaultFilter 默认的filter，当forText模式时有效
      * @return {string}
      */
-    function compileVariable( source, forText, defaultFilter ) {
+    function compileVariable( source, engine, forText ) {
         var code = [];
+        var options = engine.options;
+
         var toStringHead = '';
         var toStringFoot = '';
         var wrapHead = '';
         var wrapFoot = '';
+
+        // 默认的filter，当forText模式时有效
+        var defaultFilter;
 
         if ( forText ) {
             toStringHead = 'ts(';
             toStringFoot = ')';
             wrapHead = RENDER_STRING_ADD_START;
             wrapFoot = RENDER_STRING_ADD_END;
+            defaultFilter = options.defaultFilter
         }
 
         parseTextBlock(
-            source, '${', '}', 1,
+            source, options.variableOpen, options.variableClose, 1,
 
-            function ( text ) { // ${...}内文本的处理函数
+            function ( text ) {
                 // 加入默认filter
                 // 只有当处理forText时，需要加入默认filter
                 // 处理if/var/use等command时，不需要加入默认filter
@@ -425,7 +431,7 @@
                 ];
 
                 if ( filterSource ) {
-                    filterSource = compileVariable( filterSource );
+                    filterSource = compileVariable( filterSource, engine );
                     var filterSegs = filterSource.split( '|' );
                     for ( var i = 0, len = filterSegs.length; i < len; i++ ) {
                         var seg = filterSegs[ i ];
@@ -452,7 +458,7 @@
                 );
             },
 
-            function ( text ) { // ${...}外普通文本的处理函数
+            function ( text ) { 
                 code.push( 
                     wrapHead, 
                     forText ? stringLiteralize( text ) : text, 
@@ -491,7 +497,7 @@
                 return '';
             }
 
-            return compileVariable( value, 1, options.defaultFilter );
+            return compileVariable( value, this.engine, 1 );
         },
 
         /**
@@ -1253,7 +1259,7 @@
             RENDER_STRING_ADD_START,
             RENDER_STRING_ADD_END,
             stringLiteralize( this.name ),
-            compileVariable( this.args ).replace( 
+            compileVariable( this.args, this.engine ).replace( 
                 /(^|,)\s*([a-z0-9_]+)\s*=/ig,
                 function ( match, start, argName ) {
                     return (start || '') + stringLiteralize( argName ) + ':';
@@ -1272,7 +1278,7 @@
             return stringFormat( 
                 'v[{0}]={1};',
                 stringLiteralize( this.name ),
-                compileVariable( this.expr )
+                compileVariable( this.expr, this.engine )
             );
         }
 
@@ -1287,7 +1293,7 @@
     IfCommand.prototype.getRendererBody = function () {
         var rendererBody = stringFormat(
             'if({0}){{1}}',
-            compileVariable( this.value ),
+            compileVariable( this.value, this.engine ),
             Command.prototype.getRendererBody.call( this )
         );
 
@@ -1319,7 +1325,7 @@
             + 'else if(typeof {0}==="object")'
             +     'for(var {4} in {0}){v[{2}]={4};v[{3}]={0}[{4}];{6}}',
             generateGUID(),
-            compileVariable( this.list ),
+            compileVariable( this.list, this.engine ),
             stringLiteralize( this.index || generateGUID() ),
             stringLiteralize( this.item ),
             generateGUID(),
@@ -1343,7 +1349,7 @@
             RENDER_STRING_ADD_END,
             Command.prototype.getRendererBody.call( this ),
             stringLiteralize( this.name ),
-            args ? ',' + compileVariable( args ) : ''
+            args ? ',' + compileVariable( args, this.engine ) : ''
         );
     };
 
@@ -1483,6 +1489,8 @@
         this.options = {
             commandOpen: '<!--',
             commandClose: '-->',
+            variableOpen: '${',
+            variableClose: '}',
             defaultFilter: 'html'
         };
 
