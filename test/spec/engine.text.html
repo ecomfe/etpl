@@ -60,9 +60,9 @@ lang
 ::custom-filter-tpl2::
 <!-- target: engineCustomFilterTarget2 -->Hello ${name}!
 ::upper-tpl::
-<!-- target: engineUpperTarget -->Hello ${name|upper}!
+<!-- target: engineUpperTarget -->Hello ${name|engine-upper}!
 ::upper-tpl2::
-<!-- target: engineUpperTarget2 -->Hello ${name|upper2()}! Hello ${name | upper2(true)}!
+<!-- target: engineUpperTarget2 -->Hello ${name|engine-upper2()}! Hello ${name | engine-upper2(true)}!
 ::data::
 ({
     info: {
@@ -95,6 +95,22 @@ default engine
 my engine
 ::expect-custom-options::
 <!-- import: a -->
+::custom-variable::
+<!-- target: engineCustomVariable --><!-- var: name = "etpl" --><!-- var: yes = true -->
+Hello {{name}}! Hello {{name | engine-upper}}! Hello {{name | engine-upper2( {{yes}} )}}!
+<!--if: {{yes}}-->Hello <!--filter: engine-upper2({{yes}})-->{{name}}<!--/filter-->!<!--/if-->
+::expect-custom-variable::
+
+Hello etpl! Hello ETPL! Hello Etpl!
+Hello Etpl!
+::custom-command-variable::
+<% target: engineCustomCommandVariable %><% var: name = "etpl" %><% var: yes = true %>
+Hello {{name}}! Hello {{name | engine-upper}}! Hello {{name | engine-upper2( {{yes}} )}}!
+<%if: {{yes}}%>Hello <%filter: engine-upper2({{yes}})%>{{name}}<%/filter%>!<%/if%>
+::expect-custom-command-variable::
+
+Hello etpl! Hello ETPL! Hello Etpl!
+Hello Etpl!
 ::get-tpl::
 <!-- target: engineGetSimpleTarget -->Hello etpl!
 <!-- target: engineGetImportTarget -->

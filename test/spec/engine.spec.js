@@ -6,6 +6,30 @@
     var text = readText( 'engine.text.html' );
     etpl.compile( text['get-tpl'] );
 
+    etpl.addFilter( 'engine-upper', function ( source ) {
+        return source.toUpperCase();
+    } );
+
+    etpl.addFilter( 'engine-upper2', function ( source, initial ) {
+        if (initial) {
+            return source.charAt(0).toUpperCase() + source.slice( 1 );
+        }
+
+        return source.toUpperCase();
+    } );
+
+    mytpl.addFilter( 'engine-upper', function ( source ) {
+        return source.toUpperCase();
+    } );
+
+    mytpl.addFilter( 'engine-upper2', function ( source, initial ) {
+        if (initial) {
+            return source.charAt(0).toUpperCase() + source.slice( 1 );
+        }
+
+        return source.toUpperCase();
+    } );
+
     describe('Engine', function() {
         it('can new by manual, isolate from default engine', function() {
             etpl.compile(text['default-tpl']);
@@ -63,6 +87,38 @@
             mytpl.config({
                 commandOpen: '<!--',
                 commandClose: '-->'
+            });
+        });
+
+        it('"config" method can setup variable open and close', function() {
+            mytpl.config({
+                variableOpen: '{{',
+                variableClose: '}}'
+            });
+            mytpl.compile(text['custom-variable']);
+            expect(mytpl.getRenderer('engineCustomVariable')())
+                .toEqual(text['expect-custom-variable']);
+            mytpl.config({
+                variableOpen: '${',
+                variableClose: '}'
+            });
+        });
+
+        it('"config" method can setup variable and command at the same time', function() {
+            mytpl.config({
+                commandOpen: '<%',
+                commandClose: '%>',
+                variableOpen: '{{',
+                variableClose: '}}'
+            });
+            mytpl.compile(text['custom-command-variable']);
+            expect(mytpl.getRenderer('engineCustomCommandVariable')())
+                .toEqual(text['expect-custom-command-variable']);
+            mytpl.config({
+                commandOpen: '<!--',
+                commandClose: '-->',
+                variableOpen: '${',
+                variableClose: '}'
             });
         });
 
@@ -166,9 +222,6 @@
         });
 
         it('"addFilter" method can add a filter function', function() {
-            etpl.addFilter( 'upper', function ( source ) {
-                return source.toUpperCase();
-            } );
             var renderer = etpl.compile(text['upper-tpl']);
             var data = {name: 'etpl'};
             expect(renderer(data))
@@ -176,13 +229,6 @@
         });
 
         it('"addFilter" method can add a filter function which can receive extra params', function() {
-            etpl.addFilter( 'upper2', function ( source, initial ) {
-                if (initial) {
-                    return source.charAt(0).toUpperCase() + source.slice( 1 );
-                }
-
-                return source.toUpperCase();
-            } );
             var renderer = etpl.compile(text['upper-tpl2']);
             var data = {name: 'etpl'};
             expect(renderer(data))
