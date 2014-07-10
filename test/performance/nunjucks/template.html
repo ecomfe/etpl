@@ -1,0 +1,5 @@
+<ul>
+{% for person in persons %}
+    <li>{{person.name|escape}} [{{person.email|escape}}] is {{person.age|escape}} ages.</li>
+{% endfor %}
+</ul>
