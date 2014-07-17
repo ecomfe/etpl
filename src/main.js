@@ -537,7 +537,6 @@
          */
         open: function ( context ) {
             var parent = context.stack.top();
-            this.parent = parent;
             parent && parent.addChild( this );
             context.stack.push( this );
         },
@@ -1060,9 +1059,7 @@ debugger;
      * @param {Object} context 语法分析环境对象
      */
     UseCommand.prototype.open = function ( context ) {
-        var parent = context.stack.top();
-        this.parent = parent;
-        parent.addChild( this );
+        context.stack.top().addChild( this );
     };
 
     /**
