@@ -56,23 +56,6 @@
             }
         });
 
-        it('compile master which exists should throw error', function() {
-            try{
-                etpl.compile(text['repeat-master-tpl']);
-                etpl.compile(text['repeat-master-tpl']);
-                expect(false).toBeTruthy();
-            }
-            catch (ex) {
-                var msg = ex.message;
-                if ( /^master /i.test(msg) && /is exists/.test(msg) ) {
-                    expect(true).toBeTruthy();
-                }
-                else {
-                    expect(false).toBeTruthy();
-                }
-            }
-        });
-
         it('"config" method can setup command open and close', function() {
             mytpl.config({
                 commandOpen: '<%',
@@ -147,10 +130,6 @@
             mytpl.compile(text['repeat-tpl-ignore-second']);
             expect(mytpl.render('engineRepeatIgnoreTarget')).toEqual('ignore');
 
-            mytpl.compile(text['repeat-master-tpl-ignore-first']);
-            mytpl.compile(text['repeat-master-tpl-ignore-second']);
-            expect(mytpl.render('engineRepeatIgnoreMasterTarget')).toEqual('ignore erik');
-
             mytpl.config({
                 namingConflict: 'error'
             });
@@ -164,10 +143,6 @@
             mytpl.compile(text['repeat-tpl-override-first']);
             mytpl.compile(text['repeat-tpl-override-second']);
             expect(mytpl.render('engineRepeatOverrideTarget')).toEqual('override');
-
-            mytpl.compile(text['repeat-master-tpl-override-first']);
-            mytpl.compile(text['repeat-master-tpl-override-second']);
-            expect(mytpl.render('engineRepeatOverrideMasterTarget')).toEqual('override erik');
 
             mytpl.config({
                 namingConflict: 'error'

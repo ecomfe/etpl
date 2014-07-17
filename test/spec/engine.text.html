@@ -14,17 +14,6 @@
 <!-- target: engineRepeatOverrideTarget -->ignore
 ::repeat-tpl-override-second::
 <!-- target: engineRepeatOverrideTarget -->override
-::repeat-master-tpl::
-<!-- master: engineRepeatMaster -->default engine
-::repeat-master-tpl-ignore-first::
-<!-- master: engineRepeatIgnoreMaster -->ignore <!--contentplaceholder:name-->
-::repeat-master-tpl-ignore-second::
-<!-- master: engineRepeatIgnoreMaster -->override <!--contentplaceholder:name--><!-- target: engineRepeatIgnoreMasterTarget( master = engineRepeatIgnoreMaster ) --><!--content:name-->erik<!--/content-->
-::repeat-master-tpl-override-first::
-<!-- master: engineRepeatOverrideMaster -->ignore <!--contentplaceholder:name-->
-::repeat-master-tpl-override-second::
-<!-- target: engineRepeatOverrideMasterTarget( master = engineRepeatOverrideMaster ) --><!--content:name-->erik<!--/content-->
-<!-- master: engineRepeatOverrideMaster -->override <!--contentplaceholder:name-->
 ::data-tpl::
 <!-- target: engineDataTarget -->Hello ${info.name} by ${info.contributor.name}[${info.contributor.email}]!
 ::strip-tpl::
