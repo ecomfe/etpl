@@ -22,21 +22,21 @@
 <!-- target: useSimpleTargetBreakLine -->
 <ul>
 <!-- for: ${persons} as ${person} -->
-<!-- 
-    use: usePersonTarget( 
-        name = ${person.name}, 
+<!--
+    use: usePersonTarget(
+        name = ${person.name},
         email = ${person.email}
-    ) 
+    )
 -->
 <!-- /for -->
 </ul>
 <!-- target: usePersonTarget --><li>${name}[${email}]
 ::tpl-dep-target::
 <!-- target: useDepTarget( master = useDepMaster ) -->
-<!-- content: header --><!-- use: useDepHeaderTarget() -->
+<!-- block: header --><!-- use: useDepHeaderTarget() --><!--/block-->
 ::tpl-dep-master::
-<!-- master: useDepMaster -->
-<header><!-- contentplaceholder: header --></header>
+<!-- target: useDepMaster -->
+<header><!-- block: header --><!--/block--></header>
 <div><!-- use: useDepBodyTarget( name=${engine} ) --></div>
 <!-- target: useDepBodyTarget -->${name}
 <!-- target: useDepHeaderTarget -->header
@@ -45,11 +45,11 @@
 
 <!-- target: useRecursionMenuTarget -->
 <ul>
-    <!-- for: ${children} as ${item} -->
+<!-- for: ${children} as ${item} -->
     <li><a href="#">${item.text}</a>
-        <!-- if: ${item.children} && ${item.children.length} --><!-- use: useRecursionMenuTarget(children=${item.children}) --><!-- /if -->
+<!-- if: ${item.children} && ${item.children.length} --><!-- use: useRecursionMenuTarget(children=${item.children}) --><!-- /if -->
     </li>
-    <!-- /for -->
+<!-- /for -->
 </ul>
 <!-- /target -->
 ::data-recursion::
@@ -70,47 +70,47 @@
 ::expect-useRecursionTarget::
 
 <ul>
-    
+
     <li><a href="#">a</a>
-        
+
     </li>
-    
+
     <li><a href="#">b</a>
-        
+
 <ul>
-    
+
     <li><a href="#">b1</a>
-        
+
 <ul>
-    
+
     <li><a href="#">b11</a>
-        
+
     </li>
-    
+
     <li><a href="#">b12</a>
-        
+
     </li>
-    
+
 </ul>
 
     </li>
-    
+
     <li><a href="#">b2</a>
-        
+
     </li>
-    
+
     <li><a href="#">b3</a>
-        
+
     </li>
-    
+
 </ul>
 
     </li>
-    
+
     <li><a href="#">c</a>
-        
+
     </li>
-    
+
 </ul>
 
 ::data-persons::
