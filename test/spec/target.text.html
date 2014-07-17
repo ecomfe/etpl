@@ -14,4 +14,120 @@ abcdefg
 
 abcdefg
 
+::tpl-many::
+<!-- target: targetMany1 -->
+manyTargets-1
+<!-- target: targetMany2 -->
+manyTargets-2
+<!-- target: targetMany3 -->
+manyTargets-3
+<!-- /target -->
+::expect-many1::
+
+manyTargets-1
+
+::expect-many2::
+
+manyTargets-2
+
+::expect-many3::
+
+manyTargets-3
+
+::tpl-simple-master::
+<!-- target:targetFromMasterSimple( master = targetMasterSimple ) -->
+<!-- block:content1 -->abc<!-- /block -->
+
+<!-- target:targetMasterSimple --><!-- block:content1 --><!--/block-->def
+
+::expect-simple-master::
+abcdef
+
+::tpl-simple-master2::
+<!-- target:targetFromMasterSimple2( master = targetMasterSimple2 ) -->
+<!-- block:header -->header<!-- /block -->
+<!-- block:body -->body<!-- /block -->
+<!-- block:footer -->footer<!-- /block -->
+<!--
+target:targetFromMasterSimple2Breakline(
+    master = targetMasterSimple2
+)
+-->
+<!-- block:header -->header<!-- /block -->
+<!-- block:body -->body<!-- /block -->
+<!-- block:footer -->footer<!-- /block -->
+<!-- target:targetMasterSimple2 -->
+<header><!-- block: header --><!-- /block --></header>
+<div><!-- block: body --><!-- /block --></div>
+<footer><!-- block: footer --><!-- /block --></footer>
+::expect-simple-master2::
+
+<header>header</header>
+<div>body</div>
+<footer>footer</footer>
+::tpl-master-default-block::
+<!-- target:targetDefaultBlockMaster -->
+<div class="header"><!-- block:header -->header<!-- /block --></div>
+<div class="body"><!-- block:body -->body<!-- /block --></div>
+<!-- target:targetFromDefaultBlockMaster(master=targetDefaultBlockMaster) -->
+<!-- block:body -->body2<!-- /block -->
+
+::expect-master-default-block::
+
+<div class="header">header</div>
+<div class="body">body2</div>
+
+::tpl-ntier-master::
+<!-- target:targetNTierRoot -->
+<div class="header"><!-- block:header -->header<!-- /block --></div>
+<div class="body"><!-- block:body -->body<!-- /block --></div>
+<!--
+    target:
+        targetNTierLevel1
+        (
+            master = targetNTierRoot
+        )
+-->
+<!-- block: header -->child header<!-- /block -->
+<!-- block: body -->
+    <!-- block:body-head -->child head<!-- /block -->
+    <!-- block:body-main -->child body<!-- /block -->
+<!-- /block -->
+
+<!-- target:targetNTierNoContent(master=targetNTierLevel1) -->
+<!-- target:targetNTierBodyContent(master=targetNTierLevel1) -->
+<!-- block: body-main -->child body2<!-- /block -->
+<!-- target:targetNTierBHContent(master=targetNTierLevel1) -->
+<!-- block: body-head -->child head2<!-- /block -->
+::expect-ntier-nocontent::
+
+<div class="header">child header</div>
+<div class="body">
+    child head
+    child body
+</div>
+
+::expect-ntier-bodycontent::
+
+<div class="header">child header</div>
+<div class="body">
+    child head
+    child body2
+</div>
+
+::expect-ntier-bhcontent::
+
+<div class="header">child header</div>
+<div class="body">
+    child head2
+    child body
+</div>
+
+::tpl-lazy-target::
+<!-- target:targetFromLazyMaster(master=targetLazyMaster) -->
+<!-- block: content -->content<!--/block-->
+::tpl-lazy-master::
+<!-- target:targetLazyMaster --><!-- block: content --><!--/block-->
+::expect-lazy::
+content
 ::eof::
