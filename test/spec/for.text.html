@@ -16,11 +16,11 @@
 <!-- target:forItemIndexTarget -->
 <!-- for: ${myList} as ${item}, ${idx} --><!--if:${idx}>0-->|<!--/if-->${item},${idx}<!-- /for -->
 <!-- target:forItemIndexTargetBreakLine -->
-<!-- for: 
-        ${myList} 
-    as 
-        ${item}, 
-        ${idx} 
+<!-- for:
+        ${myList}
+    as
+        ${item},
+        ${idx}
 --><!--if:${idx}>0-->|<!--/if-->${item},${idx}<!-- /for -->
 <!-- target:forOItemTarget -->
 <!-- for: ${myObj} as ${item} -->${item}|<!-- /for -->
@@ -37,6 +37,12 @@
 <!-- target:forDataGetterTarget -->
 <ul>
 <!-- for: ${persons} as ${person} --><li>${person.name}[${person.email}]</li><!-- /for -->
+</ul>
+<!-- target:forBlockTarget(master=forBlockMaster) -->
+<!--block:item--><li>${person.name}[${person.email}]</li><!--/block-->
+<!-- target:forBlockMaster -->
+<ul>
+<!-- for: ${persons} as ${person} --><!--block:item--><!--/block--><!-- /for -->
 </ul>
 <!-- target:forNestedTarget -->
 <!-- for: ${persons} as ${person} -->
@@ -115,6 +121,12 @@ name:firede
 ::except-nested-4::
 email:firede@gmail.com
 ::except-forDataGetterTarget::
+
+<ul>
+<li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>
+</ul>
+
+::expect-forBlockTarget::
 
 <ul>
 <li>erik[errorrik@gmail.com]</li><li>firede[firede@gmail.com]</li>

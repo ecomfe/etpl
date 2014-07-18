@@ -10,7 +10,7 @@
         personsIndex: eval(text.personsIndex)
     };
     data.ecomfe = {
-        persons: data.persons, 
+        persons: data.persons,
         personsIndex: data.personsIndex
     };
     etpl.compile( text.tpl );
@@ -103,6 +103,11 @@
             };
             var result = renderer(dataHasGetter);
             expect(result).toEqual(text['except-forDataGetterTarget']);
+        });
+
+        it('has block in traversal body, child target can override block content', function() {
+            var renderer = etpl.getRenderer('forBlockTarget');
+            expect(renderer(data)).toEqual(text['expect-forBlockTarget']);
         });
     });
 
