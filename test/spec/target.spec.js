@@ -100,6 +100,20 @@
                 expect(render()).toBe(text['expect-lazy']);
             }
         );
+
+        it(
+            'block can be nested',
+            function() {
+                var render = etpl.compile(text['tpl-nested-block']);
+                expect(render()).toEqual(text['expect-nested-block']);
+
+                render = etpl.getRenderer('targetFromNestedBlockNoHeader');
+                expect(render()).toEqual(text['expect-nested-block-noheader']);
+
+                render = etpl.getRenderer('targetFromNestedBlockCustomBody');
+                expect(render()).toEqual(text['expect-nested-block-custombody']);
+            }
+        );
     });
 
 })();

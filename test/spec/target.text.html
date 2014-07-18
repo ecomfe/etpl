@@ -130,4 +130,47 @@ target:targetFromMasterSimple2Breakline(
 <!-- target:targetLazyMaster --><!-- block: content --><!--/block-->
 ::expect-lazy::
 content
+::tpl-nested-block::
+<!-- target: targetFromNestedBlock(master = targetNestedBlock) -->
+<!-- block: body-main -->body main<!-- /block -->
+<!-- block: body-side -->body side<!-- /block -->
+<!-- block: header -->header<!-- /block -->
+
+<!-- target: targetFromNestedBlockNoHeader(master = targetNestedBlock) -->
+<!-- block: body-main -->body main<!-- /block -->
+<!-- block: body-side -->body side<!-- /block -->
+<!-- block: header-wrap --><!-- /block -->
+
+<!-- target: targetFromNestedBlockCustomBody(master = targetNestedBlock) -->
+<!-- block: body -->
+    <div><!-- block: body-main -->body main<!-- /block --></div>
+<!-- /block -->
+<!-- block: header -->header<!-- /block -->
+
+<!-- target: targetNestedBlock -->
+<!-- block: header-wrap --><header><!-- block: header --><!-- /block --></header><!-- /block -->
+<!-- block: body-wrap --><div class="body"><!-- block: body -->
+    <aside><!-- block: body-side --><!-- /block --></aside>
+    <div><!-- block: body-main --><!-- /block --></div>
+<!-- /block --></div><!-- /block -->
+::expect-nested-block::
+
+<header>header</header>
+<div class="body">
+    <aside>body side</aside>
+    <div>body main</div>
+</div>
+::expect-nested-block-noheader::
+
+
+<div class="body">
+    <aside>body side</aside>
+    <div>body main</div>
+</div>
+::expect-nested-block-custombody::
+
+<header>header</header>
+<div class="body">
+    <div>body main</div>
+</div>
 ::eof::
