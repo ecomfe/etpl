@@ -56,6 +56,13 @@
             expect(renderer( {num:1,str:"1"} )).toEqual(text['expect-ifComplexTarget']);
         });
 
+        it('has block in body, child target can override block content', function() {
+            var renderer = etpl.getRenderer('ifBlockTarget');
+            expect(renderer({cond: 'if'})).toEqual(text['expect-ifBlockTarget-if']);
+            expect(renderer({cond: 'elif'})).toEqual(text['expect-ifBlockTarget-elif']);
+            expect(renderer({cond: 'else'})).toEqual(text['expect-ifBlockTarget-else']);
+        });
+
         it('"if" can be nested', function() {
             var renderer = etpl.getRenderer('ifNestedTarget');
             expect(renderer( {num:1,str:"1"} ))
@@ -64,5 +71,5 @@
                 .toEqual(text['expect-ifNestedTarget-differentvalue']);
         });
     });
-    
+
 })();

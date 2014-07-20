@@ -18,18 +18,24 @@
 <!-- if: !( 0 && 0 ) -->1<!--else-->2<!--/if-->
 <!-- if: !0 && 0 -->1<!--else-->2<!--/if-->
 <!-- target:ifComplexTargetBreakLine -->
-<!-- if: !( 
-        0 
+<!-- if: !(
+        0
         && 0
-    ) 
+    )
 -->1<!--else-->2<!--/if-->
-<!-- if: 
-    !0 
-    && 0 
+<!-- if:
+    !0
+    && 0
 -->1<!--else-->2<!--/if-->
 <!--target:ifComplexPropertyAccessTarget-->
 <!-- if: ${level1[1]['num']} -->1<!--else-->2<!--/if-->
 <!-- if: ${level1[0].num} -->1<!--else-->2<!--/if-->
+<!-- target: ifBlockMaster -->
+<!-- if: ${cond} === 'if' --><!--block: if--><!--/block--><!--elif: ${cond}==='elif'--><!--block: elif--><!--/block--><!--else--><!--block: else--><!--/block--><!--/if-->
+<!-- target: ifBlockTarget(master=ifBlockMaster) -->
+<!--block: if-->if<!--/block-->
+<!--block: elif-->elif<!--/block-->
+<!--block: else-->else<!--/block-->
 <!-- target:ifNestedTarget -->
 <!-- if: ${num} == ${str} -->
     <!-- if: ${num} === ${str} -->same type<!-- else -->different type<!-- /if -->
@@ -98,4 +104,16 @@ ok
 ::expect-variable-filter-elif::
 
 ok
+::expect-ifBlockTarget-if::
+
+if
+
+::expect-ifBlockTarget-elif::
+
+elif
+
+::expect-ifBlockTarget-else::
+
+else
+
 ::eof::
