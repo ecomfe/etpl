@@ -1072,6 +1072,37 @@
         context.target.blocks[ this.name ] = this;
     };
 
+    /**
+     * elif节点open，解析开始
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ElifCommand.prototype.open = function ( context ) {
+        var elseCommand = new ElseCommand();
+        elseCommand.open( context );
+
+        var ifCommand = autoCloseCommand( context, IfCommand );
+        ifCommand.addChild( this );
+        context.stack.push( this );
+    };
+
+    /**
+     * else节点open，解析开始
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ElseCommand.prototype.open = function ( context ) {
+        var ifCommand = autoCloseCommand( context, IfCommand );
+        ifCommand.addChild( this );
+        context.stack.push( this );
+    };
+
+    /**
+     * 节点自动闭合，解析结束
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    IfCommand.prototype.autoClose = Command.prototype.close;
 
     /**
      * 节点open前的处理动作：节点不在target中时，自动创建匿名target
@@ -1272,38 +1303,6 @@
             stringLiteralize( this.name ),
             args ? ',' + compileVariable( args, this.engine ) : ''
         );
-    };
-
-    /**
-     * 节点自动闭合，解析结束
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    IfCommand.prototype.autoClose = Command.prototype.close;
-
-    /**
-     * elif节点open，解析开始
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ElifCommand.prototype.open = function ( context ) {
-        var elseCommand = new ElseCommand();
-        elseCommand.open( context );
-
-        var ifCommand = autoCloseCommand( context, IfCommand );
-        ifCommand.addChild( this );
-        context.stack.push( this );
-    };
-
-    /**
-     * else节点open，解析开始
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ElseCommand.prototype.open = function ( context ) {
-        var ifCommand = autoCloseCommand( context, IfCommand );
-        ifCommand.addChild( this );
-        context.stack.push( this );
     };
 
     /**
