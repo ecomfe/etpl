@@ -853,7 +853,7 @@
     }
 
     // 创建else命令节点继承关系
-    inherits( ElseCommand, Command );
+    inherits( ElseCommand, IfCommand );
 
     /**
      * Target的节点状态
@@ -975,7 +975,7 @@
             // console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
             //     + this.getRendererBody()
             //     + RENDER_STRING_RETURN);
-debugger;
+
             var realRenderer = new Function(
                 'data', 'engine',
                 [
@@ -1154,14 +1154,6 @@ debugger;
 
     /**
      * 节点解析结束
-     * 由于else节点无需闭合，处理时不会入栈，闭合由if负责。所以将close置为空函数
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ElseCommand.prototype.close =
-
-    /**
-     * 节点解析结束
      * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
      *
      * @param {Object} context 语法分析环境对象
@@ -1221,24 +1213,23 @@ debugger;
      * @return {string}
      */
     IfCommand.prototype.getRendererBody = function () {
-        var rendererBody = stringFormat(
+        return stringFormat(
             'if({0}){{1}}',
             compileVariable( this.value, this.engine ),
             Command.prototype.getRendererBody.call( this )
         );
+    };
 
-        var elseCommand = this[ 'else' ];
-        if ( elseCommand ) {
-            return [
-                rendererBody,
-                stringFormat(
-                    'else{{0}}',
-                    elseCommand.getRendererBody()
-                )
-            ].join( '' );
-        }
-
-        return rendererBody;
+    /**
+     * 获取renderer body的生成代码
+     *
+     * @return {string}
+     */
+    ElseCommand.prototype.getRendererBody = function () {
+        return stringFormat(
+            '}else{{0}',
+            Command.prototype.getRendererBody.call( this )
+        );
     };
 
     /**
@@ -1291,19 +1282,6 @@ debugger;
     IfCommand.prototype.autoClose = Command.prototype.close;
 
     /**
-     * 添加子节点
-     *
-     * @param {TextNode|Command} node 子节点
-     */
-    IfCommand.prototype.addChild = function ( node ) {
-        var elseCommand = this[ 'else' ];
-        ( elseCommand
-            ? elseCommand.children
-            : this.children
-        ).push( node );
-    };
-
-    /**
      * elif节点open，解析开始
      *
      * @param {Object} context 语法分析环境对象
@@ -1324,9 +1302,8 @@ debugger;
      */
     ElseCommand.prototype.open = function ( context ) {
         var ifCommand = autoCloseCommand( context, IfCommand );
-
-        ifCommand[ 'else' ] = this;
-        context.stack.push( ifCommand );
+        ifCommand.addChild( this );
+        context.stack.push( this );
     };
 
     /**
