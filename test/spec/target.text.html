@@ -66,10 +66,10 @@ target:targetFromMasterSimple2Breakline(
 <div>body</div>
 <footer>footer</footer>
 ::tpl-master-default-block::
-<!-- target:targetDefaultBlockMaster -->
+<!-- target:targetDefaultBlock/Master -->
 <div class="header"><!-- block:header -->header<!-- /block --></div>
 <div class="body"><!-- block:body -->body<!-- /block --></div>
-<!-- target:targetFromDefaultBlockMaster(master=targetDefaultBlockMaster) -->
+<!-- target:targetFromDefaultBlock/Master(master=targetDefaultBlock/Master) -->
 <!-- block:body -->body2<!-- /block -->
 
 ::expect-master-default-block::
@@ -124,10 +124,10 @@ target:targetFromMasterSimple2Breakline(
 </div>
 
 ::tpl-lazy-target::
-<!-- target:targetFromLazyMaster(master=targetLazyMaster) -->
+<!-- target:targetFromLazyMaster(master=targetLazy/Master) -->
 <!-- block: content -->content<!--/block-->
 ::tpl-lazy-master::
-<!-- target:targetLazyMaster --><!-- block: content --><!--/block-->
+<!-- target:targetLazy/Master --><!-- block: content --><!--/block-->
 ::expect-lazy::
 content
 ::tpl-nested-block::

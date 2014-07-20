@@ -1,9 +1,9 @@
 ::name::
 etpl
 ::simple::
-<!-- target: importHello -->Hello, I am ${name}!
+<!-- target: import/Hello -->Hello, I am ${name}!
 <!-- target: importCopy -->Copyright ${name}
-<!-- target: importPara --><p><!-- import: importHello --></p>
+<!-- target: importPara --><p><!-- import: import/Hello --></p>
 <!-- target: importMaster -->
 <header><!-- block: header --><!-- /block --></header>
 <footer><!-- import: importCopy --></footer>
@@ -11,11 +11,11 @@ etpl
 <header><!-- block: header --><!-- /block --></header>
 <footer><!-- import: importCopy2 --></footer>
 <!-- target: importMasterTarget2(master=importMaster2) -->
-<!-- block: header --><!-- import: importHello2 --><!-- /block -->
+<!-- block: header --><!-- import: import/Hello2 --><!-- /block -->
 <!-- target: importMasterTarget(master=importMaster) -->
-<!-- block: header --><!-- import: importHello --><!-- /block -->
+<!-- block: header --><!-- import: import/Hello --><!-- /block -->
 ::other-imported::
-<!-- target: importHello2 -->Hello, ${name}!
+<!-- target: import/Hello2 -->Hello, ${name}!
 <!-- target: importCopy2 -->Copyright ${name} 2013
 
 ::expect-importPara::

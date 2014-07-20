@@ -70,7 +70,7 @@
             'use master block content when not have block in self',
             function() {
                 etpl.compile(text['tpl-master-default-block']);
-                var render = etpl.getRenderer('targetFromDefaultBlockMaster');
+                var render = etpl.getRenderer('targetFromDefaultBlock/Master');
                 expect(render()).toEqual(text['expect-master-default-block']);
             }
         );
