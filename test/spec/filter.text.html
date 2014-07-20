@@ -21,12 +21,24 @@
 <!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: filter-lower(!${arg | filter-not}) -->ETPL<!-- /filter -->
 ::tpl-param-break-line::
 <!-- target: filterParamTargetBreakLine -->
-<!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter: 
+<!-- filter: filter-lower -->ETPL<!-- /filter --> <!-- filter:
     filter-lower(
         true
-    ) 
+    )
 -->ETPL<!-- /filter -->
 ::expect-param::
 
 etpl Etpl
+::tpl-block::
+<!-- target: filterBlockTarget(master = filterBlockMaster) -->
+<!--block:etpl-->ETPL<!--/block-->
+<!--block:er-->ER<!--/block-->
+<!-- target: filterBlockMaster -->
+<!-- filter: filter-lower --><!--if:${prod}=='etpl'--><!--block:etpl--><!--/block--><!--elif: ${prod}=='er'--><!--block:er--><!--/block--><!--/if--><!-- /filter -->
+::expect-block-etpl::
+
+etpl
+::expect-block-er::
+
+er
 ::eof::

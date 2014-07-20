@@ -45,5 +45,11 @@
             var renderer = etpl.compile( text['tpl-param-break-line'] );
             expect(renderer()).toEqual(text['expect-param']);
         });
+
+        it('has block in body, child target can override block content', function() {
+            var renderer = etpl.compile( text['tpl-block'] );
+            expect(renderer({prod:'etpl'})).toEqual(text['expect-block-etpl']);
+            expect(renderer({prod:'er'})).toEqual(text['expect-block-er']);
+        });
     });
 })();
