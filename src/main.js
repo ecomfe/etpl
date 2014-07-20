@@ -678,7 +678,7 @@
      * @param {Engine} engine 引擎实例
      */
     function TargetCommand(value, engine) {
-        if (!/^\s*([a-z0-9_-]+)\s*(\(\s*master\s*=\s*([a-z0-9_-]+)\s*\))?\s*/i.test(value)) {
+        if (!/^\s*([a-z0-9\/_-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/_-]+)\s*\))?\s*/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
@@ -701,7 +701,7 @@
      * @param {Engine} engine 引擎实例
      */
     function BlockCommand(value, engine) {
-        if (!/^\s*([a-z0-9_-]+)\s*$/i.test(value)) {
+        if (!/^\s*([a-z0-9\/_-]+)\s*$/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
@@ -722,7 +722,7 @@
      * @param {Engine} engine 引擎实例
      */
     function ImportCommand(value, engine) {
-        if (!/^\s*([a-z0-9_-]+)\s*$/i.test(value)) {
+        if (!/^\s*([a-z0-9\/_-]+)\s*$/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
@@ -787,7 +787,7 @@
      * @param {Engine} engine 引擎实例
      */
     function UseCommand(value, engine) {
-        if (!/^\s*([a-z0-9_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test(value)) {
+        if (!/^\s*([a-z0-9\/_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
