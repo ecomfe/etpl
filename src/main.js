@@ -557,15 +557,6 @@
         },
 
         /**
-         * 添加文本节点
-         *
-         * @param {TextNode} node 节点
-         */
-        addTextNode: function (node) {
-            this.addChild(node);
-        },
-
-        /**
          * 获取renderer body的生成代码
          *
          * @return {string}
@@ -1532,12 +1523,12 @@
          * @inner
          */
         function flushTextBuf() {
-            if (textBuf.length > 0) {
-                var text = textBuf.join('');
+            var text;
+            if (textBuf.length > 0 && (text = textBuf.join(''))) {
                 var textNode = new TextNode(text, engine);
                 textNode.beforeAdd(analyseContext);
 
-                stack.top().addTextNode(textNode);
+                stack.top().addChild(textNode);
                 textBuf = [];
 
                 if (engine.options.strip
