@@ -1,0 +1,17 @@
+#! /usr/bin/env node
+
+var fs = require('fs');
+
+var inputFile = process.argv[2];
+if (!inputFile || !fs.existsSync(inputFile)) {
+    console.log( '[ERROR]' + (inputFile || 'Input') + ' is not exist!!');
+    process.exit(1);
+}
+
+var inputStat = fs.statSync(inputFile);
+if (inputStat.isDirectory()) {
+    console.log(inputFile + ' is directory!');
+}
+else {
+    console.log(inputFile + ' is normal file!');
+}
