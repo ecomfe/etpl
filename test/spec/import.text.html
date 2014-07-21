@@ -62,18 +62,25 @@ etpl
 ::tpl-mix::
 <!--target:importMixTarget(master=importMixMaster)-->
 <!--block:head-->target head<!--/block-->
+<!--block:foot-->target foot<!--/block-->
 <!--target:importMixMaster-->
 <header><!--block:head-->master head<!--/block--></header>
 <div><!--block:body--><!--import:importMixHello--><!--block:content-->master hello<!--/block--><!--/import--><!--/block--></div>
+<footer><!--block:foot--><!--import:importMixCopy--><!--/block--></footer>
 <!--target:importMixHello--><b><!--block:content-->default hello<!--/block--></b>
+<!--target:importMixCopy--><p><!--import:importMixCopyRight--></p><!--target:importMixCopyRight-->CopyRight Etpl
 ::expect-mix-target::
 
 <header>target head</header>
-<div><b>master hello</b></div>
+<div><b>master hello</b>
+</div>
+<footer>target foot</footer>
 
 ::expect-mix-master::
 
 <header>master head</header>
-<div><b>master hello</b></div>
+<div><b>master hello</b>
+</div>
+<footer><p>CopyRight Etpl</p></footer>
 
 ::eof::
