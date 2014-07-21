@@ -1,39 +1,79 @@
 ::name::
 etpl
-::simple::
-<!-- target: import/Hello -->Hello, I am ${name}!
-<!-- target: importCopy -->Copyright ${name}
+::tpl-para::
 <!-- target: importPara --><p><!-- import: import/Hello --></p>
+<!-- target: import/Hello -->Hello, I am ${name}!
+::expect-para::
+<p>Hello, I am etpl!</p>
+
+::tpl-master::
+<!-- target: importFromMaster(master=importMaster) -->
+<!-- block: header --><!-- import: importFromMasterHello --><!-- /block -->
 <!-- target: importMaster -->
 <header><!-- block: header --><!-- /block --></header>
-<footer><!-- import: importCopy --></footer>
-<!-- target: importMaster2 -->
+<footer><!-- import: importFromMasterCopy --></footer>
+<!-- target: importFromMasterHello -->Hello, I am ${name}!<!-- target: importFromMasterCopy -->Copyright ${name}
+::expect-master::
+
+<header>Hello, I am etpl!</header>
+<footer>Copyright etpl</footer>
+
+::tpl-unready-begin::
+<!-- target: importUnready(master=importUnreadyMaster) -->
+<!-- block: header --><!-- import: importUnreadyHello --><!-- /block -->
+<!-- target: importUnreadyMaster -->
 <header><!-- block: header --><!-- /block --></header>
-<footer><!-- import: importCopy2 --></footer>
-<!-- target: importMasterTarget2(master=importMaster2) -->
-<!-- block: header --><!-- import: import/Hello2 --><!-- /block -->
-<!-- target: importMasterTarget(master=importMaster) -->
-<!-- block: header --><!-- import: import/Hello --><!-- /block -->
-::other-imported::
-<!-- target: import/Hello2 -->Hello, ${name}!
-<!-- target: importCopy2 -->Copyright ${name} 2013
+<footer><!-- import: importUnreadCopy --></footer>
 
-::expect-importPara::
-<p>Hello, I am etpl!
-</p>
+::tpl-unready-then::
+<!-- target: importUnreadyHello -->Hello, ${name}!<!-- target: importUnreadCopy -->Copyright ${name} 2013
+::expect-unready::
 
-::expect-importMasterTarget::
+<header>Hello, etpl!</header>
+<footer>Copyright etpl 2013</footer>
 
-<header>Hello, I am etpl!
-</header>
-<footer>Copyright etpl
-</footer>
+::tpl-block::
+<!-- target: import/biz -->
+<!-- import: import/header -->
+<!-- import: import/main --><!-- block: main -->
+<!-- import: import/list --><!-- block: list -->biz list<!-- /block --><!-- /import -->
+<!-- import: import/pager --><!-- block: pager -->biz pager<!-- /block --><!-- /import -->
+<!-- /block --><!-- /import -->
 
-::expect-importMasterTarget2::
+<!-- target: import/header --><header><!-- block: header -->default header<!-- /block --></header>
+<!-- target: import/main --><div><!-- block: main -->default main<!-- /block --></div>
+<!-- target: import/footer -->
+<footer><!-- block: footer -->default footer<!-- /block --></footer>
+<!-- target: import/filter --><div class="filter"><!-- block: filter -->default filter<!-- /block --></div>
+<!-- target: import/list --><div class="list"><!-- block: list -->default list<!-- /block --></div>
+<!-- target: import/pager --><div class="pager"><!-- block: pager -->default pager<!-- /block --></div>
+::expect-block::
 
-<header>Hello, etpl!
-</header>
-<footer>Copyright etpl 2013
-</footer>
+<header>default header</header>
+
+<div>
+<div class="list">biz list</div>
+
+<div class="pager">biz pager</div>
+</div>
+
+
+
+::tpl-mix::
+<!--target:importMixTarget(master=importMixMaster)-->
+<!--block:head-->target head<!--/block-->
+<!--target:importMixMaster-->
+<header><!--block:head-->master head<!--/block--></header>
+<div><!--block:body--><!--import:importMixHello--><!--block:content-->master hello<!--/block--><!--/import--><!--/block--></div>
+<!--target:importMixHello--><b><!--block:content-->default hello<!--/block--></b>
+::expect-mix-target::
+
+<header>target head</header>
+<div><b>master hello</b></div>
+
+::expect-mix-master::
+
+<header>master head</header>
+<div><b>master hello</b></div>
 
 ::eof::
