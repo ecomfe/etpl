@@ -415,7 +415,7 @@
                 // 形成filter["b"](filter["a"](ts(gv(...))))
                 //
                 // 当variableName以*起始时，忽略ts调用，直接传递原值给filter
-                var filterCharIndex = text.indexOf( '|' );
+                var filterCharIndex = text.indexOf('|');
                 var variableName = (
                         filterCharIndex > 0
                         ? text.slice(0, filterCharIndex)
@@ -728,7 +728,8 @@
 
         this.name = RegExp.$1;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name' ];
+        this.cloneProps = [ 'name', 'state', 'blocks' ];
+        this.blocks = {};
     }
 
     // 创建Import命令节点继承关系
@@ -881,29 +882,18 @@
     };
 
     /**
-     * 节点闭合，解析结束
+     * 应用其继承的母版，返回是否成功应用母版
      *
-     * @param {Object} context 语法分析环境对象
+     * @return {boolean}
      */
-    TargetCommand.prototype.close =
-
-    /**
-     * 节点闭合，解析结束。自闭合时被调用
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    TargetCommand.prototype.autoClose = function (context) {
-        Command.prototype.close.call(this, context);
-        this.state = this.master ? TargetState.READED : TargetState.APPLIED;
-        context.target = null;
-    };
+    ImportCommand.prototype.applyMaster =
 
     /**
      * 应用其继承的母版，返回是否成功应用母版
      *
      * @return {boolean}
      */
-    TargetCommand.prototype.applyMaster = function () {
+    TargetCommand.prototype.applyMaster = function (masterName) {
         if (this.state >= TargetState.APPLIED) {
             return 1;
         }
@@ -925,8 +915,8 @@
             }
         }
 
-        var master = this.engine.targets[this.master];
-        if (master && master.applyMaster()) {
+        var master = this.engine.targets[masterName];
+        if (master && master.applyMaster(master.master)) {
             this.children = master.clone().children;
             replaceBlock(this);
             this.state = TargetState.APPLIED;
@@ -968,7 +958,7 @@
             }
         }
 
-        if (this.applyMaster()) {
+        if (this.applyMaster(this.master)) {
             checkReadyState(this);
             readyState && (this.state = TargetState.READY);
             return readyState;
@@ -986,8 +976,8 @@
         }
 
         if (this.isReady()) {
-            // console.log( this.name + ' ------------------' );
-            // console.log(RENDERER_BODY_START +RENDER_STRING_DECLATION
+            // console.log(this.name + ' ------------------');
+            // console.log(RENDERER_BODY_START + RENDER_STRING_DECLATION
             //     + this.getRendererBody()
             //     + RENDER_STRING_RETURN);
 
@@ -1055,13 +1045,6 @@
     };
 
     /**
-     * Import节点open，解析开始
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ImportCommand.prototype.open =
-
-    /**
      * Var节点open，解析开始
      *
      * @param {Object} context 语法分析环境对象
@@ -1084,7 +1067,7 @@
      */
     BlockCommand.prototype.open = function (context) {
         Command.prototype.open.call(this, context);
-        context.target.blocks[this.name] = this;
+        (context.imp || context.target).blocks[this.name] = this;
     };
 
     /**
@@ -1113,11 +1096,92 @@
     };
 
     /**
+     * import节点open，解析开始
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ImportCommand.prototype.open = function (context) {
+        this.parent = context.stack.top();
+        this.target = context.target;
+        Command.prototype.open.call(this, context);
+        this.state = TargetState.READING;
+        context.imp = this;
+    };
+
+    /**
+     * 节点解析结束
+     * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    UseCommand.prototype.close =
+
+    /**
+     * 节点解析结束
+     * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    VarCommand.prototype.close = function () {};
+
+    /**
+     * 节点解析结束
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ImportCommand.prototype.close = function (context) {
+        Command.prototype.close.call(this, context);
+        this.state = TargetState.READED;
+        context.imp = null;
+    };
+
+    /**
+     * 节点闭合，解析结束
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    TargetCommand.prototype.close =
+
+    /**
+     * 节点闭合，解析结束。自闭合时被调用
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    TargetCommand.prototype.autoClose = function (context) {
+        Command.prototype.close.call(this, context);
+        this.state = this.master ? TargetState.READED : TargetState.APPLIED;
+        context.target = null;
+    };
+
+    /**
      * 节点自动闭合，解析结束
      *
      * @param {Object} context 语法分析环境对象
      */
     IfCommand.prototype.autoClose = Command.prototype.close;
+
+    /**
+     * 节点自动闭合，解析结束
+     * ImportCommand的自动结束逻辑为，在其开始位置后马上结束
+     * 所以，其自动结束时children应赋予其所属的parent
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ImportCommand.prototype.autoClose = function (context) {
+        // move children to parent
+        var parentChildren = this.parent.children;
+        parentChildren.push.apply(parentChildren, this.children);
+        this.children.length = 0;
+
+        // move blocks to target
+        for (var key in this.blocks) {
+            this.target.blocks[key] = this.blocks[key];
+        }
+        this.blocks = {};
+
+        // do close
+        this.close(context);
+    };
 
     /**
      * 节点open前的处理动作：节点不在target中时，自动创建匿名target
@@ -1183,37 +1247,13 @@
     };
 
     /**
-     * 节点解析结束
-     * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    UseCommand.prototype.close =
-
-    /**
-     * 节点解析结束
-     * 由于import节点无需闭合，处理时不会入栈，所以将close置为空函数
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ImportCommand.prototype.close =
-
-    /**
-     * 节点解析结束
-     * 由于var节点无需闭合，处理时不会入栈，所以将close置为空函数
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    VarCommand.prototype.close = function () {};
-
-    /**
      * 获取renderer body的生成代码
      *
      * @return {string}
      */
     ImportCommand.prototype.getRendererBody = function () {
-        var target = this.engine.targets[this.name];
-        return target.getRendererBody();
+        this.applyMaster(this.name);
+        return Command.prototype.getRendererBody.call(this);
     };
 
     /**
