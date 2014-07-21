@@ -7,8 +7,6 @@
  *         otakustay(otakustay@gmail.com)
  */
 
-// 有的正则比较长，所以特别放开一些限制
-/* jshint maxdepth: 10, unused: false, white: false */
 
 // HACK: 可见的重复代码未抽取成function和var是为了gzip size，吐槽的一边去
 
@@ -134,6 +132,7 @@
         // 所以，不考虑将原有子类prototype缓存再逐个拷贝回去
     }
 
+    /* jshint ignore:start */
     /**
      * HTML Filter替换的字符实体表
      *
@@ -147,7 +146,9 @@
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#39;'
+
     };
+    /* jshint ignore:end */
 
     /**
      * HTML Filter的替换函数
@@ -271,7 +272,7 @@
     var RENDER_STRING_RETURN = 'return r;';
 
     // HACK: IE8-时，编译后的renderer使用join Array的策略进行字符串拼接
-    if (typeof navigator != 'undefined'
+    if (typeof navigator !== 'undefined'
         && /msie\s*([0-9]+)/i.test(navigator.userAgent)
         && RegExp.$1 - 0 < 8
     ) {
@@ -393,7 +394,7 @@
             toStringFoot = ')';
             wrapHead = RENDER_STRING_ADD_START;
             wrapFoot = RENDER_STRING_ADD_END;
-            defaultFilter = options.defaultFilter
+            defaultFilter = options.defaultFilter;
         }
 
         parseTextBlock(
@@ -547,6 +548,7 @@
             context.stack.push(this);
         },
 
+        /* jshint ignore:start */
         /**
          * 节点闭合，解析结束
          *
@@ -555,6 +557,7 @@
         close: function (context) {
             while (context.stack.pop().constructor !== this.constructor) {}
         },
+        /* jshint ignore:end */
 
         /**
          * 获取renderer body的生成代码
@@ -614,12 +617,15 @@
             do {
                 node = stack.top();
 
+                /* jshint ignore:start */
                 // 如果节点对象不包含autoClose方法
                 // 则认为该节点不支持自动闭合，需要抛出错误
                 // for等节点不支持自动闭合
                 if (!node.autoClose) {
                     throw new Error(node.type + ' must be closed manually: ' + node.value);
                 }
+                /* jshint ignore:end */
+
                 node.autoClose(context);
             } while (node !== closeEnd);
         }
@@ -669,9 +675,11 @@
      * @param {Engine} engine 引擎实例
      */
     function TargetCommand(value, engine) {
+        /* jshint ignore:start */
         if (!/^\s*([a-z0-9\/_-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/_-]+)\s*\))?\s*/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
+        /* jshint ignore:end */
 
         this.master = RegExp.$3;
         this.name = RegExp.$1;
@@ -801,9 +809,11 @@
      * @param {Engine} engine 引擎实例
      */
     function ForCommand(value, engine) {
+        /* jshint ignore:start */
         if (!/^\s*(\$\{[\s\S]+\})\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
+        /* jshint ignore:end */
 
         this.list = RegExp.$1;
         this.item = RegExp.$2;
@@ -1008,11 +1018,13 @@
 
         if (engine.targets[name]) {
             switch (engine.options.namingConflict) {
+                /* jshint ignore:start */
                 case 'override':
                     engine.targets[name] = target;
                     context.targets.push(name);
                 case 'ignore':
                     break;
+                /* jshint ignore:end */
                 default:
                     throw new Error('Target is exists: ' + name);
             }
@@ -1316,12 +1328,14 @@
      */
     ForCommand.prototype.getRendererBody = function () {
         return stringFormat(
+            /* jshint ignore:start */
             ''
             + 'var {0}={1};'
             + 'if({0} instanceof Array)'
             +     'for (var {4}=0,{5}={0}.length;{4}<{5};{4}++){v[{2}]={4};v[{3}]={0}[{4}];{6}}'
             + 'else if(typeof {0}==="object")'
             +     'for(var {4} in {0}){v[{2}]={4};v[{3}]={0}[{4}];{6}}',
+            /* jshint ignore:end */
             generateGUID(),
             compileVariable(this.list, this.engine),
             stringLiteralize(this.index || generateGUID()),
@@ -1489,7 +1503,7 @@
      * @param {Function} filter 过滤函数
      */
     Engine.prototype.addFilter = function (name, filter) {
-        if (typeof filter == 'function') {
+        if (typeof filter === 'function') {
             this.filters[name] = filter;
         }
     };
@@ -1502,7 +1516,7 @@
      * @param {Engine} engine 引擎实例
      * @return {Array} target名称列表
      */
-    function parseSource( source, engine) {
+    function parseSource(source, engine) {
         var commandOpen = engine.options.commandOpen;
         var commandClose = engine.options.commandClose;
 
@@ -1564,7 +1578,7 @@
                 // 否则，为不具有command含义的普通文本
                 if (match
                     && (NodeType = commandTypes[match[2].toLowerCase()])
-                    && typeof NodeType == 'function'
+                    && typeof NodeType === 'function'
                 ) {
                     // 先将缓冲区中的text节点内容写入
                     flushTextBuf();
@@ -1581,7 +1595,7 @@
                     }
                     else {
                         currentNode = new NodeType(match[4], engine);
-                        if (typeof currentNode.beforeOpen == 'function') {
+                        if (typeof currentNode.beforeOpen === 'function') {
                             currentNode.beforeOpen(analyseContext);
                         }
                         currentNode.open(analyseContext);
@@ -1613,11 +1627,11 @@
     var etpl = new Engine();
     etpl.Engine = Engine;
 
-    if (typeof exports == 'object' && typeof module == 'object') {
+    if (typeof exports === 'object' && typeof module === 'object') {
         // For CommonJS
         exports = module.exports = etpl;
     }
-    else if (typeof define == 'function' && define.amd) {
+    else if (typeof define === 'function' && define.amd) {
         // For AMD
         define(etpl);
     }
