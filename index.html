@@ -1,54 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8" />
-	<title>ETPL - Enterprise Template</title>
-	<link rel="stylesheet" href="page.css" />
+    <meta charset="UTF-8" />
+    <title>ETPL - Enterprise Template</title>
+    <link rel="stylesheet" href="css/font-awesome.css" />
+    <link rel="stylesheet" href="css/github.css" />
+    <link rel="stylesheet" href="css/page.css" />
 </head>
 <body>
-	<div class="header">
-		<h1>ETPL</h1>
-		<p class="desc">Enterprise Template是一个灵活、具有强大复用能力的高性能模板引擎<br />适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用</p>
-		<div class="nav">
-			<a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down">Download</a><a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc">Document</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source">Source</a>
-		</div>
-	</div>
-	<h2>Start</h2>
-	<p class="use">ETPL可以在CommonJS/AMD的模块定义环境中使用，也能直接在页面下通过<em>&lt;script src=</em>引用：</p>
-	<ol class="use-step">
-		<li>CommonJS/AMD环境下需要通过如下代码得到ETPL的模块。<br /><code>var etpl = require( 'etpl' );</code></li>
-		<li>得到ETPL模块对象后，首先对模板源代码进行编译，会能得到编译后的function。<br /><code>var render = etpl.compile( 'Hello ${name}!' );</code></li>
-		<li>然后执行这个function，传入数据对象，就能得到模板执行的结果了。<br /><code>var text = render( {name: 'etpl'} );</code></li>
-	</ol>
-	<h2>Try</h2>
-	<div class="try-panel">
-		<ul class="try-nav" id="try-nav">
-			<li data-nav="vs">变量替换</li>
-			<li data-nav="if">分支</li>
-			<li data-nav="for">循环</li>
-			<li>import</li>
-			<li data-nav="master">母版</li>
-			<li>use</li>
-			<li data-nav="filter">内容块过滤</li>
-			<li>var</li>
-			<li data-nav="dg">Data Getter</li>
-		</ul>
-		<div class="try-template">
-			<h3>Template</h3>
-			<textarea id="text-template"></textarea>
-		</div>
-		<div class="try-data">
-			<h3>Data</h3>
-			<textarea id="text-data"></textarea>
-		</div>
-		<div class="try-result">
-			<h3>Result</h3>
-			<textarea id="text-result" disabled="1"></textarea>
-		</div>
-	</div>
-	<script src="etpl.js"></script>
-	<script src="try.js"></script>
-	<script type="text/javascript">
+    <div class="header">
+        <h1>ETPL</h1>
+        <p class="slogan">write less, do more</p>
+    </div>
+    <div class="nav">
+        <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Examples</a>
+    </div>
+    <p class="desc">强复用、灵活、高性能的JavaScript模板引擎</p>
+    <ul class="feature-list">
+        <li>
+            <h3>强复用</h3>
+            <p>我们相信，这一定是你见过的复用形式最丰富的JavaScript模版引擎。<a href="#">模板继承(母版)</a>、<a href="#">引用代入</a>、<a href="#">动态调用</a>的支持，能够让你真正做到用最少的代码，实现相同的功能。</p>
+        </li>
+        <li>
+            <h3>灵活</h3>
+            <p>你可以根据喜好<a href="#">定制语法风格</a>，<a href="#">Filter管道</a>使模板能够根据需要对数据二次处理，<a href="#">Data Getter</a>让你获得渲染时动态数据的能力，还有.....，如果你熟悉，它们会让你得心应手。</p>
+        </li>
+        <li>
+            <h3>高性能</h3>
+            <p>模板编译技术已经在主流JavaScript模板引擎中普及，它能让模版渲染性能比解释型更高。<a href="#">ETpl的高性能</a>正来源于此。很重要的，ETpl只有<b>3.7k</b>(gzipped)，下载耗时几乎可以忽略。</p>
+        </li>
+    </ul>
+
+    <div class="nav">
+        <a class="feature-more" href="#"><i class="fa fa-info-circle"></i>More Features</a>
+    </div>
+
+    <h2>开始</h2>
+    <div class="start-panel">
+        <p class="use">ETpl可以在<em>CommonJS/AMD</em>的模块定义环境中使用，也能直接在页面下通过<em>script</em>标签引用。</p>
+
+        <h3>浏览器环境</h3>
+        <ol class="use-step">
+            <li>直接通过script标签引用，你可以获得一个全局的<em>etpl</em>变量
+                <pre><code class="html">&lt;script src="etpl.js"&gt;&lt;/script&gt;</code></pre>
+            </li>
+            <li>在AMD环境的模块定义时，你可以通过<em>同步require</em>获得ETpl模块
+                <pre><code class="javascript">define(function (require) {
+    var etpl = require('etpl');
+});</code></pre>
+            </li>
+            <li>在AMD环境，你也可以通过<em>异步require</em>获得ETPL模块
+                <pre><code class="javascript">require([ 'etpl' ], function (etpl) {
+});</code></pre>
+            </li>
+        </ol>
+        <p class="use-notice"><i class="fa fa-info-circle"></i> 在AMD环境下，请确保你的<em>require.config</em>配置能够让Loader找到ETpl模块</p>
+        <h3>Node.JS环境</h3>
+        <ol class="use-step">
+            <li>你可以通过<em>npm</em>来安装ETpl
+                <pre><code class="bash">$ npm install etpl</code></pre>
+            </li>
+            <li>安装完成后，你就可以通过<em>require</em>获得一个ETpl模块，正常地使用它
+                <pre><code class="javascript">var etpl = require('etpl');</code></pre>
+            </li>
+        </ol>
+        <h3>使用</h3>
+        <ol class="use-step">
+            <li>使用ETPL模块，对模板源代码进行编译，会能得到编译后的function
+                <pre><code class="javascript">var render = etpl.compile('Hello ${name}!');</code></pre>
+            </li>
+            <li>执行这个function，传入数据对象，就能得到模板执行的结果了
+                <pre><code class="javascript">var text = render({ name: 'etpl' });</code></pre>
+            </li>
+        </ol>
+    </div>
+
+    <div class="nav">
+        <a class="example-see" href="#"><i class="fa fa-pencil-square"></i>See Examples</a>
+    </div>
+
+    <div class="any-other">
+        <p><i class="fa fa-info-circle"></i> 开源的ETpl来自百度<a href="http://efe.baidu.com/">EFE</a>的RIA团队。在<a href="http://efe.baidu.com/">EFE</a>，我们还有其他开源产品：</p>
+        <dl>
+            <dt><a href="#">ECharts</a></dt>
+            <dd>直观，生动，可交互，可高度个性化定制的数据可视化图表。</dd>
+            <dt><a href="#">ESL</a></dt>
+            <dd>比Require.js更精简、更高效、更健壮的AMD Loader。</dd>
+            <dt><a href="#">EDP</a></dt>
+            <dd>提供了前端开发时常用工具：项目管理、包管理、调试、构建、代码生成、代码检测等，并允许用户自定义扩展。</dd>
+            <dt><a href="#">ER</a></dt>
+            <dd>富浏览器端 web 应用的框架，适用于并能很方便地构建一个整站式的 AJAX web 应用。</dd>
+            <dt><a href="#">ESUI</a></dt>
+            <dd>一套功能完善，并具有强大扩展机制的 UI 组件库。基于模板、声明式地编程方式让视图更具表达能力。</dd>
+            <dt><a href="#">EST</a></dt>
+            <dd>基于 Less 的样式工具库，提供了一系列方便快捷的 mixin，只在调用时才输出代码。</dd>
+            <dt><a href="#">Saber</a></dt>
+            <dd>提供了 JavaScript 模块、CSS 样式库与开发平台的完整前端解决方案。擅长移动端 SPA 项目、轻应用。</dd>
+            <dt><a href="#">Rider</a></dt>
+            <dd>专为移动端设计的 Mixin 风格样式工具库。在其基础上创建了 Rider UI，一个灵活的 UI 样式库。</dd>
+            <dt><a href="#">......</a></dt>
+        </dl>
+
+
+    </div>
+
+    <div class="copyright">&copy;2014 <a href="http://www.baidu.com/">Baidu</a> <a href="http://efe.baidu.com/">EFE</a></div>
+
+    <!--h2>Try</h2>
+    <div class="try-panel">
+        <ul class="try-nav" id="try-nav">
+            <li data-nav="vs">变量替换</li>
+            <li data-nav="if">分支</li>
+            <li data-nav="for">循环</li>
+            <li>import</li>
+            <li data-nav="master">母版</li>
+            <li>use</li>
+            <li data-nav="filter">内容块过滤</li>
+            <li>var</li>
+            <li data-nav="dg">Data Getter</li>
+        </ul>
+        <div class="try-template">
+            <h3>Template</h3>
+            <textarea id="text-template"></textarea>
+        </div>
+        <div class="try-data">
+            <h3>Data</h3>
+            <textarea id="text-data"></textarea>
+        </div>
+        <div class="try-result">
+            <h3>Result</h3>
+            <textarea id="text-result" disabled="1"></textarea>
+        </div>
+    </div-->
+
+    <script src="js/highlight.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="etpl.js"></script>
+    <script src="try.js"></script>
+    <script type="text/javascript">
 var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
 document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fab9cee8266375e25fe7635cc3f2a015c' type='text/javascript'%3E%3C/script%3E"));
 </script>
