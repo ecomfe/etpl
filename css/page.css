@@ -13,8 +13,8 @@ body {
 
 header {
 	background: #555;
-	padding-bottom: 50px;
 	color: #f1f1f1;
+	min-height: 50px;
 }
 
 a:link, a:visited { color: #0090C9; text-decoration: none; }
@@ -67,20 +67,21 @@ header nav a:hover {
 	font-size: 14px;
 	text-align: center;
 	text-decoration: none;
-	height: 26px;
-	line-height: 26px;
-	margin: 5px 10px;
+	height: 16px;
+	line-height: 16px;
+	margin: 13px 5px;
+	padding: 4px 5px;
 	border: 0;
-}
-header nav .down { color: #e66000; }
-header nav .doc { color: #1487B4; }
-header nav .source { color: #86B127;}
-header nav .example {
-	color: #C74050;
-	margin-right: 0;
+	color: #ddd;
 }
 
+header nav .example { margin-right: 0; }
+header nav .down:hover { color: #e66000; }
+header nav .doc:hover { color: #1487B4; }
+header nav .source:hover { color: #86B127; }
+header nav .example:hover { color: #C74050; }
 
+.index header { padding-bottom: 50px; }
 .index nav {
 	float: none;
 	margin: 20px 0 0;
@@ -126,7 +127,11 @@ nav .fa {padding-right:3px;}
 	width: 200px;
 }
 
-.feature header { margin-bottom: 30px;}
+.feature header { margin-bottom: 30px; }
+.feature pre {
+	width: 780px;
+	margin: 0 auto 20px;
+}
 
 .feature h2,
 .feature h3,
@@ -140,6 +145,22 @@ nav .fa {padding-right:3px;}
 .feature h2 { margin-top: 30px; margin-bottom: 20px;}
 .feature h3 { margin-top: 20px; }
 .feature p { line-height: 20px; }
+.feature .copyright { margin: 60px auto 40px; }
+.feature .feature-code {
+	margin: 10px auto 0;
+	width: 780px;
+	padding: 0;
+}
+.feature .feature-code a{
+	display: block;
+	background: #eee;
+	color: #666;
+	padding: 3px;
+	width: 40px;
+	text-align: center;
+}
+
+.feature .feature-code a:hover {border:0;}
 
 .start-panel {
 	width: 780px;

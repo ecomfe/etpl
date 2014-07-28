@@ -42,7 +42,7 @@ var EXAMPLE_CODE = {
 
     'html-style': {
         tpl: [
-            '<!-- if: ${name} != null -->'
+            '<!-- if: ${name} != null -->',
             '    Hello ${name}!',
             '<!-- else -->',
             '    noname!',
@@ -79,7 +79,7 @@ var EXAMPLE_CODE = {
             '<!-- target: myTpl -->',
             '<!-- import: header -->',
             '<!-- import: main -->',
-            '    <!-- block: main -->'
+            '    <!-- block: main -->',
             '        <!-- import: list -->',
             '            <!-- block: list -->biz list<!-- /block -->',
             '        <!-- /import -->',
@@ -87,7 +87,7 @@ var EXAMPLE_CODE = {
             '            <!-- block: pager -->biz pager<!-- /block -->',
             '        <!-- /import -->',
             '    <!-- /block -->',
-            '<!-- /import -->'
+            '<!-- /import -->',
             '',
             '<!-- target: header -->',
             '<header><!-- block: header -->default header<!-- /block --></header>',
@@ -179,7 +179,7 @@ var EXAMPLE_CODE = {
         options: {}
     },
 
-    'template-var': {
+    'var': {
         tpl: [
             '<!-- var: name = "errorrik" -->',
             'Hello ${name}!'
