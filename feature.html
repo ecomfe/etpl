@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Features - ETPL - Enterprise Template</title>
+    <link rel="stylesheet" href="css/font-awesome.css" />
+    <link rel="stylesheet" href="css/page.css" />
+</head>
+
+<body class="feature">
+    <header><div class="header-inner">
+        <nav>
+            <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Examples</a>
+        </nav>
+    </div></header>
+
+    <h3><a name="html-style"></a>HTML风格</h3>
+    <p>ETpl默认使用HTML注释做语法声明。编写一个纯HTML的模板文件，开发者就不会丧失编辑器本身自带的语法高亮、自动补全等功能。<a href="example.html#target">看看示例</a>。如果你不喜欢，可以<a href="#custom">定制自己的模板风格</a>。</p>
+
+    <h3><a name="target"></a>片段管理</h3>
+    <p>在编写模版时，你可以将模版划分成不同的片段，并分别为它们命名。<a href="example.html#target">看看示例</a>。模版片段的划分通常是因为需要复用。如果不需要复用，可以和使用其他简单模板引擎一样的写法。<a href="example.html#notarget">看看示例</a></p>
+
+    <h3><a name="auto-close"></a>自闭合</h3>
+    <p>ETpl的一些命令标签支持自闭合，编写时无需编写闭合标签，能节省部分代码和时间。比较常用的，target、import、use、var在普通场景下，都无需编写闭合。</p>
+
+    <h2>强复用</h2>
+
+    <h3><a name="import"></a>直接引用</h3>
+    <p>直接引用是最基本的复用方式，通过名字去使用一个存在的模板片段，一切都是静态的。<a href="example.html#import">看看示例</a></p>
+
+    <h3><a name="master"></a>模版继承（母版）</h3>
+    <p>模版继承（母版）功能允许你在一开始就对多个相似的模板从“结构”的角度进行抽象。继承自一个和你具有相同结构的母版，你可以无需再编写结构骨架部分，只需要编写结构内部的内容差异部分。</p>
+
+    <h3><a name="import-block"></a>引用代入</h3>
+    <p>如果有一个模板的大部分可以复用时，通过引用代入功能，你可以在引用时抹平差异，定制其中差异部分内容。这绝对是一个神奇的功能，当你面临结构种类数量爆炸时，引用代入提供了另一种更灵活的复用方式。</p>
+
+    <h3><a name="use"></a>动态调用</h3>
+    <p>动态调用允许你在引用一个模板时，为其定制模板渲染运行时的数据。在面临多种不同的数据名称、相似的结构时，动态调用可以让你只编写一份代码，多次调用。</p>
+
+    <h2>灵活</h2>
+
+    <h3><a name="filter"></a>Filter</h3>
+    <p>Filter提供了引用数据时的数据处理能力，其支持管道、参数传递。灵活的Filter能够让你保证模板渲染前的数据纯洁性，无需对Model数据进行二次加工和适配。</p>
+
+    <h3><a name="custom"></a>语法风格定制</h3>
+    <p>通过几个简单的配置设置，你可以定制自己喜欢的模板语法风格。<a href="example.html#nunjucks">下面的例子</a>将ETpl定制成nunjucks的语法风格。</p>
+
+    <h3><a name="template-var"></a>数据声明</h3>
+    <p>你可以在模板中声明数据。通常用于对数据进行处理后保存，避免多次处理，以及一些简单的场景。模板引擎的主要职责是将数据转换成视图，我们很小心的提供一个模板中简单的数据声明途径，但并不推荐你重度使用它。</p>
+    
+    <h3><a name="data-getter"></a>Data Getter</h3>
+    <p>Data Getter提供的动态数据功能，可以让你的数据延后到模板渲染的过程中提供。你需要根据变量名生成数据，或者从不同的数据源中获得数据时，这能给你提供便利。</p>
+
+    <h3><a name="filter-block"></a>内容块过滤</h3>
+    <p>除了变量，你同样可以将任意的模板文本通过过滤器进行处理。这免除了在js中通过丑陋且繁琐的字符串操作来生成大段文本用于过滤器的痛苦，让模板显得更加直观易懂</p>
+    
+    <h2>高性能</h2>
+    <p>ETpl采用了主流的模板编译技术。“变量引用预提取”、“区分平台产生不同的编译产物”等优化手段，使ETpl在具有这么多动态特性时，还能做到接近极限的渲染性能。<a href="performance/render-time.html">看看ETpl的性能测试</a></p>
+
+    <div class="copyright">&copy;2014 <a href="http://www.baidu.com/">Baidu</a> <a href="http://efe.baidu.com/">EFE</a></div>
+
+    <script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fab9cee8266375e25fe7635cc3f2a015c' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+</body>
+</html>

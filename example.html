@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Examples - ETPL - Enterprise Template</title>
+    <link rel="stylesheet" href="css/font-awesome.css" />
+    <link rel="stylesheet" href="css/codemirror.css" />
+    <link rel="stylesheet" href="css/neo.css" />
+    <link rel="stylesheet" href="css/page.css" />
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Examples</a>
+        </nav>
+    </header>
+
+    <div class="try-panel">
+        <ul class="try-nav" id="try-nav">
+            <li data-nav="vs">变量替换</li>
+            <li data-nav="if">分支</li>
+            <li data-nav="for">循环</li>
+            <li>import</li>
+            <li data-nav="master">母版</li>
+            <li>use</li>
+            <li data-nav="filter">内容块过滤</li>
+            <li>var</li>
+            <li data-nav="dg">Data Getter</li>
+        </ul>
+
+        <div class="try-template">
+            <h3>Template</h3>
+            <textarea id="text-template"></textarea>
+        </div>
+        <div class="try-data">
+            <h3>Data</h3>
+            <textarea id="text-data"></textarea>
+        </div>
+        <div class="try-result">
+            <h3>Result</h3>
+            <textarea id="text-result" disabled="1"></textarea>
+        </div>
+    </div>
+
+    <div class="copyright">&copy;2014 <a href="http://www.baidu.com/">Baidu</a> <a href="http://efe.baidu.com/">EFE</a></div>
+
+    <script src="js/codemirror.js"></script>
+    <script src="js/codemirror-js.js"></script>
+    <script>
+    var editor = CodeMirror.fromTextArea(document.getElementById('text-template'), {
+        mode: "text/javascript",
+        theme: 'neo',
+        lineNumbers: true,
+        indentWithTabs: true,
+        tabSize: 4
+    });
+    </script>
+    <script src="etpl.js"></script>
+    <!--script src="try.js"></script-->
+    <script type="text/javascript">
+var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fab9cee8266375e25fe7635cc3f2a015c' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+</body>
+</html>
