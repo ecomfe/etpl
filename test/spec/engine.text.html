@@ -76,6 +76,18 @@ lang
         }
     }
 })
+::custom-syntax::
+<% var arr = new Array(5) %>
+<% for {{arr}} as {{item}}, {{index}} %><li<% if {{index}} % 2 %> class="odd"<% /if %>>{{index}}</li>
+<% /for %>
+::expect-custom-syntax::
+
+<li>0</li>
+<li class="odd">1</li>
+<li>2</li>
+<li class="odd">3</li>
+<li>4</li>
+
 ::custom-options::
 <% target: engineCustomTarget %><!-- import: a -->
 ::expect-default::

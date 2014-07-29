@@ -72,6 +72,25 @@
             });
         });
 
+        it('"config" method can setup command syntax', function() {
+            mytpl.config({
+                commandSyntax: /^\s*(\/)?([a-z]+)\s?([\s\S]*)$/,
+                commandOpen: '<%',
+                commandClose: '%>',
+                variableOpen: '{{',
+                variableClose: '}}'
+            });
+            var render = mytpl.compile(text['custom-syntax']);
+            expect(render()).toEqual(text['expect-custom-syntax']);
+            mytpl.config({
+                commandSyntax: /^\s*(\/)?([a-z]+)\s*(?::([\s\S]*))?$/,
+                commandOpen: '<!--',
+                commandClose: '-->',
+                variableOpen: '${',
+                variableClose: '}'
+            });
+        });
+
         it('"config" method can setup variable open and close', function() {
             mytpl.config({
                 variableOpen: '{{',
