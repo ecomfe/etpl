@@ -218,6 +218,19 @@
     }
 
     /**
+     * 对字符串进行可用于new RegExp的字面化
+     *
+     * @inner
+     * @param {string} source 需要字面化的字符串
+     * @return {string}
+     */
+    function regexpLiteral(source) {
+        return source.replace(/[\^\[\]\$\(\)\{\}\?\*\.\+]/g, function (c) {
+            return '\\' + c;
+        });
+    }
+
+    /**
      * 字符串格式化
      *
      * @inner
@@ -809,10 +822,19 @@
      */
     function ForCommand(value, engine) {
         /* jshint ignore:start */
-        if (!/^\s*(\$\{[\s\S]+\})\s+as\s+\$\{([0-9a-z_]+)\}\s*(,\s*\$\{([0-9a-z_]+)\})?\s*$/i.test(value)) {
+        var rule = new RegExp(
+            stringFormat(
+                '^\\s*({0}[\\s\\S]+{1})\\s+as\\s+{0}([0-9a-z_]+){1}\\s*(,\\s*{0}([0-9a-z_]+){1})?\\s*$',
+                regexpLiteral(engine.options.variableOpen),
+                regexpLiteral(engine.options.variableClose)
+            ),
+            'i'
+        );
+        /* jshint ignore:end */
+
+        if (!rule.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
-        /* jshint ignore:end */
 
         this.list = RegExp.$1;
         this.item = RegExp.$2;
@@ -1412,6 +1434,7 @@
         this.options = {
             commandOpen: '<!--',
             commandClose: '-->',
+            commandSyntax: /^\s*(\/)?([a-z]+)\s*(?::([\s\S]*))?$/,
             variableOpen: '${',
             variableClose: '}',
             defaultFilter: 'html'
@@ -1518,6 +1541,7 @@
     function parseSource(source, engine) {
         var commandOpen = engine.options.commandOpen;
         var commandClose = engine.options.commandClose;
+        var commandSyntax = engine.options.commandSyntax;
 
         var stack = new Stack();
         var analyseContext = {
@@ -1571,7 +1595,7 @@
             source, commandOpen, commandClose, 0,
 
             function (text) { // <!--...-->内文本的处理函数
-                var match = /^\s*(\/)?([a-z]+)\s*(:([\s\S]*))?$/.exec(text);
+                var match = commandSyntax.exec(text);
 
                 // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
                 // 否则，为不具有command含义的普通文本
@@ -1593,7 +1617,7 @@
                         currentNode && currentNode.close(analyseContext);
                     }
                     else {
-                        currentNode = new NodeType(match[4], engine);
+                        currentNode = new NodeType(match[3], engine);
                         if (typeof currentNode.beforeOpen === 'function') {
                             currentNode.beforeOpen(analyseContext);
                         }
