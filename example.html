@@ -7,36 +7,57 @@
     <link rel="stylesheet" href="css/codemirror.css" />
     <link rel="stylesheet" href="css/neo.css" />
     <link rel="stylesheet" href="css/page.css" />
+    <script src="js/example-code.js"></script>
 </head>
 
 <body>
-    <header>
+    <header><div class="header-inner">
         <nav>
-            <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Examples</a>
+            <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Example</a><a class="feature-more" href="#"><i class="fa fa-info-circle"></i>Features</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a>
         </nav>
-    </header>
+    </div></header>
 
     <div class="try-panel">
         <ul class="try-nav" id="try-nav">
-            <li data-nav="vs">变量替换</li>
-            <li data-nav="if">分支</li>
-            <li data-nav="for">循环</li>
-            <li>import</li>
-            <li data-nav="master">母版</li>
-            <li>use</li>
-            <li data-nav="filter">内容块过滤</li>
-            <li>var</li>
-            <li data-nav="dg">Data Getter</li>
+        <script>
+        (function () {
+            for (var i = 0, l = EXAMPLE_CODE_NAV.length; i < l; i++) {
+                var item = EXAMPLE_CODE_NAV[i];
+                document.write('<li data-nav="' + item.example + '">' + item.title + '</li>');
+            }
+        })();
+        </script>
         </ul>
 
         <div class="try-template">
             <h3>Template</h3>
             <textarea id="text-template"></textarea>
         </div>
+
         <div class="try-data">
             <h3>Data</h3>
             <textarea id="text-data"></textarea>
         </div>
+
+        <b class="try-render" id="try-render">Render</b>
+
+        <div class="try-config">
+            <h3>Config</h3>
+            <label>commandOpen</label>
+            <input type="text" />
+            <label>commandClose</label>
+            <input type="text" />
+            <label>commandSyntax</label>
+            <input type="text" />
+            <label>variableOpen</label>
+            <input type="text" />
+            <label>variableClose</label>
+            <input type="text" />
+            <label>defaultFilter</label>
+            <input type="text" />
+            <label>strip <input type="checkbox"><label>
+        </div>
+
         <div class="try-result">
             <h3>Result</h3>
             <textarea id="text-result" disabled="1"></textarea>
@@ -45,19 +66,50 @@
 
     <div class="copyright">&copy;2014 <a href="http://www.baidu.com/">Baidu</a> <a href="http://efe.baidu.com/">EFE</a></div>
 
+    <script src="etpl.js"></script>
     <script src="js/codemirror.js"></script>
     <script src="js/codemirror-js.js"></script>
+    <script src="js/codemirror-xml.js"></script>
     <script>
-    var editor = CodeMirror.fromTextArea(document.getElementById('text-template'), {
+    var tplEditor = CodeMirror.fromTextArea(document.getElementById('text-template'), {
+        mode: "text/html",
+        theme: 'neo',
+        indentUnit: 4,
+        lineNumbers: true
+    });
+    tplEditor.setSize(640, 300);
+
+    var dataEditor = CodeMirror.fromTextArea(document.getElementById('text-data'), {
         mode: "text/javascript",
         theme: 'neo',
-        lineNumbers: true,
-        indentWithTabs: true,
-        tabSize: 4
+        indentUnit: 4,
+        lineNumbers: true
     });
+    dataEditor.setSize(640, 150);
+
+    var resultEditor = CodeMirror.fromTextArea(document.getElementById('text-result'), {
+        mode: "text/html",
+        theme: 'neo',
+        indentUnit: 4,
+        readOnly: true
+    });
+    resultEditor.setSize(640, 300);
+
+    document.getElementById('try-nav').onclick = function (e) {
+        e = e || window.event;
+        var target = e.srcElement || e.target;
+
+        if (target.tagName == 'LI') {
+            var type = target.getAttribute('data-nav');
+            var example = EXAMPLE_CODE[type];
+            if (example) {
+                tplEditor.doc.setValue(example.tpl);
+                dataEditor.doc.setValue(example.data || EXAMPLE_DEFAULT_DATA);
+            }
+        }
+    };
     </script>
-    <script src="etpl.js"></script>
-    <!--script src="try.js"></script-->
+    
     <script type="text/javascript">
 var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
 document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fab9cee8266375e25fe7635cc3f2a015c' type='text/javascript'%3E%3C/script%3E"));

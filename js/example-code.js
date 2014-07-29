@@ -136,7 +136,7 @@ var EXAMPLE_CODE = {
     },
 
     'for': {
-        template: [
+        tpl: [
             '<ul>',
             '<!-- for: ${persons} as ${person} -->',
             '    <li>${person.name}[${person.email}]</li>',
@@ -213,3 +213,29 @@ var EXAMPLE_CODE = {
         ].join('\n')
     }
 };
+
+var EXAMPLE_CODE_NAV = [
+    { title: 'HTML风格', example: 'html-style' },
+    { title: '片段划分', example: 'target' },
+    { title: '无片段划分', example: 'notarget' },
+    { title: '自闭合', example: 'auto-close' },
+    { title: '直接引用', example: 'import' },
+    { title: '模版继承(母版)', example: 'master' },
+    { title: '引用代入', example: 'import-block' },
+    { title: '动态调用', example: 'use' },
+    { title: '循环', example: 'for' },
+    { title: '过滤器', example: 'filter' },
+    { title: '语法风格定制', example: 'custom' },
+    { title: '数据声明', example: 'var' },
+    { title: 'Data Getter', example: 'data-getter' },
+    { title: '内容块过滤', example: 'filter-block' }
+];
+
+var EXAMPLE_DEFAULT_DATA = [
+    '{',
+    '    name: "ETpl"',
+    '}'
+].join('\n');
+
+
+

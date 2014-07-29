@@ -69,17 +69,17 @@ header nav a:hover {
 	text-decoration: none;
 	height: 16px;
 	line-height: 16px;
-	margin: 13px 5px;
+	margin: 13px 2px;
 	padding: 4px 5px;
 	border: 0;
 	color: #ddd;
 }
 
-header nav .example { margin-right: 0; }
 header nav .down:hover { color: #e66000; }
 header nav .doc:hover { color: #1487B4; }
 header nav .source:hover { color: #86B127; }
 header nav .example:hover { color: #C74050; }
+header nav .feature-more:hover { color: #456B9B; }
 
 .index header { padding-bottom: 50px; }
 .index nav {
@@ -108,11 +108,8 @@ header nav .example:hover { color: #C74050; }
 nav .fa {padding-right:3px;}
 .index nav .down { background: #e66000; }
 .index nav .doc { background: #1487B4; }
-.index nav .source { background: #86B127;}
-.index nav .example {
-	background: #C74050;
-	margin-right: 0;
-}
+.index nav .source { background: #86B127;margin-right: 0;}
+.index nav .example {background: #C74050;}
 
 .index nav .feature-see { background: #0095dd; }
 .index nav .feature-more:link {
@@ -217,74 +214,83 @@ nav .fa {padding-right:3px;}
 }
 
 .try-panel {
-	width:800px; 
-	margin:0 auto;
+	width: 800px; 
+	margin: 20px auto 0;
+	overflow: hidden;
 }
 
 .try-nav {
 	float: left;
-	height: 30px;
-	padding: 20px 0 0 10px;
+	width: 140px;
+	border-top: 1px solid #ddd;
 }
 
 .try-nav li {
-	margin-right: 10px;
 	list-style: none;
-	background: #ddd;
-	padding: 0 18px;
+	background: #fff;
+	padding: 0 10px;
 	cursor: pointer;
 	font-family: Helvetica, arial;
 	color: #666;
-	line-height: 22px;
-	border-radius: 3px;
+	line-height: 30px;
+	border: 1px solid #ddd;
+	border-top: 0;
 }
 
 .try-nav li:hover {
-	background: #aaa;
+	background: #eee;
 	color: #333;
 }
 
 .try-template {
-	width: 490px;
+	width: 640px;
 	float: right;
 }
 
 .try-data {
-	width: 490px;
+	width: 640px;
 	float: right;
-}
-
-.try-template h3, .try-data h3, .try-result h3 {
-	text-align: center;
 }
 
 textarea {
 	font-size:14px;
 	font-family: 'Courier New';
 	border: 1px solid #666;
-}
-
-.try-template textarea {
-	background:#DFF6FE;
-	width: 484px;
-	height: 200px;
-}
-
-.try-data textarea {
-	background:#E0F9E4;
-	width: 284px;
+	width: 640px;
 	height: 200px;
 }
 
 .try-result {
-	clear: both;
+	float: right;
 	margin-bottom: 40px;
 }
 
-.try-result textarea {
-	width:794px; 
-	height:180px; 
-	background:#E7E7E7;
+.try-render {
+	float: left;
+	width: 140px;
+	background: #C74050;
+	color: #fff;
+	margin: 20px 0;
+	line-height: 30px;
+	cursor: pointer;
+	text-align: center;
+	border-radius: 3px;
+}
+
+.try-config {
+	float: left;
+	width: 140px;
+}
+
+.try-config label {
+	display: block;
+}
+
+.try-config input[type=text] {
+	border: 1px solid #888;
+	width: 130px;
+	height: 20px;
+	margin-bottom: 10px;
 }
 
 .desc {
