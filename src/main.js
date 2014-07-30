@@ -1047,7 +1047,7 @@
                     break;
                 /* jshint ignore:end */
                 default:
-                    throw new Error('Target is exists: ' + name);
+                    throw new Error('Target exists: ' + name);
             }
         }
         else {
