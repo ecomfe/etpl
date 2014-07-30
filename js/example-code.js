@@ -2,9 +2,9 @@ var EXAMPLE_CODE = {
     'target': {
         tpl: [
             '<!-- target: myTpl -->',
-            '    <!-- import: header -->',
-            '    <div class="main">Hello ${name}!</div>',
-            '    <!-- import: footer -->',
+            '<!-- import: header -->',
+            '<div class="main">Hello ${name}!</div>',
+            '<!-- import: footer -->',
             '<!-- /target -->',
             '',
             '<!-- target: header -->',
@@ -158,7 +158,7 @@ var EXAMPLE_CODE = {
             '}'
         ].join( '\n' )
     },
-    
+
 
     'filter': {
         tpl: [
