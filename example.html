@@ -61,6 +61,7 @@
         <div class="try-result">
             <h3>Result</h3>
             <textarea id="text-result" disabled="1"></textarea>
+            <p><i class="fa fa-info-circle"></i> 为了方便功能演示，该页面为ETpl注册了markdown和slice两个filters。ETpl默认并不包含这些功能。</p>
         </div>
     </div>
 
@@ -79,7 +80,7 @@
             indentUnit: 4,
             lineNumbers: true
         });
-        tplEditor.setSize(640, 300);
+        tplEditor.setSize(790, 300);
 
         var dataEditor = CodeMirror.fromTextArea(document.getElementById('text-data'), {
             mode: "text/javascript",
@@ -87,7 +88,7 @@
             indentUnit: 4,
             lineNumbers: true
         });
-        dataEditor.setSize(640, 150);
+        dataEditor.setSize(790, 200);
 
         var resultEditor = CodeMirror.fromTextArea(document.getElementById('text-result'), {
             mode: "text/html",
@@ -95,7 +96,7 @@
             indentUnit: 4,
             readOnly: true
         });
-        resultEditor.setSize(640, 300);
+        resultEditor.setSize(790, 200);
 
         function getConfigInputs() {
             return document.getElementById('try-config').getElementsByTagName('input');
