@@ -31,7 +31,7 @@ h1 {
 
 h2 { 
 	font-size: 32px; 
-	width: 780px;
+	width: 1000px;
 	padding-top: 30px;
 	margin: 0 auto;
 	border-top: 1px solid #ddd;
@@ -52,7 +52,7 @@ h3 {
 }
 
 .header-inner {
-	width: 800px;
+	width: 1000px;
 	margin: 0 auto;
 }
 header nav {
@@ -126,14 +126,14 @@ nav .fa {padding-right:3px;}
 
 .feature header { margin-bottom: 30px; }
 .feature pre {
-	width: 780px;
+	width: 980px;
 	margin: 0 auto 20px;
 }
 
 .feature h2,
 .feature h3,
 .feature p {
-	width: 780px;
+	width: 980px;
 	margin: 0 auto;
 	padding-left: 5px;
 	color: #444;
@@ -145,10 +145,10 @@ nav .fa {padding-right:3px;}
 .feature .copyright { margin: 60px auto 40px; }
 .feature .feature-code {
 	margin: 10px auto 0;
-	width: 780px;
+	width: 980px;
 	padding: 0;
 }
-.feature .feature-code a{
+.feature .feature-code a {
 	display: block;
 	background: #eee;
 	color: #666;
@@ -160,7 +160,7 @@ nav .fa {padding-right:3px;}
 .feature .feature-code a:hover {border:0;}
 
 .start-panel {
-	width: 780px;
+	width: 1000px;
 	margin: 15px auto 30px;
 }
 
@@ -170,7 +170,7 @@ nav .fa {padding-right:3px;}
 
 .use {
 	font-size: 14px; 
-	width: 780px;
+	width: 1000px;
 	margin: 12px auto;
 	padding-left: 2px;
 	line-height: 120%;
@@ -188,14 +188,14 @@ nav .fa {padding-right:3px;}
 }
 
 .use-step {
-	width: 780px;
+	width: 1000px;
 	margin: 12px auto;
 }
 
 .use-step li {
     color: #666;
 	font-size: 15px; 
-	width: 740px;
+	width: 960px;
 	margin: 20px auto;
 	line-height: 120%; 
 }
@@ -214,14 +214,14 @@ nav .fa {padding-right:3px;}
 }
 
 .try-panel {
-	width: 800px; 
+	width: 1000px; 
 	margin: 20px auto 0;
 	overflow: hidden;
 }
 
 .try-nav {
 	float: left;
-	width: 140px;
+	width: 190px;
 	border-top: 1px solid #ddd;
 }
 
@@ -243,12 +243,12 @@ nav .fa {padding-right:3px;}
 }
 
 .try-template {
-	width: 640px;
+	width: 790px;
 	float: right;
 }
 
 .try-data {
-	width: 640px;
+	width: 790px;
 	float: right;
 }
 
@@ -256,7 +256,7 @@ textarea {
 	font-size:14px;
 	font-family: 'Courier New';
 	border: 1px solid #666;
-	width: 640px;
+	width: 790px;
 	height: 200px;
 }
 
@@ -265,9 +265,15 @@ textarea {
 	margin-bottom: 40px;
 }
 
+.try-result p {
+	color: #666;
+	padding-top: 10px;
+	font-size: 12px;
+}
+
 .try-render {
 	float: left;
-	width: 140px;
+	width: 190px;
 	background: #C74050;
 	color: #fff;
 	margin: 20px 0;
@@ -279,7 +285,7 @@ textarea {
 
 .try-config {
 	float: left;
-	width: 140px;
+	width: 190px;
 }
 
 .try-config label {
@@ -288,7 +294,7 @@ textarea {
 
 .try-config input[type=text] {
 	border: 1px solid #888;
-	width: 130px;
+	width: 180px;
 	height: 20px;
 	margin-bottom: 10px;
 }
@@ -301,7 +307,7 @@ textarea {
 }
 
 .feature-list {
-	width: 780px;
+	width: 1000px;
 	list-style: none;
 	overflow: hidden;
 	margin: 0 auto;
@@ -309,7 +315,7 @@ textarea {
 }
 
 .feature-list li {
-	width: 250px;
+	width: 323px;
 	padding: 0 5px;
 	float: left;
 }
@@ -331,12 +337,12 @@ textarea {
 }
 
 .any-other p {
-	width: 780px;
+	width: 1000px;
 	margin: 0 auto 10px;
 }
 
 .any-other dl {
-	width: 780px;
+	width: 1000px;
 	margin: 0 auto;
 	line-height: 24px;
 	overflow: hidden;
@@ -355,7 +361,7 @@ textarea {
 }
 
 .copyright {
-	width: 780px;
+	width: 1000px;
 	margin: 30px auto;
 	text-align: center;
 	clear: both;
