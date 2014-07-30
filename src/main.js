@@ -244,7 +244,7 @@
             /\{([0-9]+)\}/g,
             function (match, index) {
                 return args[index - 0 + 1];
-            } );
+            });
     }
 
     /**
@@ -560,16 +560,16 @@
             context.stack.push(this);
         },
 
-        /* jshint ignore:start */
         /**
          * 节点闭合，解析结束
          *
          * @param {Object} context 语法分析环境对象
          */
         close: function (context) {
-            while (context.stack.pop().constructor !== this.constructor) {}
+            if (context.stack.top() === this) {
+                context.stack.pop();
+            }
         },
-        /* jshint ignore:end */
 
         /**
          * 获取renderer body的生成代码
@@ -626,9 +626,7 @@
         if (closeEnd) {
             var node;
 
-            do {
-                node = stack.top();
-
+            while ((node = stack.top()) !== closeEnd) {
                 /* jshint ignore:start */
                 // 如果节点对象不包含autoClose方法
                 // 则认为该节点不支持自动闭合，需要抛出错误
@@ -639,7 +637,9 @@
                 /* jshint ignore:end */
 
                 node.autoClose(context);
-            } while (node !== closeEnd);
+            }
+
+            closeEnd.close(context);
         }
 
         return closeEnd;
@@ -1164,25 +1164,11 @@
      *
      * @param {Object} context 语法分析环境对象
      */
-    TargetCommand.prototype.close =
-
-    /**
-     * 节点闭合，解析结束。自闭合时被调用
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    TargetCommand.prototype.autoClose = function (context) {
+    TargetCommand.prototype.close = function (context) {
         Command.prototype.close.call(this, context);
         this.state = this.master ? TargetState.READED : TargetState.APPLIED;
         context.target = null;
     };
-
-    /**
-     * 节点自动闭合，解析结束
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    IfCommand.prototype.autoClose = Command.prototype.close;
 
     /**
      * 节点自动闭合，解析结束
@@ -1579,18 +1565,6 @@
 
         var NodeType;
 
-        /**
-         * 判断节点是否是NodeType类型的实例
-         * 用于在stack中find提供filter
-         *
-         * @inner
-         * @param {Command} node 目标节点
-         * @return {boolean}
-         */
-        function isInstanceofNodeType(node) {
-            return node instanceof NodeType;
-        }
-
         parseTextBlock(
             source, commandOpen, commandClose, 0,
 
@@ -1613,8 +1587,7 @@
                     }
 
                     if (match[1]) {
-                        currentNode = stack.find(isInstanceofNodeType);
-                        currentNode && currentNode.close(analyseContext);
+                        currentNode = autoCloseCommand(analyseContext, NodeType);
                     }
                     else {
                         currentNode = new NodeType(match[3], engine);
