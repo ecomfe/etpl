@@ -12,6 +12,21 @@
             expect(renderer(data)).toEqual(text['expect-para']);
         });
 
+        it('can be used in target which close manually', function() {
+            var renderer = etpl.compile(text['tpl-hasclose']);
+            expect(renderer(data)).toEqual(text['expect-hasclose']);
+        });
+
+        it('can be used in if command', function() {
+            var renderer = etpl.compile(text['tpl-inif']);
+            expect(renderer(data)).toEqual(text['expect-inif']);
+        });
+
+        it('can be used in for command', function() {
+            var renderer = etpl.compile(text['tpl-infor']);
+            expect(renderer(data)).toEqual(text['expect-infor']);
+        });
+
         it('can be used in master applyed', function() {
             var renderer = etpl.compile(text['tpl-master']);
             expect(renderer(data)).toEqual(text['expect-master']);
