@@ -47,7 +47,7 @@
             }
             catch (ex) {
                 var msg = ex.message;
-                if ( /^target /i.test(msg) && /is exists/.test(msg) ) {
+                if ( /^target exists/i.test(msg) ) {
                     expect(true).toBeTruthy();
                 }
                 else {
