@@ -41,21 +41,21 @@
 
         <b class="try-render" id="try-render">Render</b>
 
-        <div class="try-config">
+        <div class="try-config" id="try-config">
             <h3>Config</h3>
             <label>commandOpen</label>
-            <input type="text" />
+            <input type="text" id="option-commandOpen" />
             <label>commandClose</label>
-            <input type="text" />
+            <input type="text" id="option-commandClose" />
             <label>commandSyntax</label>
-            <input type="text" />
+            <input type="text" id="option-commandSyntax" data-type="regexp" />
             <label>variableOpen</label>
-            <input type="text" />
+            <input type="text" id="option-variableOpen" />
             <label>variableClose</label>
-            <input type="text" />
+            <input type="text" id="option-variableClose" />
             <label>defaultFilter</label>
-            <input type="text" />
-            <label>strip <input type="checkbox"><label>
+            <input type="text" id="option-defaultFilter" />
+            <label>strip <input type="checkbox" id="option-strip"><label>
         </div>
 
         <div class="try-result">
@@ -66,48 +66,145 @@
 
     <div class="copyright">&copy;2014 <a href="http://www.baidu.com/">Baidu</a> <a href="http://efe.baidu.com/">EFE</a></div>
 
-    <script src="etpl.js"></script>
+    <script src="js/etpl.js"></script>
+    <script src="js/markdown.js"></script>
     <script src="js/codemirror.js"></script>
     <script src="js/codemirror-js.js"></script>
     <script src="js/codemirror-xml.js"></script>
     <script>
-    var tplEditor = CodeMirror.fromTextArea(document.getElementById('text-template'), {
-        mode: "text/html",
-        theme: 'neo',
-        indentUnit: 4,
-        lineNumbers: true
-    });
-    tplEditor.setSize(640, 300);
+    (function () {
+        var tplEditor = CodeMirror.fromTextArea(document.getElementById('text-template'), {
+            mode: "text/html",
+            theme: 'neo',
+            indentUnit: 4,
+            lineNumbers: true
+        });
+        tplEditor.setSize(640, 300);
 
-    var dataEditor = CodeMirror.fromTextArea(document.getElementById('text-data'), {
-        mode: "text/javascript",
-        theme: 'neo',
-        indentUnit: 4,
-        lineNumbers: true
-    });
-    dataEditor.setSize(640, 150);
+        var dataEditor = CodeMirror.fromTextArea(document.getElementById('text-data'), {
+            mode: "text/javascript",
+            theme: 'neo',
+            indentUnit: 4,
+            lineNumbers: true
+        });
+        dataEditor.setSize(640, 150);
 
-    var resultEditor = CodeMirror.fromTextArea(document.getElementById('text-result'), {
-        mode: "text/html",
-        theme: 'neo',
-        indentUnit: 4,
-        readOnly: true
-    });
-    resultEditor.setSize(640, 300);
+        var resultEditor = CodeMirror.fromTextArea(document.getElementById('text-result'), {
+            mode: "text/html",
+            theme: 'neo',
+            indentUnit: 4,
+            readOnly: true
+        });
+        resultEditor.setSize(640, 300);
 
-    document.getElementById('try-nav').onclick = function (e) {
-        e = e || window.event;
-        var target = e.srcElement || e.target;
-
-        if (target.tagName == 'LI') {
-            var type = target.getAttribute('data-nav');
-            var example = EXAMPLE_CODE[type];
-            if (example) {
-                tplEditor.doc.setValue(example.tpl);
-                dataEditor.doc.setValue(example.data || EXAMPLE_DEFAULT_DATA);
-            }
+        function getConfigInputs() {
+            return document.getElementById('try-config').getElementsByTagName('input');
         }
-    };
+
+        function render() {
+            var tpl = tplEditor.doc.getValue();
+            var data = dataEditor.doc.getValue();
+
+            var options = {};
+            var inputs = getConfigInputs();
+            var len = inputs.length;
+            while (len--) {
+                var input = inputs[len];
+                var optionName = input.id.replace('option-', '');
+                switch (input.getAttribute('type')) {
+                    case 'text':
+                        if (input.getAttribute('data-type') === 'regexp') {
+                            options[optionName] = new RegExp(input.value, 'i');
+                        }
+                        else {
+                            options[optionName] = input.value;
+                        }
+                        break;
+
+                    case 'checkbox':
+                        options[optionName] = input.checked;
+                        break;
+                }
+            }
+
+            var result = '';
+            var engine = new etpl.Engine(options);
+            engine.addFilter('markdown', function (source) {
+                return markdown.toHTML(source);
+            });
+            engine.addFilter('slice', function (source, start, end) {
+                return source.slice(start, end)
+            });
+            var render;
+
+            try {
+                data = (new Function( 'return ' + data ))();
+            }
+            catch ( ex ) {
+                result = 'invalid data';
+            }
+
+            try {
+                render = engine.compile( tpl );
+                if ( !render ) {
+                    result = 'no template';
+                }
+            }
+            catch ( ex ) {
+                result = ex.message;
+            }
+
+            if ( result ) {
+                resultEditor.doc.setValue(result);
+                return;
+            }
+
+            try {
+                result = render( data );
+            }
+            catch ( ex ) {
+                result = ex.message;
+            }
+            resultEditor.doc.setValue(result);
+        }
+
+        document.getElementById('try-nav').onclick = function (e) {
+            e = e || window.event;
+            var target = e.srcElement || e.target;
+
+            if (target.tagName == 'LI') {
+                var type = target.getAttribute('data-nav');
+
+                var example = EXAMPLE_CODE[type];
+                if (example) {
+                    tplEditor.doc.setValue(example.tpl);
+                    dataEditor.doc.setValue(example.data || EXAMPLE_DEFAULT_DATA);
+
+                    var options = example.options || EXAMPLE_DEFAULT_OPTIONS;
+                    var inputs = getConfigInputs();
+                    var len = inputs.length;
+                    while (len--) {
+                        var input = inputs[len];
+                        var optionName = input.id.replace('option-', '');
+
+                        switch (input.getAttribute('type')) {
+                            case 'text':
+                                input.value = options[optionName] || '';
+                                break;
+
+                            case 'checkbox':
+                                input.checked = !!options[optionName];
+                                break;
+                        }
+                    }
+                }
+
+                render();
+            }
+        };
+
+        document.getElementById('try-render').onclick = render;
+    })();
     </script>
     
     <script type="text/javascript">

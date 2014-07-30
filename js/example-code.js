@@ -176,7 +176,26 @@ var EXAMPLE_CODE = {
     },
 
     'custom': {
-        options: {}
+        tpl: [
+            '<% target myTpl %>',
+            '<% import header %>',
+            '<div class="main">Hello {{name}}!</div>',
+            '<% import footer %>',
+            '',
+            '<% target header %>',
+            '<header>Header Content</header>',
+            '',
+            '<% target footer %>',
+            '<footer>Footer Content</footer>'
+        ].join('\n'),
+        options: {
+            commandSyntax: '^\\s*(\\\/)?([a-z]+)\\s?([\\s\\S]*)$',
+            commandOpen: '<%',
+            commandClose: '%>',
+            variableOpen: '{{',
+            variableClose: '}}',
+            defaultFilter: 'html'
+        }
     },
 
     'var': {
@@ -236,6 +255,15 @@ var EXAMPLE_DEFAULT_DATA = [
     '    name: "ETpl"',
     '}'
 ].join('\n');
+
+var EXAMPLE_DEFAULT_OPTIONS = {
+    commandSyntax: '^\\s*(\\\/)?([a-z]+)\\s*(?::([\\s\\S]*))?$',
+    commandOpen: '<!--',
+    commandClose: '-->',
+    variableOpen: '${',
+    variableClose: '}',
+    defaultFilter: 'html'
+};
 
 
 
