@@ -169,42 +169,50 @@
             resultEditor.doc.setValue(result);
         }
 
+        function renderExample(type) {
+            var example = EXAMPLE_CODE[type];
+
+            if (example) {
+                tplEditor.doc.setValue(example.tpl);
+                dataEditor.doc.setValue(example.data || EXAMPLE_DEFAULT_DATA);
+
+                var options = example.options || EXAMPLE_DEFAULT_OPTIONS;
+                var inputs = getConfigInputs();
+                var len = inputs.length;
+                while (len--) {
+                    var input = inputs[len];
+                    var optionName = input.id.replace('option-', '');
+
+                    switch (input.getAttribute('type')) {
+                        case 'text':
+                            input.value = options[optionName] || '';
+                            break;
+
+                        case 'checkbox':
+                            input.checked = !!options[optionName];
+                            break;
+                    }
+                }
+            }
+
+            render();
+        }
+
         document.getElementById('try-nav').onclick = function (e) {
             e = e || window.event;
             var target = e.srcElement || e.target;
 
             if (target.tagName == 'LI') {
                 var type = target.getAttribute('data-nav');
-
-                var example = EXAMPLE_CODE[type];
-                if (example) {
-                    tplEditor.doc.setValue(example.tpl);
-                    dataEditor.doc.setValue(example.data || EXAMPLE_DEFAULT_DATA);
-
-                    var options = example.options || EXAMPLE_DEFAULT_OPTIONS;
-                    var inputs = getConfigInputs();
-                    var len = inputs.length;
-                    while (len--) {
-                        var input = inputs[len];
-                        var optionName = input.id.replace('option-', '');
-
-                        switch (input.getAttribute('type')) {
-                            case 'text':
-                                input.value = options[optionName] || '';
-                                break;
-
-                            case 'checkbox':
-                                input.checked = !!options[optionName];
-                                break;
-                        }
-                    }
-                }
-
-                render();
+                location.hash = '#' + type;
+                renderExample(type);
             }
         };
 
         document.getElementById('try-render').onclick = render;
+
+        var startType = location.hash.replace(/^#/, '') || 'notarget';
+        renderExample(startType);
     })();
     </script>
     
