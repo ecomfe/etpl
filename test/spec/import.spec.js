@@ -4,7 +4,6 @@
     var readText = require( './readTextSync' );
     var text = readText( 'import.text.html' );
     var data = {name: text.name};
-    etpl.compile( text['simple'] );
 
     describe('Import', function() {
         it('can be used in target', function() {
