@@ -1,0 +1,5 @@
+{
+   "commandOpen": "<!--",
+   "commandClose": "-->",
+   "scope": "mutil"
+}

@@ -1,0 +1,16 @@
+#! /usr/bin/env node
+
+var fs = require('fs');
+var main = require('./src/main');
+
+function usage() {
+    console.log('Usage: etpl2to3 <input file/directory> [--output directory]');
+}
+
+var inputFile = process.argv[2];
+if (!inputFile) {
+    usage();
+    process.exit(0);
+}
+
+main.convert();
