@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8" />
 <title>ETPL Render Time Test</title>
 <style>
 body { font-size: 14px; }
-li {height: 30px; width: 200px;list-style: none}
+ul { margin:0; padding: 0; border: 1px solid #999; background: #f7f7f7;width: 220px;}
+li {height: 30px; width: 200px;list-style: none; padding-left: 10px; line-height: 30px;}
 li a {float: left; color: blue;}
 li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
+input { display: block; }
+label { font-size: 12px;}
+button { margin: 10px 0 20px;}
 </style>
 <script>
 (function (global) {
@@ -24,12 +29,17 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
     ];
 
     var loops = 100;
-    var dataLen = 10000;
+    var dataCount = 10000;
 
     if ( /^\?([0-9]+)\*([0-9]+)/.test(location.search) ) {
         loops = parseInt( RegExp.$2, 10 );
-        dataLen = parseInt( RegExp.$1, 10 );
+        dataCount = parseInt( RegExp.$1, 10 );
     }
+
+    global.initParams = function () {
+        document.getElementById('data-count').value = dataCount;
+        document.getElementById('loops').value = loops;
+    };
 
     var index = -1;
     var testIframe;
@@ -40,7 +50,7 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         }
 
         var test = tests[ index ];
-        testIframe.src = test.url + '?' + dataLen + '*' + loops;
+        testIframe.src = test.url + '?' + dataCount + '*' + loops;
     };
 
     global.receiveResult = function ( time ) {
@@ -53,7 +63,7 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
         for ( var i = 0; i < tests.length; i++ ) {
             var li = document.createElement( 'li' );
             var item = tests[ i ];
-            li.innerHTML = '<a target="_blank" href="' + item.url + '?' + dataLen + '*' + loops + '">' + item.name + '</a><b></b>';
+            li.innerHTML = '<a target="_blank" href="' + item.url + '?' + dataCount + '*' + loops + '">' + item.name + '</a><b></b>';
             ul.appendChild( li );
         }
         document.body.appendChild( ul );
@@ -64,6 +74,15 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
     };
 
     global.start = function () {
+        loops = parseInt( document.getElementById('data-count').value, 10 );
+        dataCount = parseInt( document.getElementById('loops').value, 10 );
+
+        var as = document.getElementsByTagName('a');
+        var len = as.length;
+        while (len--) {
+            as[len].href = as[len].href.replace(/\?[0-9]+\*[0-9]+$/, '?' + dataCount + '*' + loops)
+        }
+
         global.nextTest();
     };
 })(this);
@@ -71,11 +90,12 @@ li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
 </script>
 </head>
 <body>
-<script> 
+    <label>数据量：</label><input type="text" id="data-count"/>
+    <label>循环次数：</label><input type="text" id="loops"/>
+    <button onclick="this.disabled=true;start();">Start</button>
+<script>
+initParams();
 showTests();
-if (location.search.indexOf('start') > 0) {
-    start(); 
-}
 </script>
 </body>
 </html>
