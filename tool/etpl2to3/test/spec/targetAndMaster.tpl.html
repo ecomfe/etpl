@@ -1,0 +1,39 @@
+<!-- master: myMaster -->
+<div class="title"><!-- contentplaceholder: title -->title<!-- /contentplaceholder --></div>
+<div class="main"><!-- contentplaceholder: main --></div>
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>
+
+<!-- master: myMaster-has-sidebar(master=myMaster) -->
+<!-- content: title -->
+title for has sidebar
+<!-- content: main -->
+<div class="sidebar"><!-- contentplaceholder: sidebar --></div>
+<div class="article"><!-- contentplaceholder: article --></div>
+<div class="sidebar">
+    name: ${name}
+    <!-- if: ${email} -->
+    email: ${email}
+    <!-- /if -->
+    <!-- if: ${number} > 0 -->
+    larger than zero
+    <!-- elif: ${number} == 0 -->
+    zero
+    <!-- else -->
+    invalid
+    <!-- /if -->
+</div>
+<div class="article"></div>
+<!-- target: myTarget(master=myMaster) -->
+<!-- content: title -->
+Building WebKit from Xcode
+<!-- content: main -->
+<p>R:To build from within Xcode, you can use the WebKit workspace. </p>
+<!-- target: myTarget-has-sidebar(master=myMaster-has-sidebar) -->
+<!-- content: sidebar -->
+<ul class="navigator">R:...</ul>
+<!-- content: article -->
+<p>To build from within Xcode, you can use the WebKit workspace. </p>

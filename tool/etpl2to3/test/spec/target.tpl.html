@@ -1,0 +1,20 @@
+<!-- target: info -->
+name: ${name}
+<!-- if: ${email} -->
+email: ${email}
+<!-- /if -->
+<!-- if: ${number} > 0 -->
+larger than zero
+<!-- elif: ${number} == 0 -->
+zero
+<!-- else -->
+invalid
+<!-- /if -->
+
+<!-- target: main -->
+<div class="main"><!-- use: info(name=${person.name}, email=${person.email}) --></div>
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>

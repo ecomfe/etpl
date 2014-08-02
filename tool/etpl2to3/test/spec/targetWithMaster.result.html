@@ -1,0 +1,30 @@
+<!-- target: myTarget[master=myMaster] -->
+<!-- block: title -->
+Building WebKit from Xcode
+<!-- /block -->
+<!-- block: main -->
+name: ${name}
+<!-- if: ${email} -->
+email: ${email}
+<!-- /if -->
+<!-- if: ${number} > 0 -->
+larger than zero
+<!-- elif: ${number} == 0 -->
+zero
+<!-- else -->
+invalid
+<!-- /if -->
+<!-- /block -->
+
+<!-- target: myTarget-has-sidebar[master=myMaster-has-sidebar] -->
+<!-- block: sidebar -->
+<ul class="navigator">...</ul>
+<!-- /block -->
+<!-- block: article -->
+<div class="main"><!-- use: info(name=${person.name}, email=${person.email}) --></div>
+<ul>
+<!-- for: ${persons} as ${person}, ${index} -->
+<li>${index}: ${person.name}
+<!-- /for -->
+</ul>
+<!-- /block -->
