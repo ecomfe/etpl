@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>ETPL Render Time Test</title>
+<style>
+body { font-size: 14px; }
+ul { margin:0; padding: 0; border: 1px solid #999; background: #f7f7f7;width: 220px;}
+li {height: 30px; width: 200px;list-style: none; padding-left: 10px; line-height: 30px;}
+li a {float: left; color: blue;}
+li b { float: right; padding-left: 40px; color: green; font-size: 12px; }
+input { display: block; }
+label { font-size: 12px;}
+button { margin: 10px 0 20px;}
+</style>
+<script>
+(function (global) {
+    var tests = [
+        {name: 'etpl', url: 'etpl/etpl.html'},
+        {name: 'juicer', url: 'juicer/juicer.html'},
+        {name: 'hogan', url: 'hogan/hogan.html'},
+        {name: 'artTemplate', url: 'artTemplate/artTemplate.html'},
+        {name: 'handlebars', url: 'handlebars/handlebars.html'},
+        {name: 'nunjucks', url: 'nunjucks/nunjucks.html'},
+        {name: 'dot', url: 'dot/dot.html'},
+        {name: 'baiduTemplate', url: 'baiduTemplate/baiduTemplate.html'},
+        {name: 'mustache', url: 'mustache/mustache.html'},
+        {name: 'ejs', url: 'ejs/ejs.html'}
+    ];
+
+    var loops = 100;
+    var dataCount = 10000;
+
+    if ( /^\?([0-9]+)\*([0-9]+)/.test(location.search) ) {
+        loops = parseInt( RegExp.$2, 10 );
+        dataCount = parseInt( RegExp.$1, 10 );
+    }
+
+    global.initParams = function () {
+        document.getElementById('data-count').value = dataCount;
+        document.getElementById('loops').value = loops;
+    };
+
+    var index = -1;
+    var testIframe;
+    global.nextTest = function () {
+        index++;
+        if ( index >= tests.length ) {
+            return;
+        }
+
+        var test = tests[ index ];
+        testIframe.src = test.url + '?' + dataCount + '*' + loops;
+    };
+
+    global.receiveResult = function ( time ) {
+        document.getElementsByTagName('li')[index].getElementsByTagName('b')[0].innerHTML = time + 'ms';
+        global.nextTest();
+    };
+
+    global.showTests = function () {
+        var ul = document.createElement( 'ul' );
+        for ( var i = 0; i < tests.length; i++ ) {
+            var li = document.createElement( 'li' );
+            var item = tests[ i ];
+            li.innerHTML = '<a target="_blank" href="' + item.url + '?' + dataCount + '*' + loops + '">' + item.name + '</a><b></b>';
+            ul.appendChild( li );
+        }
+        document.body.appendChild( ul );
+
+        testIframe = document.createElement('iframe');
+        testIframe.style.display = 'none';
+        document.body.appendChild(testIframe);
+    };
+
+    global.start = function () {
+        loops = parseInt( document.getElementById('data-count').value, 10 );
+        dataCount = parseInt( document.getElementById('loops').value, 10 );
+
+        var as = document.getElementsByTagName('a');
+        var len = as.length;
+        while (len--) {
+            as[len].href = as[len].href.replace(/\?[0-9]+\*[0-9]+$/, '?' + dataCount + '*' + loops)
+        }
+
+        global.nextTest();
+    };
+})(this);
+
+</script>
+</head>
+<body>
+    <label>数据量：</label><input type="text" id="data-count"/>
+    <label>循环次数：</label><input type="text" id="loops"/>
+    <button onclick="this.disabled=true;start();">Start</button>
+<script>
+initParams();
+showTests();
+</script>
+</body>
+</html>
