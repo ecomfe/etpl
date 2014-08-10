@@ -17,15 +17,23 @@ header {
 	height: 70px;
 }
 
-header img {
-	border: 0;
-	margin: 10px 0;
-	float: left;
-}
+
 
 a .fa { padding-right: 2px; }
 a:link, a:visited { color: #0090C9; text-decoration: none; }
-a:hover {border-bottom: 1px solid #CE4873; color: #CE4873; }
+a:hover { color: #CE4873; }
+
+header img {
+	border: 0;
+}
+
+header .logo {
+	width: 50px;
+	height: 50px;
+	margin: 10px 0;
+	float: left;
+}
+header .logo:hover{ border: 0; }
 
 h1 { 
 	font-size: 28px;
@@ -61,7 +69,7 @@ header nav a:hover {
 	text-decoration: none;
 	height: 16px;
 	line-height: 16px;
-	margin: 18px 5px;
+	margin: 18px 10px;
 	padding: 4px 0;
 	border: 0;
 	color: #ddd;
