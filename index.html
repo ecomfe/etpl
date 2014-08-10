@@ -7,33 +7,38 @@
     <link rel="stylesheet" href="css/github.css" />
     <link rel="stylesheet" href="css/page.css" />
 </head>
-<body class="index">
-    <header>
-        <h1>ETPL</h1>
-        <p class="slogan">write less, do more</p>
-    </header>
-    <nav>
-        <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Examples</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a>
-    </nav>
+<body>
+    <header><div class="header-inner">
+        <img src="img/logo.png" width="50" height="50" alt="logo" />
+        <h1><a href="index.html">ETPL</a></h1>
+        <nav>
+            <a target="_blank" href="https://github.com/ecomfe/etpl/doc/"><i class="fa fa-book"></i>Document</a>
+            <a target="_blank" href="https://github.com/ecomfe/etpl/archive/3.0.0.zip"><i class="fa fa-download"></i>Download</a>
+            <a href="example.html"><i class="fa fa-pencil-square" target="_blank"></i>Example</a>
+            <a href="feature.html"><i class="fa fa-info-circle"></i>Feature</a>
+            <a target="_blank" href="https://github.com/ecomfe/etpl"><i class="fa fa-github"></i>GitHub</a>
+        </nav>
+    </div></header>
     <p class="desc">强复用、灵活、高性能的JavaScript模板引擎</p>
     <ul class="feature-list">
         <li>
+            <img src="img/feature-reuse.png" width="150" height="150" alt="reuse" />
             <h3>强复用</h3>
-            <p>我们相信，这一定是你见过的复用形式最丰富的JavaScript模版引擎。<a href="#">模板继承(母版)</a>、<a href="#">引用代入</a>、<a href="#">动态调用</a>的支持，能够让你真正做到用最少的代码，实现相同的功能。</p>
+            <p>我们相信，这一定是你见过的复用形式最丰富的JavaScript模版引擎。<a href="feature.html#master">模板继承(母版)</a>、<a href="feature.html#import-block">引用代入</a>、<a href="feature.html#use">动态调用</a>的支持，能够让你真正做到用最少的代码，实现相同的功能。</p>
         </li>
         <li>
+            <img src="img/feature-flexible.png" width="150" height="150" alt="flexible" />
             <h3>灵活</h3>
-            <p>你可以根据喜好<a href="#">定制语法风格</a>，<a href="#">Filter管道</a>使模板能够根据需要对数据二次处理，<a href="#">Data Getter</a>让你获得渲染时动态数据的能力，还有.....，如果你熟悉，它们会让你得心应手。</p>
+            <p>你可以根据喜好<a href="feature.html#custom">定制语法风格</a>，<a href="feature.html#filter">Filter管道</a>使模板能够根据需要对数据二次处理，<a href="feature.html#data-getter">Data Getter</a>让你获得渲染时动态数据的能力，还有.....，如果你熟悉，它们会让你得心应手。</p>
         </li>
         <li>
+            <img src="img/feature-performance.png" width="150" height="150" alt="performance" />
             <h3>高性能</h3>
-            <p>模板编译技术已经在主流JavaScript模板引擎中普及，它能让模版渲染性能比解释型更高。<a href="#">ETpl的高性能</a>正来源于此。很重要的，ETpl只有<b>3.7k</b>(gzipped)，下载耗时几乎可以忽略。</p>
+            <p>模板编译技术已经在主流JavaScript模板引擎中普及，它能让模版渲染性能比解释型更高。<a href="feature.html#performance">ETpl的高性能</a>正来源于此。很重要的，ETpl只有<b>3.7k</b>(gzipped)，下载耗时几乎可以忽略。</p>
         </li>
     </ul>
 
-    <nav>
-        <a class="feature-more" href="#"><i class="fa fa-info-circle"></i>More Features</a>
-    </nav>
+    <a class="more-features" href="feature.html"><i class="fa fa-info-circle"></i>More Features</a>
 
     <h2>开始</h2>
     <div class="start-panel">
@@ -76,7 +81,7 @@
     </div>
 
     <nav>
-        <a class="example-see" href="#"><i class="fa fa-pencil-square"></i>See Examples</a>
+        <a class="see-examples" href="example.html"><i class="fa fa-pencil-square"></i>See Examples</a>
     </nav>
 
     <div class="any-other">

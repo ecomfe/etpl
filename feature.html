@@ -10,9 +10,9 @@
     <script src="js/example-code.js"></script>
     <script>
     function showExampleCode(key) {
-        document.write('<p class="feature-code"><a href="example.html#' + key + '" target="_blank">Run</a></p>'
-            + '<pre><code class="html">' 
-            + EXAMPLE_CODE[key].tpl.replace(/</g, '&lt;').replace(/>/g, '&gt;') 
+        document.write('<p class="feature-code"><i>示例代码</i><a href="example.html#' + key + '" target="_blank">看看效果</a></p>'
+            + '<pre><code class="html">'
+            + EXAMPLE_CODE[key].tpl.replace(/</g, '&lt;').replace(/>/g, '&gt;')
             + '</code></pre>');
     }
     </script>
@@ -20,8 +20,14 @@
 
 <body class="feature">
     <header><div class="header-inner">
+        <img src="img/logo.png" width="50" height="50" alt="logo" />
+        <h1><a href="index.html">ETPL</a></h1>
         <nav>
-            <a href="https://github.com/ecomfe/etpl#start" target="_blank" class="doc"><i class="fa fa-book"></i>Document</a><a href="https://github.com/ecomfe/etpl/archive/2.0.6.zip" class="down"><i class="fa fa-download"></i>Download</a><a class="example" href="#"><i class="fa fa-pencil-square"></i>Example</a><a class="feature-more" href="#"><i class="fa fa-info-circle"></i>Features</a><a href="https://github.com/ecomfe/etpl" target="_blank" class="source"><i class="fa fa-github"></i>GitHub</a>
+            <a target="_blank" href="https://github.com/ecomfe/etpl/doc/"><i class="fa fa-book"></i>Document</a>
+            <a target="_blank" href="https://github.com/ecomfe/etpl/archive/3.0.0.zip"><i class="fa fa-download"></i>Download</a>
+            <a href="example.html"><i class="fa fa-pencil-square" target="_blank"></i>Example</a>
+            <a href="feature.html"><i class="fa fa-info-circle"></i>Feature</a>
+            <a target="_blank" href="https://github.com/ecomfe/etpl"><i class="fa fa-github"></i>GitHub</a>
         </nav>
     </div></header>
 
@@ -70,14 +76,14 @@
     <h3><a name="template-var"></a>数据声明</h3>
     <p>你可以在模板中声明数据。通常用于对数据进行处理后保存，避免多次处理，以及一些简单的场景。模板引擎的主要职责是将数据转换成视图，我们很小心的提供一个模板中简单的数据声明途径，但并不推荐你重度使用它。</p>
     <script>showExampleCode('var');</script>
-    
+
     <h3><a name="data-getter"></a>Data Getter</h3>
     <p>Data Getter提供的动态数据功能，可以让你的数据延后到模板渲染的过程中提供。你需要根据变量名生成数据，或者从不同的数据源中获得数据时，这能给你提供便利。<a href="example.html#data-getter" target="_blank">看看示例</a></p>
 
     <h3><a name="filter-block"></a>内容块过滤</h3>
     <p>除了变量，你同样可以将任意的模板文本通过过滤器进行处理。这免除了在js中通过丑陋且繁琐的字符串操作来生成大段文本用于过滤器的痛苦，让模板显得更加直观易懂</p>
     <script>showExampleCode('filter-block');</script>
-    
+
     <h2><a name="performance"></a>高性能</h2>
     <p>ETpl采用了主流的模板编译技术。“变量引用预提取”、“区分平台产生不同的编译产物”等优化手段，使ETpl在具有这么多动态特性时，还能做到接近极限的渲染性能。<br><br><a href="performance/render-time.html">看看ETpl的性能测试</a></p>
 
