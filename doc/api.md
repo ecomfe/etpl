@@ -1,10 +1,8 @@
+## API
 
 - [methods](#methods)
 - [classes](#classes)
-- [兼容性](#compatibility)
 
-
-## API
 
 ### methods
 
@@ -40,14 +38,7 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 
 ##### {void} config( {Object}options )
 
-对默认引擎进行配置，配置参数将合并到引擎现有的参数中。
-
-- `{Object}`options - 配置参数对象
-- `{string}`options.commandOpen - 命令语法起始串，默认值为 *<!--*
-- `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
-- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
-- `{boolean}`options.strip - 是否清除命令标签前后的空白字符，默认值为 *false*
-- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是`error` | `ignore` | `override`，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
+对默认引擎进行配置，配置参数将合并到引擎现有的参数中。[查看配置参数](config.md)。
 
 ```javascript
 etplEngine.config( {
@@ -137,14 +128,8 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 
 ##### {void} config( {Object}options )
 
-对引擎进行配置，配置参数将合并到引擎现有的参数中。
+对引擎进行配置，配置参数将合并到引擎现有的参数中。[查看配置参数](config.md)。
 
-- `{Object}`options - 配置参数对象
-- `{string}`options.commandOpen - 命令语法起始串，默认值为 *<!--*
-- `{string}`options.commandClose - 命令语法结束串，默认值为 *-->*
-- `{string}`options.defaultFilter - 默认变量替换的filter，默认值为 *html*
-- `{boolean}`options.strip - 是否清除命令标签前后的空白字符，默认值为 *false*
-- `{string}`options.namingConflict - target或master名字冲突时的处理策略，值可以是`error` | `ignore` | `override`，分别代表`抛出错误`、`保留现有目标，忽略新目标`、`覆盖现有目标`。默认值为 *error*
 
 ```javascript
 etplEngine.config( {
@@ -177,7 +162,4 @@ etplEngine.compile( '<!-- target: hello -->Hello ${name}!' );
 etplEngine.render( 'hello', {name: 'ETPL'} ); // Hello ETPL!
 ```
 
-### Compatibility
-
-ETpl2的Engine的`get`方法可以根据target名称获取模板内容。ETpl3不再支持该方法，所有的模板都通过render来使用。
 
