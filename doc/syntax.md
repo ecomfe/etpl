@@ -1,3 +1,6 @@
+## Syntax
+
+
 - [基础](#基础)
     - [语法形式](#语法形式)
     - [target](#target)
@@ -14,8 +17,6 @@
     - [变量声明](#变量声明)
     - [内容块过滤](#内容块过滤)
 
-
-## Syntax
 
 ### 基础
 
@@ -102,6 +103,12 @@ Hello <strong>ETPL</strong>!
 
 <!-- target: bye -->
 Bye <strong>ETPL</strong>!
+
+<!-- target: page -->
+<header>
+    <!-- block: header -->Header Content<!-- /block -->
+</header>
+<div class="main"><!-- block: content --><!-- /block --></div>
 ```
 
 ##### 匿名target
@@ -198,63 +205,104 @@ Hello <strong>${name}</strong>!
 
 ##### 自动结束
 
-import无需编写`指令结束`，其将在`指令起始`后立即自动结束。
+如果不编写import的`指令结束`，其`指令起始`后立即自动结束。
+
+如果需要使用import的[引用代入](#引用代入)功能，需要手工编写`指令结束`。
 
 
 #### 母版
 
-`target`中，可以通过`block`指令声明可被替换的部分。
 
 `target`声明时可以通过 **master=master-name** 指定一个继承的母版。并且通过自身的`block`指令，能够替换母版中同名`block`指令声明部分的内容。
 
-##### 语法
-
-block的语法形式为：
-
-    block: block-name
+模版继承（母版）功能允许你在一开始就对多个相似的模板从“结构”的角度进行抽象。继承自一个和你具有相同结构的母版，你可以无需再编写结构骨架部分，只需要编写结构内部的内容差异部分。
 
 
 ##### 示例
 
 ```html
-<!-- master: myMaster -->
-<div class="title"><!-- contentplaceholder: title -->title<!-- /contentplaceholder --></div>
-<div class="main"><!-- contentplaceholder: main --></div>
+<!-- target: myTpl(master = page) -->
+<!-- block: content -->
+    Hello ${name}!
+<!-- /block -->
 
-<!-- master: myMaster-has-sidebar(master=myMaster) -->
-<!-- content: title -->
-title for has sidebar
-<!-- content: main -->
-<div class="sidebar"><!-- contentplaceholder: sidebar --></div>
-<div class="article"><!-- contentplaceholder: article --></div>
-
-<!-- target: myTarget(master=myMaster) -->
-<!-- content: title -->
-Building WebKit from Xcode
-<!-- content: main -->
-<p>To build from within Xcode, you can use the WebKit workspace. </p>
-
-<!-- target: myTarget-has-sidebar(master=myMaster-has-sidebar) -->
-<!-- content: sidebar -->
-<ul class="navigator">...</ul>
-<!-- content: article -->
-<p>To build from within Xcode, you can use the WebKit workspace. </p>
+<!-- target: page -->
+<header><!-- block: header -->Header Content<!-- /block --></header>
+<div class="main"><!-- block: content --><!-- /block --></div>
 ```
 
-##### 自动结束
+##### 复杂示例
 
-block指令不支持自动结束，必须手工编写`指令结束`。
+```html
+<!-- target: myMaster -->
+<div class="title">
+    <!-- block: title -->title<!-- /block -->
+</div>
+<div class="main">
+    <!-- block: main --><!-- /block -->
+</div>
+
+<!-- target: myMaster-has-sidebar(master=myMaster) -->
+<!-- block: title -->title for has sidebar<!-- /block -->
+<!-- block: main -->
+    <div class="sidebar"><!-- block: sidebar --><!-- /block --></div>
+    <div class="article"><!-- block: article --><!-- /block --></div>
+<!-- /block -->
+
+<!-- target: myTarget(master=myMaster) -->
+<!-- block: title -->
+    Building WebKit from Xcode
+<!-- /block -->
+<!-- block: main -->
+    <p>To build from within Xcode, you can use the WebKit workspace. </p>
+<!-- /block -->
+
+<!-- target: myTarget-has-sidebar(master=myMaster-has-sidebar) -->
+<!-- block: sidebar -->
+    <ul class="navigator">...</ul>
+<!-- /block -->
+<!-- block: article -->
+    <p>To build from within Xcode, you can use the WebKit workspace. </p>
+<!-- /block -->
+```
 
 
 #### 引用代入
 
+通过`import`指令引入一个`target`时，可以定制其`block`部分的内容。
 
+如果有一个模板的大部分可以复用时，通过引用代入功能，你可以在引用时抹平差异，定制其中差异部分内容。当你面临结构种类数量爆炸时，引用代入提供了另一种更灵活的复用方式。
+
+使用引用代入功能，import需要手工编写`指令结束`，并且imort中只允许包含`block`，其他指令将被忽略。
+
+##### 示例
+
+```html
+<!-- target: myTpl -->
+<!-- import: header -->
+<!-- import: main -->
+    <!-- block: main -->
+        <div class="list">list</div>
+        <div class="pager">pager</div>
+    <!-- /block -->
+<!-- /import -->
+
+<!-- target: header -->
+<header><!-- block: header -->default header<!-- /block --></header>
+
+<!-- target: main -->
+<div>
+    <!-- block: main -->default main<!-- /block -->
+</div>
+```
 
 
 
 #### use
 
 通过`use`指令，可以调用指定`target`，在当前位置插入其render后的结果。允许使用静态或动态数据指定数据项。
+
+在面临多种不同的数据名称、相似的结构时，动态调用可以让你只编写一份代码，多次调用。
 
 ##### 语法
 
@@ -267,19 +315,20 @@ use的语法形式为：
 ##### 示例
 
 ```html
-<!-- target: info -->
-name: ${name}
-<!-- if: ${email} -->
-email: ${email}
-<!-- /if -->
+<ul>
+<!-- for: ${persons} as ${p} -->
+    <!-- use: item(main=${p.name}, sub=${p.email}) -->
+<!-- /for -->
+</ul>
 
-<!-- target: main -->
-<div class="main"><!-- use: info(name=${person.name}, email=${person.email}) --></div>
+<!-- target: item --><li>${main}[${sub}]</li>
 ```
 
 ##### 自动结束
 
 use无需编写`指令结束`，其将在`指令起始`后立即自动结束。
+
+
 
 ### 分支与循环
 
