@@ -835,6 +835,21 @@
 
     // 创建for命令节点继承关系
     inherits( ForCommand, Command );
+
+    /**
+     * break命令节点类
+     * 
+     * @inner
+     * @constructor
+     * @param {string} value 命令节点的value
+     * @param {Engine} engine 引擎实例
+     */
+    function BreakCommand(value, engine) {
+        Command.call(this, value, engine);
+    } 
+
+    // 创建break命令节点继承关系
+    inherits(BreakCommand, Command);
     
     /**
      * if命令节点类
@@ -1141,6 +1156,19 @@
 
 
     /**
+     * Break节点open，解析开始
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    BreakCommand.prototype.open = function (context) {
+        var forCommand = context.stack.find(function (item) {
+            return item instanceof ForCommand;
+        });
+        
+        forCommand.brIndex = compileVariable(this.value, this.engine);
+    }
+
+    /**
      * 节点open前的处理动作：节点不在target中时，自动创建匿名target
      * 
      * @param {Object} context 语法分析环境对象
@@ -1196,6 +1224,14 @@
         target.open( context );
     };
     
+    /**
+     * 节点解析结束
+     * 由于break节点无需闭合，处理时不会入栈，所以将close置为空函数
+     * 
+     * @param {Object} context 语法分析环境对象
+     */
+    BreakCommand.prototype.close = 
+
     /**
      * 节点解析结束
      * 由于use节点无需闭合，处理时不会入栈，所以将close置为空函数
@@ -1321,16 +1357,17 @@
             ''
             + 'var {0}={1};'
             + 'if({0} instanceof Array)'
-            +     'for (var {4}=0,{5}={0}.length;{4}<{5};{4}++){v[{2}]={4};v[{3}]={0}[{4}];{6}}'
+            +     'for (var {4}=0,{5}={0}.length;{4}<{5};{4}++){if({4}=={7})break;v[{2}]={4};v[{3}]={0}[{4}];{6}}'
             + 'else if(typeof {0}==="object")'
-            +     'for(var {4} in {0}){v[{2}]={4};v[{3}]={0}[{4}];{6}}',
+            +     'for(var {4} in {0}){if({4}=={7})break;v[{2}]={4};v[{3}]={0}[{4}];{6}}',
             generateGUID(),
             compileVariable( this.list, this.engine ),
             stringLiteralize( this.index || generateGUID() ),
             stringLiteralize( this.item ),
             generateGUID(),
             generateGUID(),
-            Command.prototype.getRendererBody.call( this )
+            Command.prototype.getRendererBody.call( this ),
+            this.brIndex
         );
     };
 
@@ -1472,6 +1509,7 @@
     addCommandType( 'elif', ElifCommand );
     addCommandType( 'else', ElseCommand );
     addCommandType( 'filter', FilterCommand );
+    addCommandType( 'break', BreakCommand );
     
     
     /**
