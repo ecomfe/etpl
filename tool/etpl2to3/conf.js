@@ -1,5 +1,5 @@
 {
    "commandOpen": "<!--",
    "commandClose": "-->",
-   "scope": "mutil"
+   "namingConflict ": "error"
 }
