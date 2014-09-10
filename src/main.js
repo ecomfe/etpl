@@ -124,15 +124,16 @@
      * @param {Function} superClass 父类函数
      */
     function inherits(subClass, superClass) {
+        /* jshint -W054 */
         var F = new Function();
         F.prototype = superClass.prototype;
         subClass.prototype = new F();
         subClass.prototype.constructor = subClass;
+        /* jshint +W054 */
         // 由于引擎内部的使用场景都是inherits后，逐个编写子类的prototype方法
         // 所以，不考虑将原有子类prototype缓存再逐个拷贝回去
     }
 
-    /* jshint ignore:start */
     /**
      * HTML Filter替换的字符实体表
      *
@@ -141,13 +142,14 @@
      * @type {Object}
      */
     var HTML_ENTITY = {
+        /* jshint ignore:start */
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#39;'
+        /* jshint ignore:end */
     };
-    /* jshint ignore:end */
 
     /**
      * HTML Filter的替换函数
@@ -821,16 +823,17 @@
      * @param {Engine} engine 引擎实例
      */
     function ForCommand(value, engine) {
-        /* jshint ignore:start */
         var rule = new RegExp(
             stringFormat(
+                /* jshint ignore:start */
                 '^\\s*({0}[\\s\\S]+{1})\\s+as\\s+{0}([0-9a-z_]+){1}\\s*(,\\s*{0}([0-9a-z_]+){1})?\\s*$',
+                /* jshint ignore:end */
                 regexpLiteral(engine.options.variableOpen),
                 regexpLiteral(engine.options.variableClose)
             ),
             'i'
         );
-        /* jshint ignore:end */
+
 
         if (!rule.test(value)) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
@@ -1003,6 +1006,7 @@
             //     + this.getRendererBody()
             //     + RENDER_STRING_RETURN);
 
+            /* jshint -W054 */
             var realRenderer = new Function(
                 'data', 'engine',
                 [
@@ -1012,6 +1016,7 @@
                     RENDER_STRING_RETURN
                 ].join('\n')
             );
+            /* jshint +W054 */
 
             var engine = this.engine;
             this.renderer = function (data) {
@@ -1470,7 +1475,9 @@
             }
         }
 
+        /* jshint -W054 */
         return new Function('return ""');
+        /* jshint +W054 */
     };
 
     /**

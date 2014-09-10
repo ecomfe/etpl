@@ -32,7 +32,9 @@ define(
                             load(source);
                         }
 
+                        /* jshint -W054 */
                         xhr.onreadystatechange = new Function();
+                        /* jshint +W054 */
                         xhr = null;
                     }
                 };
