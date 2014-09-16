@@ -81,7 +81,7 @@ var text = render({ name: 'etpl' });
 
 我们认为，当前流行的通过`block`来表达模板继承中的变化，是更好的表达方式。所以在ETpl3中，我们优化了母版的语法，删除了`master`、`contentplacehoder`、`content`标签，引入了`block`标签。
 
-对于ETpl2的使用者，我们提供一个[etpl2to3](tool/etpl2to3)工具，能够帮助你平滑地将ETpl2的模板翻译成ETpl3。
+对于ETpl2的使用者，我们提供一个[etpl2to3](https://github.com/ecomfe/etpl2to3)工具，能够帮助你平滑地将ETpl2的模板翻译成ETpl3。
 
 
 ### get
