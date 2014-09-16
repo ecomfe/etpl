@@ -1,5 +1,0 @@
-{
-   "commandOpen": "<!--",
-   "commandClose": "-->",
-   "namingConflict ": "error"
-}
