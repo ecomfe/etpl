@@ -9,7 +9,7 @@
     "main": "main",
     "homepage": "http://ecomfe.github.io/etpl/",
     "repository": "git://github.com/ecomfe/etpl",
-    "description": "ETPL是一个灵活、具有强大复用能力的高性能Javascript模板引擎，适用于WEB前端应用中视图的生成，特别是SPA(Single Page APP)类型的应用。",
+    "description": "ETPL是一个强复用、灵活、高性能的JavaScript模板引擎，适用于浏览器端或Node环境中视图的生成。",
     "scripts": {
         "test": "jasmine-node test/spec"
     },
