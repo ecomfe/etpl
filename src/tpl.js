@@ -6,6 +6,7 @@
  * @author errorrik(errorrik@gmail.com)
  */
 
+/* global ActiveXObject */
 define(
     function (require, exports, module) {
         var etpl = require('.');

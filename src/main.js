@@ -9,6 +9,7 @@
 
 
 // HACK: 可见的重复代码未抽取成function和var是为了gzip size，吐槽的一边去
+/* eslint-env node */
 
 (function (root) {
     /**
@@ -53,7 +54,7 @@
         /**
          * 弹出顶部元素
          *
-         * @return {*}
+         * @return {*} 顶部元素
          */
         pop: function () {
             if (this.length > 0) {
@@ -66,7 +67,7 @@
         /**
          * 获取顶部元素
          *
-         * @return {*}
+         * @return {*} 顶部元素
          */
         top: function () {
             return this.raw[this.length - 1];
@@ -75,7 +76,7 @@
         /**
          * 获取底部元素
          *
-         * @return {*}
+         * @return {*} 底部元素
          */
         bottom: function () {
             return this.raw[0];
@@ -85,7 +86,7 @@
          * 根据查询条件获取元素
          *
          * @param {Function} condition 查询函数
-         * @return {*}
+         * @return {*} 符合条件的元素
          */
         find: function (condition) {
             var index = this.length;
@@ -110,7 +111,7 @@
      * 获取唯一id，用于匿名target或编译代码的变量名生成
      *
      * @inner
-     * @return {string}
+     * @return {string} 唯一id
      */
     function generateGUID() {
         return '___' + (guidIndex++);
@@ -147,7 +148,9 @@
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
+        /* eslint-disable quotes */
         "'": '&#39;'
+        /* eslint-enable quotes */
         /* jshint ignore:end */
     };
 
@@ -156,7 +159,7 @@
      *
      * @inner
      * @param {string} c 替换字符
-     * @return {string}
+     * @return {string} 替换后的HTML字符实体
      */
     function htmlFilterReplacer(c) {
         return HTML_ENTITY[c];
@@ -174,7 +177,7 @@
          * HTML转义filter
          *
          * @param {string} source 源串
-         * @return {string}
+         * @return {string} 替换结果串
          */
         html: function (source) {
             return source.replace(/[&<>"']/g, htmlFilterReplacer);
@@ -184,7 +187,7 @@
          * URL编码filter
          *
          * @param {string} source 源串
-         * @return {string}
+         * @return {string} 替换结果串
          */
         url: encodeURIComponent,
 
@@ -192,7 +195,7 @@
          * 源串filter，用于在默认开启HTML转义时获取源串，不进行转义
          *
          * @param {string} source 源串
-         * @return {string}
+         * @return {string} 替换结果串
          */
         raw: function (source) {
             return source;
@@ -204,7 +207,7 @@
      *
      * @inner
      * @param {string} source 需要字面化的字符串
-     * @return {string}
+     * @return {string} 字符串字面化结果
      */
     function stringLiteralize(source) {
         return '"'
@@ -224,7 +227,7 @@
      *
      * @inner
      * @param {string} source 需要字面化的字符串
-     * @return {string}
+     * @return {string} 字符串字面化结果
      */
     function regexpLiteral(source) {
         return source.replace(/[\^\[\]\$\(\)\{\}\?\*\.\+]/g, function (c) {
@@ -238,7 +241,7 @@
      * @inner
      * @param {string} source 目标模版字符串
      * @param {...string} replacements 字符串替换项集合
-     * @return {string}
+     * @return {string} 格式化结果
      */
     function stringFormat(source) {
         var args = arguments;
@@ -301,7 +304,7 @@
      *
      * @inner
      * @param {string} name 访问变量名
-     * @return {string}
+     * @return {string} getVariable调用的编译语句
      */
     function toGetVariableLiteral(name) {
         name = name.replace(/^\s*\*/, '');
@@ -343,6 +346,7 @@
             if (i) {
                 var openBegin = 1;
                 level++;
+                /* eslint-disable no-constant-condition */
                 while (1) {
                     var closeIndex = text.indexOf(close);
                     if (closeIndex < 0) {
@@ -363,6 +367,7 @@
                         break;
                     }
                 }
+                /* eslint-enable no-constant-condition */
 
                 if (level === 0) {
                     onInBlock(buf.join(''));
@@ -389,7 +394,7 @@
      * @param {string} source 源代码
      * @param {Engine} engine 引擎实例
      * @param {boolean} forText 是否为输出文本的变量替换
-     * @return {string}
+     * @return {string} 编译代码
      */
     function compileVariable(source, engine, forText) {
         var code = [];
@@ -501,7 +506,7 @@
         /**
          * 获取renderer body的生成代码
          *
-         * @return {string}
+         * @return {string} 生成代码
          */
         getRendererBody: function () {
             var value = this.value;
@@ -519,7 +524,7 @@
         /**
          * 复制节点的方法
          *
-         * @return {TextNode}
+         * @return {TextNode} 节点复制对象
          */
         clone: function () {
             return this;
@@ -576,7 +581,7 @@
         /**
          * 获取renderer body的生成代码
          *
-         * @return {string}
+         * @return {string} 生成代码
          */
         getRendererBody: function () {
             var buf = [];
@@ -591,10 +596,13 @@
         /**
          * 复制节点的方法
          *
-         * @return {Command}
+         * @return {Command} 节点复制对象
          */
         clone: function () {
-            var node = new this.constructor(this.value, this.engine);
+            var Clazz = this.constructor;
+            var node = new Clazz(this.value, this.engine);
+
+            /* eslint-disable no-redeclare */
             for (var i = 0, l = this.children.length; i < l; i++) {
                 node.addChild(this.children[i].clone());
             }
@@ -603,6 +611,7 @@
                 var prop = this.cloneProps[i];
                 node[prop] = this[prop];
             }
+            /* eslint-enable no-redeclare */
 
             return node;
         }
@@ -614,6 +623,7 @@
      * @inner
      * @param {Object} context 语法分析环境对象
      * @param {Function=} CommandType 自闭合的节点类型
+     * @return {Command} 被闭合的节点
      */
     function autoCloseCommand(context, CommandType) {
         var stack = context.stack;
@@ -670,8 +680,8 @@
         +     'if(typeof s==="string"){return s;}'
         +     'if(s==null){s="";}'
         +     'return ""+s;'
-        + '};'
-    ;
+        + '};';
+
     // v: variables
     // fs: filters
     // gv: getVariable
@@ -720,7 +730,7 @@
 
         this.name = RegExp.$1;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name' ];
+        this.cloneProps = ['name'];
     }
 
     // 创建Block命令节点继承关系
@@ -741,7 +751,7 @@
 
         this.name = RegExp.$1;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name', 'state', 'blocks' ];
+        this.cloneProps = ['name', 'state', 'blocks'];
         this.blocks = {};
     }
 
@@ -764,7 +774,7 @@
         this.name = RegExp.$1;
         this.expr = RegExp.$2;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name', 'expr' ];
+        this.cloneProps = ['name', 'expr'];
     }
 
     // 创建Var命令节点继承关系
@@ -786,7 +796,7 @@
         this.name = RegExp.$1;
         this.args = RegExp.$3;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name', 'args' ];
+        this.cloneProps = ['name', 'args'];
     }
 
     // 创建filter命令节点继承关系
@@ -808,7 +818,7 @@
         this.name = RegExp.$1;
         this.args = RegExp.$3;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'name', 'args' ];
+        this.cloneProps = ['name', 'args'];
     }
 
     // 创建Use命令节点继承关系
@@ -843,7 +853,7 @@
         this.item = RegExp.$2;
         this.index = RegExp.$4;
         Command.call(this, value, engine);
-        this.cloneProps = [ 'list', 'item', 'index' ];
+        this.cloneProps = ['list', 'item', 'index'];
     }
 
     // 创建for命令节点继承关系
@@ -909,14 +919,15 @@
     /**
      * 应用其继承的母版，返回是否成功应用母版
      *
-     * @return {boolean}
+     * @return {boolean} 是否成功应用母版
      */
     ImportCommand.prototype.applyMaster =
 
     /**
      * 应用其继承的母版，返回是否成功应用母版
      *
-     * @return {boolean}
+     * @param {string} masterName 模板名称
+     * @return {boolean} 是否成功应用母版
      */
     TargetCommand.prototype.applyMaster = function (masterName) {
         if (this.state >= TargetState.APPLIED) {
@@ -953,7 +964,7 @@
      * 判断target是否ready
      * 包括是否成功应用母版，以及import语句依赖的target是否ready
      *
-     * @return {boolean}
+     * @return {boolean} target是否ready
      */
     TargetCommand.prototype.isReady = function () {
         if (this.state >= TargetState.READY) {
@@ -993,7 +1004,7 @@
     /**
      * 获取target的renderer函数
      *
-     * @return {function(Object):string}
+     * @return {function(Object):string} renderer函数
      */
     TargetCommand.prototype.getRenderer = function () {
         if (this.renderer) {
@@ -1189,9 +1200,11 @@
         this.children.length = 0;
 
         // move blocks to target
+        /* eslint-disable guard-for-in */
         for (var key in this.blocks) {
             this.target.blocks[key] = this.blocks[key];
         }
+        /* eslint-enable guard-for-in */
         this.blocks = {};
 
         // do close
@@ -1264,7 +1277,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     ImportCommand.prototype.getRendererBody = function () {
         this.applyMaster(this.name);
@@ -1274,7 +1287,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     UseCommand.prototype.getRendererBody = function () {
         return stringFormat(
@@ -1294,7 +1307,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     VarCommand.prototype.getRendererBody = function () {
         if (this.expr) {
@@ -1311,7 +1324,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     IfCommand.prototype.getRendererBody = function () {
         return stringFormat(
@@ -1324,7 +1337,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     ElseCommand.prototype.getRendererBody = function () {
         return stringFormat(
@@ -1336,7 +1349,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     ForCommand.prototype.getRendererBody = function () {
         return stringFormat(
@@ -1361,7 +1374,7 @@
     /**
      * 获取renderer body的生成代码
      *
-     * @return {string}
+     * @return {string} 生成代码
      */
     FilterCommand.prototype.getRendererBody = function () {
         var args = this.args;
@@ -1456,7 +1469,7 @@
      * 解析模板并编译，返回第一个target编译后的renderer函数。
      *
      * @param {string} source 模板源代码
-     * @return {function(Object):string}
+     * @return {function(Object):string} renderer函数
      */
     Engine.prototype.compile =
 
@@ -1465,7 +1478,7 @@
      * 该方法的存在为了兼容老模板引擎
      *
      * @param {string} source 模板源代码
-     * @return {function(Object):string}
+     * @return {function(Object):string} renderer函数
      */
     Engine.prototype.parse = function (source) {
         if (source) {
@@ -1484,7 +1497,7 @@
      * 根据target名称获取编译后的renderer函数
      *
      * @param {string} name target名称
-     * @return {function(Object):string}
+     * @return {function(Object):string} renderer函数
      */
     Engine.prototype.getRenderer = function (name) {
         var target = this.targets[name];
@@ -1500,7 +1513,7 @@
      * @param {Object=} data 模板数据。
      *      可以是plain object，
      *      也可以是带有 {string}get({string}name) 方法的对象
-     * @return {string}
+     * @return {string} 渲染结果
      */
     Engine.prototype.render = function (name, data) {
         var renderer = this.getRenderer(name);
