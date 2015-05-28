@@ -1107,7 +1107,11 @@
      */
     BlockCommand.prototype.open = function (context) {
         Command.prototype.open.call(this, context);
-        (context.imp || context.target).blocks[this.name] = this;
+        context.stack
+            .find(function (node) {
+                return node.blocks;
+            })
+            .blocks[this.name] = this;
     };
 
     /**
@@ -1145,7 +1149,6 @@
         this.target = context.target;
         Command.prototype.open.call(this, context);
         this.state = TargetState.READING;
-        context.imp = this;
     };
 
     /**
@@ -1172,7 +1175,6 @@
     ImportCommand.prototype.close = function (context) {
         Command.prototype.close.call(this, context);
         this.state = TargetState.READED;
-        context.imp = null;
     };
 
     /**

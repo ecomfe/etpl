@@ -115,4 +115,41 @@ Hello etpl! In if.
 </div>
 <footer><p>CopyRight Etpl</p></footer>
 
+::tpl-nested::
+<!-- target: importNested -->
+<!-- import: importNestedPage -->
+<!-- block: crumb --><!-- import: importNestedCrumb --><!-- /block -->
+<!-- block: main -->World<!-- /block -->
+<!-- /import -->
+
+<!-- target: importNestedCrumb -->
+<!-- import: importNestedAbstractCrumb -->
+<!-- block: path --><span>example</span><!-- /block -->
+<!-- /import -->
+
+<!-- target: importNestedPage -->
+<header>
+<!-- block: crumb --><!-- /block -->
+<!-- block: tip --><!-- /block -->
+</header>
+<main><!-- block: main --><!-- /block --></main>
+
+<!-- target: importNestedAbstractCrumb -->
+<div class="crumb"><!-- block: path --><!-- /block --></div>
+::expect-nested::
+
+
+<header>
+
+
+<div class="crumb"><span>example</span></div>
+
+
+
+</header>
+<main>World</main>
+
+
+
+
 ::eof::

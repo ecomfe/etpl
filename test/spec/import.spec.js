@@ -46,6 +46,11 @@
             expect(renderer()).toEqual(text['expect-block']);
         });
 
+        it('can be nested', function() {
+            var renderer = etpl.compile(text['tpl-nested']);
+            expect(renderer()).toEqual(text['expect-nested']);
+        });
+
         it('and override block, the own target can be extended', function() {
             var renderer = etpl.compile(text['tpl-mix']);
             expect(renderer()).toEqual(text['expect-mix-target']);
