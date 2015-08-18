@@ -115,3 +115,7 @@ etpl.merge = function ( element, name, data ) {
     }
 };
 ```
+
+## Related
+
+* vim语法高亮插件：[vim-etpl](https://github.com/hushicai/vim-etpl)
