@@ -118,4 +118,6 @@ etpl.merge = function ( element, name, data ) {
 
 ## Related
 
-* vim语法高亮插件：[vim-etpl](https://github.com/hushicai/vim-etpl)
+* Sublime Text 语法高亮插件：[sublime-etpl](https://github.com/ecomfe/sublime-etpl)
+* vim 语法高亮插件：[vim-etpl](https://github.com/hushicai/vim-etpl)
+* Atom 语法高亮插件：[atom-etpl](https://github.com/ecomfe/atom-etpl)
