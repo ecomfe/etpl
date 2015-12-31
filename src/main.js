@@ -751,7 +751,7 @@
 
         this.name = RegExp.$1;
         Command.call(this, value, engine);
-        this.cloneProps = ['name', 'state', 'blocks'];
+        this.cloneProps = ['name', 'state', 'blocks', 'target'];
         this.blocks = {};
     }
 
@@ -952,11 +952,19 @@
         }
 
         var master = this.engine.targets[masterName];
-        if (master && master.applyMaster(master.master)) {
-            this.children = master.clone().children;
-            replaceBlock(this);
-            this.state = TargetState.APPLIED;
-            return 1;
+        if (master) {
+            if (master.applyMaster(master.master)) {
+                this.children = master.clone().children;
+                replaceBlock(this);
+                this.state = TargetState.APPLIED;
+                return 1;
+            }
+        }
+        else if (this.engine.options.missTarget === 'error') {
+            throw new Error('[ETPL_MISS_TARGET]' + masterName 
+                + ', when extended by ' 
+                + (this.target ? this.target.name : this.name)
+            );
         }
     };
 
@@ -972,6 +980,7 @@
         }
 
         var engine = this.engine;
+        var targetName = this.name;
         var readyState = 1;
 
         /**
@@ -983,10 +992,15 @@
         function checkReadyState(node) {
             for (var i = 0, len = node.children.length; i < len; i++) {
                 var child = node.children[i];
+
                 if (child instanceof ImportCommand) {
                     var target = engine.targets[child.name];
-                    readyState = readyState
-                        && target && target.isReady(engine);
+                    if (!target && engine.options.missTarget === 'error') {
+                        throw new Error('[ETPL_MISS_TARGET]' + child.name 
+                            + ', when imported by ' + targetName);
+                    }
+
+                    readyState = readyState && target && target.isReady(engine);
                 }
                 else if (child instanceof Command) {
                     checkReadyState(child);
@@ -1063,7 +1077,7 @@
                     break;
                 /* jshint ignore:end */
                 default:
-                    throw new Error('Target exists: ' + name);
+                    throw new Error('[ETPL_TARGET_EXISTS]' + name);
             }
         }
         else {
@@ -1435,6 +1449,7 @@
      * @param {string=} options.defaultFilter 默认变量替换的filter
      * @param {boolean=} options.strip 是否清除命令标签前后的空白字符
      * @param {string=} options.namingConflict target名字冲突时的处理策略
+     * @param {string=} options.missTarget target不存在时的处理策略
      */
     function Engine(options) {
         this.options = {
@@ -1462,6 +1477,7 @@
      * @param {string=} options.defaultFilter 默认变量替换的filter
      * @param {boolean=} options.strip 是否清除命令标签前后的空白字符
      * @param {string=} options.namingConflict target名字冲突时的处理策略
+     * @param {string=} options.missTarget target不存在时的处理策略
      */
     Engine.prototype.config = function (options) {
         extend(this.options, options);
