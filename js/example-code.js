@@ -257,7 +257,7 @@ var EXAMPLE_DEFAULT_DATA = [
 ].join('\n');
 
 var EXAMPLE_DEFAULT_OPTIONS = {
-    commandSyntax: '^\\s*(\\\/)?([a-z]+)\\s*(?::([\\s\\S]*))?$',
+    commandSyntax: '^\\s*(\\\/)?([a-z]*)\\s*(?::([\\s\\S]*))?$',
     commandOpen: '<!--',
     commandClose: '-->',
     variableOpen: '${',
