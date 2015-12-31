@@ -8,6 +8,7 @@
 - [defaultFilter](#defaultfilter)
 - [strip](#strip)
 - [namingConflict](#namingconflict)
+- [missTarget](#misstarget)
 
 
 通过engine初始化时构造函数参数，或者engine实例的config方法，可以配置ETpl引擎的参数。
@@ -78,9 +79,17 @@ etplEngine.config( {
 
 `string`
 
-target或master名字冲突时的处理策略，值可以是:
+target名字冲突时的处理策略，值可以是:
 
 - `error`: 抛出错误。此项为默认值
 - `ignore`: 保留现有目标，忽略新目标
 - `override`: 覆盖现有目标
 
+### missTarget
+
+`string`
+
+target不存在时的处理策略，值可以是:
+
+- `error`: 抛出错误
+- `ignore`: 静默处理，无错误。此项为默认值
