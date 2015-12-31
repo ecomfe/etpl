@@ -30,3 +30,5 @@ http.createServer(
         }
     }
 ).listen(9999);
+
+console.log('http://localhost:9999/run.html');
