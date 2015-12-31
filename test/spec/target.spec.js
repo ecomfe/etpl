@@ -31,6 +31,15 @@
         );
 
         it(
+            'should parse correctly when shorthand',
+            function() {
+                var render = etpl.compile(text['tpl-shorthand']);
+                expect(render()).toEqual(text['expect-shorthand']);
+                expect(render).toBe(etpl.getRenderer('targetShorthand'));
+            }
+        );
+
+        it(
             'parse empty string should return a renderer which return empty string ""',
             function() {
                 expect(etpl.compile('')()).toEqual('');

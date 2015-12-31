@@ -13,7 +13,7 @@ etpl
     <!-- import: importHasCloseFooter -->
 <!-- /target -->
 
-<!-- target: importHasCloseHeader --><header>Header Content</header><!-- /target -->
+<!--: importHasCloseHeader --><header>Header Content</header><!-- /target -->
 
 <!-- target: importHasCloseFooter --><footer>Footer Content</footer><!-- /target -->
 ::expect-hasclose::
@@ -23,7 +23,7 @@ etpl
     <footer>Footer Content</footer>
 
 ::tpl-inif::
-<!-- target: importInIf -->
+<!-- : importInIf -->
 <!-- if: ${name} --><!-- import: importInIfHello --> In if.<!-- /if -->
 <!-- target: importInIfHello -->Hello ${name}!
 ::expect-inif::
@@ -33,7 +33,7 @@ Hello etpl! In if.
 ::tpl-infor::
 <!-- var: arr = new Array(3) -->
 <!-- for: ${arr} as ${item}, ${index}--><!--import: importInFor --> in for|<!--/for-->
-<!-- target: importInFor -->${index}
+<!-- :importInFor -->${index}
 ::expect-infor::
 
 0 in for|1 in for|2 in for|

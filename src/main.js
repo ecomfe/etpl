@@ -1440,7 +1440,7 @@
         this.options = {
             commandOpen: '<!--',
             commandClose: '-->',
-            commandSyntax: /^\s*(\/)?([a-z]+)\s*(?::([\s\S]*))?$/,
+            commandSyntax: /^\s*(\/)?([a-z]*)\s*(?::([\s\S]*))?$/,
             variableOpen: '${',
             variableClose: '}',
             defaultFilter: 'html'
@@ -1592,11 +1592,13 @@
 
             function (text) { // <!--...-->内文本的处理函数
                 var match = commandSyntax.exec(text);
+                var nodeName;
 
                 // 符合command规则，并且存在相应的Command类，说明是合法有含义的Command
                 // 否则，为不具有command含义的普通文本
                 if (match
-                    && (NodeType = commandTypes[match[2].toLowerCase()])
+                    && (nodeName = match[2] || 'target')
+                    && (NodeType = commandTypes[nodeName.toLowerCase()])
                     && typeof NodeType === 'function'
                 ) {
                     // 先将缓冲区中的text节点内容写入
