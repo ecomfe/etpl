@@ -1662,6 +1662,7 @@
 
     var etpl = new Engine();
     etpl.Engine = Engine;
+    etpl.version = '3.1.0';
 
     if (typeof exports === 'object' && typeof module === 'object') {
         // For CommonJS
