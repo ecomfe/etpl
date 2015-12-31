@@ -1,13 +1,13 @@
 ## Config
 
-- [commandOpen](#commandOpen)
-- [commandClose](#commandClose)
-- [commandSyntax](#commandSyntax)
-- [variableOpen](#variableOpen)
-- [variableClose](#variableClose)
-- [defaultFilter](#defaultFilter)
+- [commandOpen](#commandopen)
+- [commandClose](#commandclose)
+- [commandSyntax](#commandsyntax)
+- [variableOpen](#variableopen)
+- [variableClose](#variableclose)
+- [defaultFilter](#defaultfilter)
 - [strip](#strip)
-- [namingConflict](#namingConflict)
+- [namingConflict](#namingconflict)
 
 
 通过engine初始化时构造函数参数，或者engine实例的config方法，可以配置ETpl引擎的参数。
