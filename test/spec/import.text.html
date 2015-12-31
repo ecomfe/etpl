@@ -38,6 +38,10 @@ Hello etpl! In if.
 
 0 in for|1 in for|2 in for|
 
+::tpl-miss::
+<!-- :importMiss -->
+<!-- var: arr = new Array(3) -->
+<!-- for: ${arr} as ${item}, ${index}--><!--import: importMissInFor --> in for|<!--/for-->
 ::tpl-master::
 <!-- target: importFromMaster(master=importMaster) -->
 <!-- block: header --><!-- import: importFromMasterHello --><!-- /block -->
@@ -152,4 +156,22 @@ Hello etpl! In if.
 
 
 
+::tpl-miss-nested::
+<!-- target: importMissNested -->
+<!-- import: importMissNestedPage -->
+<!-- block: crumb --><!-- import: importMissNestedCrumb --><!-- /block -->
+<!-- block: main -->World<!-- /block -->
+<!-- /import -->
+
+<!-- target: importMissNestedCrumb -->
+<!-- import: importMissNestedAbstractCrumb -->
+<!-- block: path --><span>example</span><!-- /block -->
+<!-- /import -->
+
+<!-- target: importMissNestedPage -->
+<header>
+<!-- block: crumb --><!-- /block -->
+<!-- block: tip --><!-- /block -->
+</header>
+<main><!-- block: main --><!-- /block --></main>
 ::eof::

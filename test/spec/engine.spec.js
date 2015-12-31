@@ -47,7 +47,7 @@
             }
             catch (ex) {
                 var msg = ex.message;
-                if ( /^target exists/i.test(msg) ) {
+                if ( /^\[ETPL_TARGET_EXISTS\]/i.test(msg) ) {
                     expect(true).toBeTruthy();
                 }
                 else {

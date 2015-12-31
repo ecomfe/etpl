@@ -138,6 +138,10 @@ target:targetFromMasterSimple2Breakline(
 <!-- target:targetLazy/Master --><!-- block: content --><!--/block-->
 ::expect-lazy::
 content
+::tpl-miss-master::
+<!-- target:targetMissMaster(master=targetMissMaster/MasterT) -->
+<!-- block: content -->content<!--/block-->
+<!-- target:targetMissMaster/MasterT(master=targetMissMaster/Master/Master) --><!-- block: content -->heiheihei<!--/block-->
 ::tpl-nested-block::
 <!-- target: targetFromNestedBlock(master = targetNestedBlock) -->
 <!-- block: body-main -->body main<!-- /block -->

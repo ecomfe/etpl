@@ -31,6 +31,37 @@
             expect(renderer(data)).toEqual(text['expect-master']);
         });
 
+        it('noexist target, engine should throw an error when missTarget config is "error"', function() {
+            var mytpl = new etpl.Engine({missTarget: 'error'});
+            try{
+                var renderer = mytpl.compile(text['tpl-miss']);
+                expect(false).toBeTruthy();
+            }
+            catch (ex) {
+                var msg = ex.message;
+                if (/^\[ETPL_MISS_TARGET\]importMissInFor/i.test(msg)
+                    && msg.indexOf('importMissInFor') > 0
+                ) {
+                    expect(true).toBeTruthy();
+                }
+                else {
+                    expect(false).toBeTruthy();
+                }
+            }
+        });
+
+        it('noexist target, engine should not throw an error when missTarget config is default value', function() {
+            var mytpl = new etpl.Engine();
+            try{
+                var renderer = mytpl.compile(text['tpl-miss']);
+                expect(renderer).toBeNull();
+                expect(mytpl.render('importMiss')).toEqual('');
+            }
+            catch (ex) {
+                expect(false).toBeTruthy();
+            }
+        });
+
         it('When dependence unready, getRenderer should return null. Renderer can be getted when dependence ready.', function() {
             var renderer = etpl.compile(text['tpl-unready-begin']);
             expect(renderer).toBeNull();
@@ -49,6 +80,25 @@
         it('can be nested', function() {
             var renderer = etpl.compile(text['tpl-nested']);
             expect(renderer()).toEqual(text['expect-nested']);
+        });
+
+        it('noexist target in nested struction, engine should throw an correct error', function() {
+            var mytpl = new etpl.Engine({missTarget: 'error'});
+            try{
+                var renderer = mytpl.compile(text['tpl-miss-nested']);
+                expect(false).toBeTruthy();
+            }
+            catch (ex) {
+                var msg = ex.message;
+                if (/^\[ETPL_MISS_TARGET\]importMissNestedAbstractCrumb/i.test(msg)
+                    && msg.indexOf('importMissNestedCrumb') > 0
+                ) {
+                    expect(true).toBeTruthy();
+                }
+                else {
+                    expect(false).toBeTruthy();
+                }
+            }
         });
 
         it('and override block, the own target can be extended', function() {

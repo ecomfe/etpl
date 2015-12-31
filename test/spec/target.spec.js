@@ -85,6 +85,54 @@
         );
 
         it(
+            'use noexists master should throw an error when missTarget config is "error"',
+            function() {
+                var mytpl = new etpl.Engine({missTarget: 'error'});
+                try{
+                    var renderer = mytpl.compile(text['tpl-miss-master']);
+                    expect(false).toBeTruthy();
+                }
+                catch (ex) {
+                    var msg = ex.message;
+                    if (/^\[ETPL_MISS_TARGET\]targetMissMaster\/Master\/Master/i.test(msg)
+                        && msg.indexOf('targetMissMaster/MasterT') > 0
+                    ) {
+                        expect(true).toBeTruthy();
+                    }
+                    else {
+                        expect(false).toBeTruthy();
+                    }
+                }
+            }
+        );
+
+        it(
+            'use noexists master should throw an error when missTarget config is "error", after recompile relate target, it should be render correctly',
+            function() {
+                var mytpl = new etpl.Engine({missTarget: 'error'});
+                try{
+                    var renderer = mytpl.compile(text['tpl-lazy-target']);
+                    expect(false).toBeTruthy();
+                }
+                catch (ex) {
+                    var msg = ex.message;
+                    if (/^\[ETPL_MISS_TARGET\]targetLazy\/Master/i.test(msg)
+                        && msg.indexOf('targetFromLazyMaster') > 0
+                    ) {
+                        expect(true).toBeTruthy();
+                        mytpl.compile(text['tpl-lazy-master']);
+                        var renderer = mytpl.getRenderer('targetFromLazyMaster');
+                        expect(typeof renderer).toBe('function');
+                        expect(renderer()).toBe(text['expect-lazy']);
+                    }
+                    else {
+                        expect(false).toBeTruthy();
+                    }
+                }
+            }
+        );
+
+        it(
             'can be extends from target which extends from other parent target',
             function() {
                 etpl.compile( text['tpl-ntier-master'] );
