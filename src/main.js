@@ -289,10 +289,10 @@
     var RENDER_STRING_RETURN = 'return r;';
 
     // HACK: IE8-时，编译后的renderer使用join Array的策略进行字符串拼接
-    if (typeof navigator !== 'undefined'
-        && /msie\s*([0-9]+)/i.test(navigator.userAgent)
-        && RegExp.$1 - 0 < 8
-    ) {
+    var ieVersionMatch = typeof navigator !== 'undefined' 
+        && navigator.userAgent.match(/msie\s*([0-9]+)/i);
+
+    if (ieVersionMatch && ieVersionMatch[1] - 0 < 8) {
         RENDER_STRING_DECLATION = 'var r=[],ri=0;';
         RENDER_STRING_ADD_START = 'r[ri++]=';
         RENDER_STRING_RETURN = 'return r.join("");';
@@ -457,12 +457,12 @@
                     var filterSegs = filterSource.split('|');
                     for (var i = 0, len = filterSegs.length; i < len; i++) {
                         var seg = filterSegs[i];
+                        var segMatch = seg.match(/^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i);
+                        if (segMatch) {
+                            variableCode.unshift('fs["' + segMatch[1] + '"](');
 
-                        if (/^\s*([a-z0-9_-]+)(\((.*)\))?\s*$/i.test(seg)) {
-                            variableCode.unshift('fs["' + RegExp.$1 + '"](');
-
-                            if (RegExp.$3) {
-                                variableCode.push(',', RegExp.$3);
+                            if (segMatch[3]) {
+                                variableCode.push(',', segMatch[3]);
                             }
 
                             variableCode.push(')');
@@ -700,13 +700,14 @@
      */
     function TargetCommand(value, engine) {
         /* jshint ignore:start */
-        if (!/^\s*([a-z0-9\/_-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/_-]+)\s*\))?\s*/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/_-]+)\s*\))?\s*/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
         /* jshint ignore:end */
 
-        this.master = RegExp.$3;
-        this.name = RegExp.$1;
+        this.master = match[3];
+        this.name = match[1];
         Command.call(this, value, engine);
 
         this.blocks = {};
@@ -724,11 +725,12 @@
      * @param {Engine} engine 引擎实例
      */
     function BlockCommand(value, engine) {
-        if (!/^\s*([a-z0-9\/_-]+)\s*$/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*$/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.name = RegExp.$1;
+        this.name = match[1];
         Command.call(this, value, engine);
         this.cloneProps = ['name'];
     }
@@ -745,11 +747,12 @@
      * @param {Engine} engine 引擎实例
      */
     function ImportCommand(value, engine) {
-        if (!/^\s*([a-z0-9\/_-]+)\s*$/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*$/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.name = RegExp.$1;
+        this.name = match[1];
         Command.call(this, value, engine);
         this.cloneProps = ['name', 'state', 'blocks', 'target'];
         this.blocks = {};
@@ -767,12 +770,13 @@
      * @param {Engine} engine 引擎实例
      */
     function VarCommand(value, engine) {
-        if (!/^\s*([a-z0-9_]+)\s*=([\s\S]*)$/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9_]+)\s*=([\s\S]*)$/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.name = RegExp.$1;
-        this.expr = RegExp.$2;
+        this.name = match[1];
+        this.expr = match[2];
         Command.call(this, value, engine);
         this.cloneProps = ['name', 'expr'];
     }
@@ -789,12 +793,13 @@
      * @param {Engine} engine 引擎实例
      */
     function FilterCommand(value, engine) {
-        if (!/^\s*([a-z0-9_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9_-]+)\s*(\(([\s\S]*)\))?\s*$/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.name = RegExp.$1;
-        this.args = RegExp.$3;
+        this.name = match[1];
+        this.args = match[3];
         Command.call(this, value, engine);
         this.cloneProps = ['name', 'args'];
     }
@@ -811,12 +816,13 @@
      * @param {Engine} engine 引擎实例
      */
     function UseCommand(value, engine) {
-        if (!/^\s*([a-z0-9\/_-]+)\s*(\(([\s\S]*)\))?\s*$/i.test(value)) {
+        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*(\(([\s\S]*)\))?\s*$/i);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.name = RegExp.$1;
-        this.args = RegExp.$3;
+        this.name = match[1];
+        this.args = match[3];
         Command.call(this, value, engine);
         this.cloneProps = ['name', 'args'];
     }
@@ -845,13 +851,14 @@
         );
 
 
-        if (!rule.test(value)) {
+        var match = value.match(rule);
+        if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
 
-        this.list = RegExp.$1;
-        this.item = RegExp.$2;
-        this.index = RegExp.$4;
+        this.list = match[1];
+        this.item = match[2];
+        this.index = match[4];
         Command.call(this, value, engine);
         this.cloneProps = ['list', 'item', 'index'];
     }
@@ -1662,7 +1669,7 @@
 
     var etpl = new Engine();
     etpl.Engine = Engine;
-    etpl.version = '3.1.0';
+    etpl.version = '3.1.1';
 
     if (typeof exports === 'object' && typeof module === 'object') {
         // For CommonJS
