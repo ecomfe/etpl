@@ -9,13 +9,13 @@ ETPL是一个强复用、灵活、高性能的JavaScript模板引擎，适用于
 
 除了通过github clone外，你可以通过`右键另存`的方式获得ETpl:
 
-- [压缩代码 (Compressed)](http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-0/etpl.js)
-- [源码 (Source)](http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-0/etpl.source.js)
+- [压缩代码 (Compressed)](http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-1/etpl.js)
+- [源码 (Source)](http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-1/etpl.source.js)
 
 也可以通过CDN引用:
 
 ```html
-<script src="http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-0/etpl.js"></script>
+<script src="http://s1.bdstatic.com/r/www/cache/ecom/etpl/3-1-1/etpl.js"></script>
 ```
 
 ## Start
