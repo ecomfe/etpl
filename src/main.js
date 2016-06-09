@@ -289,7 +289,7 @@
     var RENDER_STRING_RETURN = 'return r;';
 
     // HACK: IE8-时，编译后的renderer使用join Array的策略进行字符串拼接
-    var ieVersionMatch = typeof navigator !== 'undefined' 
+    var ieVersionMatch = typeof navigator !== 'undefined'
         && navigator.userAgent.match(/msie\s*([0-9]+)/i);
 
     if (ieVersionMatch && ieVersionMatch[1] - 0 < 8) {
@@ -912,6 +912,60 @@
     inherits(ElseCommand, IfCommand);
 
     /**
+     * require命令节点类
+     *
+     * @inner
+     * @constructor
+     * @param {string} value 命令节点的value
+     * @param {Engine} engine 引擎实例
+     */
+    function RequireCommand(value, engine) {
+        Command.call(this, value, engine);
+    }
+
+    // 创建else命令节点继承关系
+    inherits(RequireCommand, Command);
+
+    // 支持以下几种形式：
+    //
+    // require: * from './foo.tpl'
+    // require: {default, foo, bar} from './foo.tpl'
+    //
+    // 不支持ES6 Module的别名、default单独处理等语法，也不支持无from的require（模板不可能是纯副作用的）
+    //
+    // 编译模板后的那个默认的匿名target会被认为是default，如果正好还有个target叫default就会悲剧，请自重
+    RequireCommand.prototype.open = function (context) {
+        autoCloseCommand(context);
+        Command.prototype.open.call(this, context);
+
+        // 保持正常用法的性能，不需要模块定义的时候不解析
+        if (!context.asModule) {
+            return;
+        }
+
+        var matches = /^\s*(\{?[\s\w,]+\}?)\s+from\s+['"]([^'"]+)['"]\s*$/.exec(this.value);
+
+        if (!matches) {
+            throw new Error('Invalid ' + this.type + ' syntax: ' + this.value);
+        }
+
+        var importClause = matches[1];
+        var module = matches[2];
+
+        if (importClause === '*') {
+            context.dependencies[module] = ['*'];
+            return;
+        }
+
+        // 去掉大括号后逗号分隔，然后每一项做trim
+        var imports = /\{([^\}]+)\}/.exec(importClause)[1].split(',');
+        for (var i = 0; i < imports.length; i++) {
+            imports[i] = imports[i].replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
+        }
+        context.dependencies[module] = imports;
+    };
+
+    /**
      * Target的节点状态
      *
      * @inner
@@ -921,6 +975,16 @@
         READED: 2,
         APPLIED: 3,
         READY: 4
+    };
+
+    /**
+     * 节点解析结束
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    RequireCommand.prototype.close = function (context) {
+        Command.prototype.close.call(this, context);
+        this.state = TargetState.READED;
     };
 
     /**
@@ -968,8 +1032,8 @@
             }
         }
         else if (this.engine.options.missTarget === 'error') {
-            throw new Error('[ETPL_MISS_TARGET]' + masterName 
-                + ', when extended by ' 
+            throw new Error('[ETPL_MISS_TARGET]' + masterName
+                + ', when extended by '
                 + (this.target ? this.target.name : this.name)
             );
         }
@@ -1003,7 +1067,7 @@
                 if (child instanceof ImportCommand) {
                     var target = engine.targets[child.name];
                     if (!target && engine.options.missTarget === 'error') {
-                        throw new Error('[ETPL_MISS_TARGET]' + child.name 
+                        throw new Error('[ETPL_MISS_TARGET]' + child.name
                             + ', when imported by ' + targetName);
                     }
 
@@ -1442,6 +1506,7 @@
     addCommandType('elif', ElifCommand);
     addCommandType('else', ElseCommand);
     addCommandType('filter', FilterCommand);
+    addCommandType('require', RequireCommand);
 
 
     /**
@@ -1518,6 +1583,27 @@
         /* jshint +W054 */
     };
 
+    Engine.prototype.compileAsModule = function (source) {
+        if (source) {
+            var context = parseSource(source, this, true);
+            var targetNames = context.targets;
+            var targets = {};
+            for (var i = 0; i < targetNames.length; i++) {
+                var targetName = targetNames[i];
+                targets[targetName] = this.targets[targetName].getRenderer();
+            }
+            return {
+                targets: targets,
+                dependencies: context.dependencies
+            };
+        }
+
+        return {
+            targets: {},
+            dependencies: {}
+        };
+    };
+
     /**
      * 根据target名称获取编译后的renderer函数
      *
@@ -1567,9 +1653,10 @@
      * @inner
      * @param {string} source 模板源代码
      * @param {Engine} engine 引擎实例
+     * @param {boolean} asModule 是否以模块的方式解析
      * @return {Array} target名称列表
      */
-    function parseSource(source, engine) {
+    function parseSource(source, engine, asModule) {
         var commandOpen = engine.options.commandOpen;
         var commandClose = engine.options.commandClose;
         var commandSyntax = engine.options.commandSyntax;
@@ -1579,7 +1666,9 @@
             engine: engine,
             targets: [],
             stack: stack,
-            target: null
+            target: null,
+            asModule: asModule || false,
+            dependencies: {}
         };
 
         // text节点内容缓冲区，用于合并多text
@@ -1664,7 +1753,7 @@
         flushTextBuf(); // 将缓冲区中的text节点内容写入
         autoCloseCommand(analyseContext);
 
-        return analyseContext.targets;
+        return asModule ? analyseContext : analyseContext.targets;
     }
 
     var etpl = new Engine();
