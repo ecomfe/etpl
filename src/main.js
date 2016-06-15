@@ -126,13 +126,13 @@
      */
     function inherits(subClass, superClass) {
         /* jshint -W054 */
+        var subClassProto = subClass.prototype;
         var F = new Function();
         F.prototype = superClass.prototype;
         subClass.prototype = new F();
         subClass.prototype.constructor = subClass;
+        extend(subClass.prototype, subClassProto);
         /* jshint +W054 */
-        // 由于引擎内部的使用场景都是inherits后，逐个编写子类的prototype方法
-        // 所以，不考虑将原有子类prototype缓存再逐个拷贝回去
     }
 
     /**
@@ -289,7 +289,7 @@
     var RENDER_STRING_RETURN = 'return r;';
 
     // HACK: IE8-时，编译后的renderer使用join Array的策略进行字符串拼接
-    var ieVersionMatch = typeof navigator !== 'undefined' 
+    var ieVersionMatch = typeof navigator !== 'undefined'
         && navigator.userAgent.match(/msie\s*([0-9]+)/i);
 
     if (ieVersionMatch && ieVersionMatch[1] - 0 < 8) {
@@ -968,8 +968,8 @@
             }
         }
         else if (this.engine.options.missTarget === 'error') {
-            throw new Error('[ETPL_MISS_TARGET]' + masterName 
-                + ', when extended by ' 
+            throw new Error('[ETPL_MISS_TARGET]' + masterName
+                + ', when extended by '
                 + (this.target ? this.target.name : this.name)
             );
         }
@@ -1003,7 +1003,7 @@
                 if (child instanceof ImportCommand) {
                     var target = engine.targets[child.name];
                     if (!target && engine.options.missTarget === 'error') {
-                        throw new Error('[ETPL_MISS_TARGET]' + child.name 
+                        throw new Error('[ETPL_MISS_TARGET]' + child.name
                             + ', when imported by ' + targetName);
                     }
 
