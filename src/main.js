@@ -1424,25 +1424,14 @@
      * 添加命令类型
      *
      * @inner
+     * @param {Engine} engine etpl引擎
      * @param {string} name 命令名称
      * @param {Function} Type 处理命令用到的类
      */
-    function addCommandType(name, Type) {
-        commandTypes[name] = Type;
+    function addCommandType(engine, name, Type) {
+        engine.commandTypes[name] = Type;
         Type.prototype.type = name;
     }
-
-    addCommandType('target', TargetCommand);
-    addCommandType('block', BlockCommand);
-    addCommandType('import', ImportCommand);
-    addCommandType('use', UseCommand);
-    addCommandType('var', VarCommand);
-    addCommandType('for', ForCommand);
-    addCommandType('if', IfCommand);
-    addCommandType('elif', ElifCommand);
-    addCommandType('else', ElseCommand);
-    addCommandType('filter', FilterCommand);
-
 
     /**
      * etpl引擎类
@@ -1467,6 +1456,17 @@
             variableClose: '}',
             defaultFilter: 'html'
         };
+        this.commandTypes = {};
+        addCommandType(this, 'target', TargetCommand);
+        addCommandType(this, 'block', BlockCommand);
+        addCommandType(this, 'import', ImportCommand);
+        addCommandType(this, 'use', UseCommand);
+        addCommandType(this, 'var', VarCommand);
+        addCommandType(this, 'for', ForCommand);
+        addCommandType(this, 'if', IfCommand);
+        addCommandType(this, 'elif', ElifCommand);
+        addCommandType(this, 'else', ElseCommand);
+        addCommandType(this, 'filter', FilterCommand);
 
         this.config(options);
         this.targets = {};
@@ -1621,7 +1621,7 @@
                 // 否则，为不具有command含义的普通文本
                 if (match
                     && (nodeName = match[2] || 'target')
-                    && (NodeType = commandTypes[nodeName.toLowerCase()])
+                    && (NodeType = engine.commandTypes[nodeName.toLowerCase()])
                     && typeof NodeType === 'function'
                 ) {
                     // 先将缓冲区中的text节点内容写入
