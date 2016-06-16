@@ -1414,13 +1414,6 @@
     };
 
     /**
-     * 命令类型集合
-     *
-     * @type {Object}
-     */
-    var commandTypes = {};
-
-    /**
      * 添加命令类型
      *
      * @inner
@@ -1456,6 +1449,7 @@
             variableClose: '}',
             defaultFilter: 'html'
         };
+
         this.commandTypes = {};
         addCommandType(this, 'target', TargetCommand);
         addCommandType(this, 'block', BlockCommand);
@@ -1506,16 +1500,25 @@
      * @return {function(Object):string} renderer函数
      */
     Engine.prototype.parse = function (source) {
+        /* jshint -W054 */
+        var renderer = new Function('return ""');
+        /* jshint +W054 */
+
         if (source) {
-            var targetNames = parseSource(source, this);
+            var parseInfo = parseSource(source, this);
+            var targetNames = parseInfo.targets;
+
+            if ('function' === typeof this.compiled) {
+                this.compiled(parseInfo);
+            }
+
             if (targetNames.length) {
-                return this.targets[targetNames[0]].getRenderer();
+                renderer = this.targets[targetNames[0]].getRenderer();
             }
         }
 
-        /* jshint -W054 */
-        return new Function('return ""');
-        /* jshint +W054 */
+
+        return renderer;
     };
 
     /**
@@ -1602,7 +1605,8 @@
             engine: engine,
             targets: [],
             stack: stack,
-            target: null
+            target: null,
+            deps: {}
         };
 
         // text节点内容缓冲区，用于合并多text
@@ -1687,19 +1691,25 @@
         flushTextBuf(); // 将缓冲区中的text节点内容写入
         autoCloseCommand(analyseContext);
 
-        return analyseContext.targets;
+        return {
+            targets: analyseContext.targets,
+            deps: analyseContext.deps
+        };
     }
 
+    // export object
     var etpl = new Engine();
     etpl.Engine = Engine;
-    etpl.version = '3.1.1';
+    etpl.version = '3.2.0';
     etpl.Command = Command;
     etpl.util = {
         inherits: inherits,
         stringFormat: stringFormat,
         stringLiteralize: stringLiteralize,
-        compileVariable: compileVariable
+        compileVariable: compileVariable,
+        parseSource: parseSource
     };
+
 
     if (typeof exports === 'object' && typeof module === 'object') {
         // For CommonJS
