@@ -1550,13 +1550,40 @@
     };
 
     /**
+     * 增加命令
+     *
+     * @param {string} name 命令名称
+     * @param {Object|Function} command 命令对象或命令类
+     */
+    Engine.prototype.addCommand = function (name, command) {
+        var CommandType = command;
+        if ('function' !== typeof CommandType) {
+            CommandType = function (value, engine) {
+                if ('function' === typeof command.validate) {
+                    command.validate();
+                }
+
+                Command.call(this, value, engine);
+                if ('function' === typeof command.init) {
+                    command.init();
+                }
+            };
+
+            CommandType.prototype = command;
+        }
+
+        inherits(CommandType, Command);
+        addCommandType(this, name, CommandType);
+    };
+
+    /**
      * 增加过滤器
      *
      * @param {string} name 过滤器名称
      * @param {Function} filter 过滤函数
      */
     Engine.prototype.addFilter = function (name, filter) {
-        if (typeof filter === 'function') {
+        if ('function' === typeof filter) {
             this.filters[name] = filter;
         }
     };
