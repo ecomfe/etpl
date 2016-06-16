@@ -912,6 +912,33 @@
     inherits(ElseCommand, IfCommand);
 
     /**
+     * 初始化的额外行为，保存依赖信息
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    TargetCommand.prototype.init = function (context) {
+        if (this.master) {
+            context.deps[this.master] = true;
+        }
+    };
+
+    /**
+     * 初始化的额外行为，保存依赖信息
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    UseCommand.prototype.init =
+
+    /**
+     * 初始化的额外行为，保存依赖信息
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    ImportCommand.prototype.init = function (context) {
+        context.deps[this.name] = true;
+    };
+
+    /**
      * Target的节点状态
      *
      * @inner
@@ -1563,9 +1590,6 @@
         if ('function' !== typeof CommandType) {
             CommandType = function (value, engine) {
                 Command.call(this, value, engine);
-                if ('function' === typeof this.init) {
-                    this.init();
-                }
             };
 
             CommandType.prototype = command;
@@ -1665,9 +1689,15 @@
                     }
                     else {
                         currentNode = new NodeType(match[3], engine);
-                        if (typeof currentNode.beforeOpen === 'function') {
+
+                        if ('function' === typeof currentNode.init) {
+                            currentNode.init(analyseContext);
+                        }
+
+                        if ('function' === typeof currentNode.beforeOpen) {
                             currentNode.beforeOpen(analyseContext);
                         }
+
                         currentNode.open(analyseContext);
                     }
 
