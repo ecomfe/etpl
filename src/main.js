@@ -1559,13 +1559,9 @@
         var CommandType = command;
         if ('function' !== typeof CommandType) {
             CommandType = function (value, engine) {
-                if ('function' === typeof command.validate) {
-                    command.validate();
-                }
-
                 Command.call(this, value, engine);
-                if ('function' === typeof command.init) {
-                    command.init();
+                if ('function' === typeof this.init) {
+                    this.init();
                 }
             };
 
@@ -1697,6 +1693,13 @@
     var etpl = new Engine();
     etpl.Engine = Engine;
     etpl.version = '3.1.1';
+    etpl.Command = Command;
+    etpl.util = {
+        inherits: inherits,
+        stringFormat: stringFormat,
+        stringLiteralize: stringLiteralize,
+        compileVariable: compileVariable
+    };
 
     if (typeof exports === 'object' && typeof module === 'object') {
         // For CommonJS
