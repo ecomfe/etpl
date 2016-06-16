@@ -700,7 +700,7 @@
      */
     function TargetCommand(value, engine) {
         /* jshint ignore:start */
-        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/_-]+)\s*\))?\s*/i);
+        var match = value.match(/^\s*([a-z0-9\/\._-]+)\s*(\(\s*master\s*=\s*([a-z0-9\/\._-]+)\s*\))?\s*/i);
         if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
@@ -725,7 +725,7 @@
      * @param {Engine} engine 引擎实例
      */
     function BlockCommand(value, engine) {
-        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*$/i);
+        var match = value.match(/^\s*([a-z0-9\/\._-]+)\s*$/i);
         if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
@@ -747,7 +747,7 @@
      * @param {Engine} engine 引擎实例
      */
     function ImportCommand(value, engine) {
-        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*$/i);
+        var match = value.match(/^\s*([a-z0-9\/\._-]+)\s*$/i);
         if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
@@ -816,7 +816,7 @@
      * @param {Engine} engine 引擎实例
      */
     function UseCommand(value, engine) {
-        var match = value.match(/^\s*([a-z0-9\/_-]+)\s*(\(([\s\S]*)\))?\s*$/i);
+        var match = value.match(/^\s*([a-z0-9\/\._-]+)\s*(\(([\s\S]*)\))?\s*$/i);
         if (!match) {
             throw new Error('Invalid ' + this.type + ' syntax: ' + value);
         }
