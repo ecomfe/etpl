@@ -1,3 +1,16 @@
+var engineLog = (function () {
+    var content;
+    function mod(c) {
+        content = c;
+    }
+
+    mod.get = function () {
+        return content;
+    };
+
+    return mod;
+})();
+
 (function (){
 
     var etpl = require( '../../src/main' );
@@ -28,6 +41,37 @@
 
         return source.toUpperCase();
     } );
+
+    mytpl.addFilter( 'log', function ( source ) {
+        engineLog(source);
+
+        return source;
+    } );
+
+    mytpl.addCommand('dump', {
+        init: function () {
+            var match = this.value.match(/^\s*([a-z0-9_]+)\s*$/i);
+            if (!match) {
+                throw new Error('Invalid ' + this.type + ' syntax: ' + this.value);
+            }
+
+            this.name = match[1];
+            this.cloneProps = ['name'];
+        },
+
+        open: function (context) {
+            context.stack.top().addChild(this);
+        },
+
+        getRendererBody: function () {
+            var util = etpl.util;
+            var options = this.engine.options;
+            return util.stringFormat(
+                '{0};',
+                util.compileVariable(options.variableOpen + this.name + '| log' + options.variableClose, this.engine)
+            );
+        }
+    });
 
     describe('Engine', function() {
         it('can new by manual, isolate from default engine', function() {
@@ -211,6 +255,18 @@
             var data = {name: 'etpl'};
             expect(renderer(data))
                  .toEqual(text['expect-engineUpperTarget2']);
+        });
+
+        it('"addCommand" method can custom command by yourself', function() {
+            var renderer = mytpl.compile(text['tpl-dump-command']);
+            var data = {
+                person: {
+                    name:'erik',
+                    email:'errorrik@gmail.com'
+                }
+            };
+            expect(renderer(data)).toEqual(text['expect-dump-command']);
+            expect(engineLog.get()).toBe(data.person);
         });
 
         it('default instance: "parse" method should reserved for backward compatibility, same as "compile" method', function() {

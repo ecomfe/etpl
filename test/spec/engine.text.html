@@ -120,4 +120,8 @@ Hello &lt;b&gt;etpl&lt;/b&gt;!
 Hello ETPL!
 ::expect-engineUpperTarget2::
 Hello ETPL! Hello Etpl!
+::tpl-dump-command::
+<!-- target: engineDumpCommand --><!--dump: person-->${person.name} - ${person.email}
+::expect-dump-command::
+erik - errorrik@gmail.com
 ::eof::
