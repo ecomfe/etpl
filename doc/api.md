@@ -23,11 +23,23 @@ var etplEngine = new etpl.Engine({
 });
 ```
 
+下面是 Engine 的实例方法列表。
 
-### methods
+- [addCommand](#addCommand)
+- [addFilter](#addFilter)
+- [compile](#compile)
+- [config](#config)
+- [getRenderer](#getRenderer)
+- [load](#load)
+- [loadFromFile](#loadFromFile)
+- [parse](#parse)
+- [render](#render)
 
 
-#### {void} addCommand( {string}name, {Object}command )
+
+### addCommand
+
+`{void} addCommand( {string}name, {Object}command )`
 
 `常用` 自定义命令标签。
 
@@ -69,7 +81,9 @@ etpl.addCommand('dump', {
 ```
 
 
-#### {void} addFilter( {string}name, {function({string}, {...*}):string}filter )
+### addFilter
+
+`{void} addFilter( {string}name, {function({string}, {...*}):string}filter )`
 
 `常用` 为默认引擎添加过滤器。过滤函数的第一个参数为过滤源字符串，其后的参数可由模板开发者传入。过滤函数必须返回string。
 
@@ -82,7 +96,9 @@ etpl.addFilter( 'markdown', function ( source, useExtra ) {
 } );
 ```
 
-#### {Function} compile( {string}source )
+### compile
+
+`{Function} compile( {string}source )`
 
 `常用` 使用默认引擎编译模板。返回第一个target编译后的renderer函数。
 
@@ -93,7 +109,9 @@ var helloRenderer = etpl.compile( 'Hello ${name}!' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
-#### {void} config( {Object}options )
+### config
+
+`{void} config( {Object}options )`
 
 `常用` 对默认引擎进行配置，配置参数将合并到引擎现有的参数中。[查看配置参数](config.md)。
 
@@ -103,7 +121,9 @@ etplEngine.config( {
 } );
 ```
 
-#### {Function} getRenderer( {string}name )
+### getRenderer
+
+`{Function} getRenderer( {string}name )`
 
 `常用` 从默认引擎中，根据target名称获取编译后的renderer函数。
 
@@ -116,7 +136,9 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
 
 
-#### {Function} load( {string}name )
+### load
+
+`{Function} load( {string}name )`
 
 `仅node环境` 加载并编译target文件
 
@@ -128,7 +150,9 @@ mainRenderer( {name: 'ETPL'} );
 ```
 
 
-#### {Function} loadFromFile( {string}file )
+### loadFromFile
+
+`{Function} loadFromFile( {string}file )`
 
 `仅node环境` 加载并编译模板文件
 
@@ -140,13 +164,14 @@ mainRenderer( {name: 'ETPL'} );
 ```
 
 
-#### {Function} parse( {string}source )
+### parse
 
 同`compile`方法。该方法的存在是为了兼容老版本的模板引擎api，不建议使用。
 
 
+### render
 
-#### {string} render( {string}name, {Object}data )
+`{string} render( {string}name, {Object}data )`
 
 使用默认引擎执行模板渲染，返回渲染后的字符串。
 
