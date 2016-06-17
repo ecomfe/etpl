@@ -1535,10 +1535,6 @@
             var parseInfo = parseSource(source, this);
             var targetNames = parseInfo.targets;
 
-            if ('function' === typeof this.compiled) {
-                this.compiled(parseInfo);
-            }
-
             if (targetNames.length) {
                 renderer = this.targets[targetNames[0]].getRenderer();
             }
@@ -1721,9 +1717,14 @@
         flushTextBuf(); // 将缓冲区中的text节点内容写入
         autoCloseCommand(analyseContext);
 
+        var deps = [];
+        for (var key in analyseContext.deps) {
+            deps.push(key);
+        }
+
         return {
             targets: analyseContext.targets,
-            deps: analyseContext.deps
+            deps: deps
         };
     }
 
