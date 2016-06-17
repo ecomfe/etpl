@@ -1,7 +1,24 @@
+/**
+ * ETPL (Enterprise Template)
+ * Copyright 2016 Baidu Inc. All rights reserved.
+ *
+ * @file node环境支持模块，主要提供import和master的依赖文件自动加载功能
+ * @author errorrik(errorrik@gmail.com)
+ */
+
+
+/* eslint-env node */
+
 var etpl = require('./main');
 var path = require('path');
 var fs = require('fs');
 
+/**
+ * 加载模板文件
+ *
+ * @param {string} file 文件路径
+ * @return {function(Object):string} renderer函数
+ */
 etpl.Engine.prototype.loadFromFile = function (file) {
     var load = this.load.bind(this);
     var targets = this.targets;
@@ -30,6 +47,12 @@ etpl.Engine.prototype.loadFromFile = function (file) {
     return renderer;
 };
 
+/**
+ * 加载target
+ *
+ * @param {string} targetName target名称
+ * @return {function(Object):string} renderer函数
+ */
 etpl.Engine.prototype.load = function (targetName) {
     if (this.targets[targetName]) {
         return this.targets[targetName].getRenderer();
@@ -39,12 +62,20 @@ etpl.Engine.prototype.load = function (targetName) {
 };
 
 
-
+/**
+ * 获取 target 对应的文件路径
+ *
+ * @inner
+ * @param {string} targetName target名称
+ * @param {Engine} engine etpl引擎
+ * @return {string}
+ */
 function resolveTargetPath(targetName, engine) {
     var dir = engine.options.dir || process.pwd();
     var ext = engine.options.extname || '.etpl';
 
     return path.resolve(dir, targetName) + ext;
 }
+
 
 module.exports = exports = etpl;
