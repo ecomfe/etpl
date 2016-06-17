@@ -1266,49 +1266,7 @@
      *
      * @param {Object} context 语法分析环境对象
      */
-    UseCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ImportCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    VarCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    ForCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    FilterCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    BlockCommand.prototype.beforeOpen =
-
-    /**
-     * 节点open前的处理动作：节点不在target中时，自动创建匿名target
-     *
-     * @param {Object} context 语法分析环境对象
-     */
-    IfCommand.prototype.beforeOpen =
+    Command.prototype.beforeOpen =
 
     /**
      * 文本节点被添加到分析环境前的处理动作：节点不在target中时，自动创建匿名target
@@ -1323,6 +1281,13 @@
         var target = new TargetCommand(generateGUID(), context.engine);
         target.open(context);
     };
+
+    /**
+     * 节点open前的处理动作：target 不需要自动创建target，所以清空方法
+     *
+     * @param {Object} context 语法分析环境对象
+     */
+    TargetCommand.prototype.beforeOpen = function () {};
 
     /**
      * 获取renderer body的生成代码
@@ -1690,10 +1655,7 @@
                             currentNode.init(analyseContext);
                         }
 
-                        if ('function' === typeof currentNode.beforeOpen) {
-                            currentNode.beforeOpen(analyseContext);
-                        }
-
+                        currentNode.beforeOpen(analyseContext);
                         currentNode.open(analyseContext);
                     }
 
