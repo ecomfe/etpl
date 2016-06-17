@@ -1,0 +1,6 @@
+<!-- :node/master-sub(master=node/master-root) -->
+<!-- block:header -->Header Content<!-- /block -->
+<!-- block:content -->
+<main><!-- block: main --><!-- /block --></main>
+<footer><!-- block: footer --><!-- /block --></footer>
+<!-- /block -->

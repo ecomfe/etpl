@@ -1,0 +1,4 @@
+<!-- target: node/main -->
+<!-- import: node/header -->
+<div class="main">Hello ${name}!</div>
+<!-- import: node/footer -->

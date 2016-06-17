@@ -1,0 +1,15 @@
+::expect-main::
+
+<header>Header Content</header>
+<div class="main">Hello errorrik!</div>
+<footer>Footer Content</footer>
+
+::expect-master-main::
+
+<header>Header Content</header>
+
+<main>Hello errorrik!</main>
+<footer>Footer Content</footer>
+
+
+::eof::

@@ -1,0 +1,3 @@
+<!-- :node/master-main(master=node/master-sub) -->
+<!-- block: main -->Hello ${name}!<!-- /block -->
+<!-- block: footer -->Footer Content<!-- /block -->
