@@ -27,9 +27,51 @@ var etplEngine = new etpl.Engine({
 ### methods
 
 
+#### {void} addCommand( {string}name, {Object}command )
+
+`常用` 自定义命令标签。
+
+- `{string}`name - 命令标签名称
+- `{Object}`command - 命令对象
+
+command 参数是一个对象，包含一些在命令标签编译时各个阶段的处理方法。
+
+- `init(context)` - 初始化
+- `open(context)` - 标签起始
+- `close(context)` - 标签闭合
+- `getRendererBody():string` - 生成编译代码
+
+```javascript
+etpl.addCommand('dump', {
+    init: function () {
+        var match = this.value.match(/^\s*([a-z0-9_]+)\s*$/i);
+        if (!match) {
+            throw new Error('Invalid ' + this.type + ' syntax: ' + this.value);
+        }
+
+        this.name = match[1];
+        this.cloneProps = ['name'];
+    },
+
+    open: function (context) {
+        context.stack.top().addChild(this);
+    },
+
+    getRendererBody: function () {
+        var util = etpl.util;
+        var options = this.engine.options;
+        return util.stringFormat(
+            'console.log({0});',
+            util.compileVariable(options.variableOpen + this.name + options.variableClose, this.engine)
+        );
+    }
+});
+```
+
+
 #### {void} addFilter( {string}name, {function({string}, {...*}):string}filter )
 
-为默认引擎添加过滤器。过滤函数的第一个参数为过滤源字符串，其后的参数可由模板开发者传入。过滤函数必须返回string。
+`常用` 为默认引擎添加过滤器。过滤函数的第一个参数为过滤源字符串，其后的参数可由模板开发者传入。过滤函数必须返回string。
 
 - `{string}`name - 过滤器名称
 - `{Function}`filter - 过滤函数
@@ -42,7 +84,7 @@ etpl.addFilter( 'markdown', function ( source, useExtra ) {
 
 #### {Function} compile( {string}source )
 
-使用默认引擎编译模板。返回第一个target编译后的renderer函数。
+`常用` 使用默认引擎编译模板。返回第一个target编译后的renderer函数。
 
 - `{string}`source - 模板源代码
 
@@ -53,7 +95,7 @@ helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 
 #### {void} config( {Object}options )
 
-对默认引擎进行配置，配置参数将合并到引擎现有的参数中。[查看配置参数](config.md)。
+`常用` 对默认引擎进行配置，配置参数将合并到引擎现有的参数中。[查看配置参数](config.md)。
 
 ```javascript
 etplEngine.config( {
@@ -63,7 +105,7 @@ etplEngine.config( {
 
 #### {Function} getRenderer( {string}name )
 
-从默认引擎中，根据target名称获取编译后的renderer函数。
+`常用` 从默认引擎中，根据target名称获取编译后的renderer函数。
 
 - `{string}`name - target名称
 
@@ -72,6 +114,31 @@ etpl.compile( '<!-- target: hello -->Hello ${name}!' );
 var helloRenderer = etpl.getRenderer( 'hello' );
 helloRenderer( {name: 'ETPL'} ); // Hello ETPL!
 ```
+
+
+#### {Function} load( {string}name )
+
+`仅node环境` 加载并编译target文件
+
+- `{string}`name - target名称
+
+```javascript
+var mainRenderer = etpl.load( 'main' );
+mainRenderer( {name: 'ETPL'} );
+```
+
+
+#### {Function} loadFromFile( {string}file )
+
+`仅node环境` 加载并编译模板文件
+
+- `{string}`file - 模板文件路径
+
+```javascript
+var mainRenderer = etpl.loadFromFile( path.resolve(__dirname, 'main.etpl') );
+mainRenderer( {name: 'ETPL'} );
+```
+
 
 #### {Function} parse( {string}source )
 
