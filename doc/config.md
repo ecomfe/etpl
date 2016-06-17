@@ -9,6 +9,9 @@
 - [strip](#strip)
 - [namingConflict](#namingconflict)
 - [missTarget](#misstarget)
+- [dir](#dir)
+- [extname](#extname)
+- [encoding](#encoding)
 
 
 通过engine初始化时构造函数参数，或者engine实例的config方法，可以配置ETpl引擎的参数。
@@ -93,3 +96,26 @@ target不存在时的处理策略，值可以是:
 
 - `error`: 抛出错误
 - `ignore`: 静默处理，无错误。此项为默认值
+
+
+### dir
+
+`string` `仅node环境有效`
+
+模板文件目录，用于加载target文件时的路径查找，默认值为 *process.pwd()*
+
+
+### extname
+
+`string` `仅node环境有效`
+
+模板文件后缀名，默认值为 *.etpl*
+
+
+### encoding
+
+`string` `仅node环境有效`
+
+模板文件编码，默认值为 *UTF-8*
+
+
