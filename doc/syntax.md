@@ -498,21 +498,18 @@ zhangsan
 zhangsan
 ```
 
-在ETPL内部，处理这三种情形下的表达式的时候，会先将`${...}`这部分内容替换成`gv('...', ['...'])`这种形式，然后整个表达式最终形成一个完整的JS表达式。
+其它语法示例：
 
-上述示例中的表达式转换成的JS代码大致如下：
+```html
+<!-- 动态对象属性 -->
+<!-- var: value = ${object}[${key1}][${key2}] -->
 
-```js
-// if
-if (gv("arr", ["arr"])[gv("index", ["index"])] === 'zhangsan') {
-    r += "He's name is zhangsan.";
-}
+<!-- 三目运算符 -->
+<!-- var: nameToShow = ${arr}[${index}] === 'zhangsan' ? 18 : 60 -->
 
-// var
-v["personName"] = gv("arr", ["arr"])[gv("index", ["index"])];
+<!-- 数学运算 -->
+<!-- var: result = ${num1} + ${num2} + 3 -->
 
-// use
-r += engine.render("item", {
-    "name": gv("arr", ["arr"])[gv("index", ["index"])]
-});
+<!-- 字符串运算 -->
+<!-- var: result = ${str1} + ${num1} + 'string' -->
 ```
