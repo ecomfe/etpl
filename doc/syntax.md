@@ -465,3 +465,54 @@ filter指令不支持自动结束，必须手工编写`指令结束`。
 ```html
 <!-- /filter -->
 ```
+
+##### 表达式的特殊语法（ expression 和 condition-expression ）
+
+`if`指令、`use`指令和`var`指令中的表达式（ expression 或者 condition-expression ）部分，可以使用动态的数据：
+
+```html
+<!-- if: ${arr}[${index}] === 'zhangsan' -->He's name is zhangsan.<!-- /if -->
+
+<!-- var: personName = ${arr}[${index}] -->${personName}
+
+<!-- use: item(name = ${arr}[${index}]) -->
+<!-- target: item -->${name}
+```
+
+如果传入的数据是：
+
+```json
+{
+    "arr": ["zhangsan"],
+    "index": 0
+}
+```
+
+输出的结果为：
+
+```
+He's name is zhangsan.
+
+zhangsan
+
+zhangsan
+```
+
+在ETPL内部，处理这三种情形下的表达式的时候，会先将`${...}`这部分内容替换成`gv('...', ['...'])`这种形式，然后整个表达式最终形成一个完整的JS表达式。
+
+上述示例中的表达式转换成的JS代码大致如下：
+
+```js
+// if
+if (gv("arr", ["arr"])[gv("index", ["index"])] === 'zhangsan') {
+    r += "He's name is zhangsan.";
+}
+
+// var
+v["personName"] = gv("arr", ["arr"])[gv("index", ["index"])];
+
+// use
+r += engine.render("item", {
+    "name": gv("arr", ["arr"])[gv("index", ["index"])]
+});
+```
